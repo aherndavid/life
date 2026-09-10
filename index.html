@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar, email and next bus in one place.">
+    <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and next bus in one place.">
     <meta name="theme-color" content="#007bff">
     <title>Life - Student Edition | dPaul Studio</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -890,8 +890,8 @@
                 </div>
 
                 <div class="container">
-                    <h2 style="margin-top: 0;">Google calendar and email</h2>
-                    <p class="note">Connect to see your Google Calendar agenda and unread Gmail on the Today tab. Read-only: this page can't send, delete or change anything. Nothing leaves your browser except the requests to Google.</p>
+                    <h2 style="margin-top: 0;">Google Calendar</h2>
+                    <p class="note">Connect to see your Google Calendar agenda on the Today tab. Read-only: this page can't add, delete or change anything. Nothing leaves your browser except the requests to Google.</p>
                     <div class="row-gap">
                         <button id="btn-google-connect" onclick="connectGoogle()">Connect Google</button>
                         <button id="btn-google-disconnect" class="btn-toggle" style="padding: 12px 20px; font-size: 1rem;" onclick="disconnectGoogle()">Disconnect</button>
@@ -988,22 +988,6 @@
                 </div>
                 <div id="calendar-content">
                     <ul class="task-list" id="calendar-list"></ul>
-                </div>
-            </div>
-
-            <div class="container compact">
-                <div class="controls-row" style="margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <h2 class="sidebar-title">Inbox</h2>
-                        <span class="badge blue" id="inbox-count" style="display: none;"></span>
-                    </div>
-                    <div class="row-gap">
-                        <button class="btn-cal-filter" onclick="fetchInbox()">Refresh</button>
-                        <button class="btn-toggle" id="btn-toggle-inbox" onclick="toggleSection('inbox-content', 'btn-toggle-inbox')">Hide</button>
-                    </div>
-                </div>
-                <div id="inbox-content">
-                    <ul class="task-list" id="inbox-list"></ul>
                 </div>
             </div>
 
@@ -1162,7 +1146,7 @@
                     <div class="guide-card">
                         <h3>Today</h3>
                         <p>Your home screen. It shows how much you can safely spend, today's classes with the one happening now highlighted, and anything due in the next two weeks.</p>
-                        <p>Next bus, your Google agenda, unread email and the focus timer sit down the right-hand side.</p>
+                        <p>Next bus, your Google agenda and the focus timer sit down the right-hand side.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
                     </div>
                     <div class="guide-card">
@@ -1208,8 +1192,8 @@
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                     <div class="guide-card">
-                        <h3>Google calendar and email</h3>
-                        <p>In Settings, choose Connect Google and sign in. Your next 7 or 30 days of events and your latest unread emails appear on Today.</p>
+                        <h3>Google Calendar</h3>
+                        <p>In Settings, choose Connect Google and sign in. Your next 7 or 30 days of events appear on Today.</p>
                         <p>Access is read-only. Google signs you out after an hour, so choose Reconnect when prompted.</p>
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
@@ -1276,8 +1260,7 @@
         // Authorised JavaScript origins. No client secret is used or needed here.
         const GOOGLE_CLIENT_ID = '';
         const GOOGLE_SCOPES = [
-            'https://www.googleapis.com/auth/calendar.readonly',
-            'https://www.googleapis.com/auth/gmail.readonly'
+            'https://www.googleapis.com/auth/calendar.readonly'
         ].join(' ');
 
         const STORE_KEY = 'dpaul_student_life_v1';
@@ -2327,7 +2310,7 @@
         }
 
         // =====================================================================
-        // GOOGLE: Calendar + Gmail, read-only, browser token flow (no server)
+        // GOOGLE: Calendar, read-only, browser token flow (no server)
         // =====================================================================
         let tokenClient = null;
         let googleToken = null;
@@ -2383,8 +2366,6 @@
             if (!connected) {
                 const msg = GOOGLE_CLIENT_ID ? '<a href="#" onclick="connectGoogle(); return false;">Connect Google</a> to see this here.' : 'Google isn\'t set up on this copy yet.';
                 $('calendar-list').innerHTML = prompt(msg);
-                $('inbox-list').innerHTML = prompt(msg);
-                $('inbox-count').style.display = 'none';
             }
         }
 
@@ -2396,7 +2377,7 @@
             return r.json();
         }
 
-        function refreshGoogle() { fetchCalendar(7); fetchInbox(); }
+        function refreshGoogle() { fetchCalendar(7); }
 
         async function fetchCalendar(days) {
             const list = $('calendar-list');
@@ -2419,31 +2400,6 @@
                 }).join('');
             } catch (e) {
                 if (e.message !== 'auth') list.innerHTML = '<li class="status-err" style="padding: 10px 0;">Couldn\'t load your calendar. Try Refresh or reconnect in Settings.</li>';
-            }
-        }
-
-        async function fetchInbox() {
-            const list = $('inbox-list');
-            if (!tokenValid()) { renderGoogleState(); return; }
-            list.innerHTML = '<li class="muted" style="padding: 10px 0;">Checking Gmail...</li>';
-            try {
-                const label = await googleGet('https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX');
-                const count = label.messagesUnread || 0;
-                const badge = $('inbox-count');
-                badge.textContent = `${count} unread`;
-                badge.style.display = '';
-                if (!count) { list.innerHTML = '<li class="empty">Inbox zero. Nothing unread.</li>'; return; }
-                const ids = await googleGet('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=6&q=' + encodeURIComponent('in:inbox is:unread'));
-                const msgs = await Promise.all((ids.messages || []).map(m =>
-                    googleGet(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`)));
-                list.innerHTML = msgs.map(m => {
-                    const h = name => ((m.payload.headers || []).find(x => x.name.toLowerCase() === name) || {}).value || '';
-                    const from = h('from').replace(/<.*?>/, '').replace(/"/g, '').trim() || h('from');
-                    return `<li class="task-item"><span class="task-text"><strong>${esc(from)}</strong><br>
-                        <a href="https://mail.google.com/mail/u/0/#inbox/${esc(m.threadId)}" target="_blank" rel="noopener" style="color: #333; text-decoration: none;">${esc(h('subject') || '(no subject)')}</a></span></li>`;
-                }).join('') + `<li style="padding-top: 10px;"><a href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener" style="color: #007bff; font-weight: bold; text-decoration: none;">Open Gmail</a></li>`;
-            } catch (e) {
-                if (e.message !== 'auth') list.innerHTML = '<li class="status-err" style="padding: 10px 0;">Couldn\'t load Gmail. Try Refresh or reconnect in Settings.</li>';
             }
         }
 
@@ -3581,8 +3537,8 @@
             {
                 id: 'google', tab: 'settings', title: 'Connect your Google account',
                 text: () => GOOGLE_CLIENT_ID
-                    ? 'Press Connect Google and sign in. Your calendar and unread emails will show on the Today tab. It\'s read-only, so nothing can be sent, changed or deleted.'
-                    : 'Google connection isn\'t switched on for this copy of the app yet, so skip this step for now. Once it is, this is where you\'ll connect your calendar and email.',
+                    ? 'Press Connect Google and sign in. Your calendar will show on the Today tab. It\'s read-only, so nothing can be added, changed or deleted.'
+                    : 'Google connection isn\'t switched on for this copy of the app yet, so skip this step for now. Once it is, this is where you\'ll connect your calendar.',
                 targets: () => ['#btn-google-connect'],
                 done: () => tokenValid()
             },
