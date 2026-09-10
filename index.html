@@ -411,6 +411,13 @@
         .help-details ol, .help-details ul { margin: 12px 16px 14px 36px; padding: 0; line-height: 1.6; color: #444; }
         .help-details li { margin-bottom: 8px; }
         .help-details p { margin: 12px 16px; color: #444; line-height: 1.55; }
+        .help-details code, .guide-owner code { background: #f1f3f5; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; font-size: 0.92em; word-break: break-all; }
+        .help-details .row-gap { margin: 0 16px 14px; }
+        .guide-owner { margin-top: 28px; padding-top: 22px; border-top: 2px solid #eee; }
+        .guide-owner h3 { margin: 0 0 6px; font-size: 1.25rem; color: #333; }
+        .guide-owner > p { margin: 0 0 6px; color: #555; line-height: 1.55; }
+        .guide-owner .help-details { margin-top: 10px; }
+        .guide-owner .help-details summary { color: #333; }
         .guide-card { background: white; border: 1px solid #ddd; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; }
         .guide-card h3 { margin: 0 0 8px; font-size: 1.2rem; color: #007bff; }
         .guide-card p { margin: 0 0 10px; line-height: 1.55; font-size: 1rem; color: #444; }
@@ -440,17 +447,18 @@
         @media (min-width: 901px) and (min-height: 560px) {
             body.on-today { height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; padding-top: 14px; padding-bottom: 6px; }
             body.on-today > .header, body.on-today > .tab-bar, body.on-today > .footer { flex: none; }
-            /* Larger top section; the list panels below give up about 20% of their height for it */
-            body.on-today .header { padding-bottom: 18px; margin-bottom: 18px; }
-            body.on-today .header-left h1 { font-size: 4.2rem; letter-spacing: 2px; }
-            body.on-today .header-meta { margin-top: 10px; gap: 8px 16px; }
-            body.on-today .header-meta .clock { font-size: 1.45rem; }
-            body.on-today .header-meta .weather-widget { font-size: 1.25rem; padding: 10px 16px; }
-            body.on-today .header-right { gap: 14px; }
-            body.on-today .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
-            body.on-today .header-right .version-tag { font-size: 1.2rem; }
-            body.on-today .header-right img { max-height: 84px; }
-            body.on-today .tab-bar { margin-bottom: 14px; padding-bottom: 12px; }
+            /* Larger top section, identical on every tab (Today's panels give up about 20% of their height for it) */
+            body { padding-top: 14px; }
+            body .header { padding-bottom: 18px; margin-bottom: 18px; }
+            body .header-left h1 { font-size: 4.2rem; letter-spacing: 2px; }
+            body .header-meta { margin-top: 10px; gap: 8px 16px; }
+            body .header-meta .clock { font-size: 1.45rem; }
+            body .header-meta .weather-widget { font-size: 1.25rem; padding: 10px 16px; }
+            body .header-right { gap: 14px; }
+            body .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
+            body .header-right .version-tag { font-size: 1.2rem; }
+            body .header-right img { max-height: 84px; }
+            body .tab-bar { margin-bottom: 14px; padding-bottom: 12px; }
             body.on-today .main-layout { flex: 1 1 auto; min-height: 0; align-items: stretch; gap: 20px; }
             body.on-today .left-column { display: flex; flex-direction: column; min-height: 0; }
             body.on-today .right-column { position: static; display: flex !important; flex-direction: column; gap: 14px; min-height: 0; }
@@ -490,15 +498,15 @@
             body.on-today .today-pair { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); }
         }
         @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
-            body.on-today .header-left h1 { font-size: 3rem; }
-            body.on-today .header-meta { margin-top: 6px; }
-            body.on-today .header-meta .clock { font-size: 1.25rem; }
-            body.on-today .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
-            body.on-today .header-right img { max-height: 60px; }
-            body.on-today .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
-            body.on-today .header { margin-bottom: 10px; padding-bottom: 10px; }
-            body.on-today .tab-btn { padding: 7px 16px; font-size: 1rem; }
-            body.on-today .tab-bar { margin-bottom: 10px; padding-bottom: 10px; }
+            body .header-left h1 { font-size: 3rem; }
+            body .header-meta { margin-top: 6px; }
+            body .header-meta .clock { font-size: 1.25rem; }
+            body .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
+            body .header-right img { max-height: 60px; }
+            body .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
+            body .header { margin-bottom: 10px; padding-bottom: 10px; }
+            body .tab-btn { padding: 7px 16px; font-size: 1rem; }
+            body .tab-bar { margin-bottom: 10px; padding-bottom: 10px; }
             body.on-today #today-money-note { display: none; }
             body.on-today .summary-card { padding: 8px; }
             body.on-today .summary-card h3 { margin-bottom: 4px; }
@@ -575,7 +583,7 @@
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
             <span class="version-tag" id="app-version">v1.5</span>
-            <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
+            <img src="assets/dpaul-logo.webp" alt="dpaul.studio logo">
         </div>
     </div>
 
@@ -1081,6 +1089,15 @@
                         <button id="btn-travel-save" onclick="saveTravelSettings()">Save and test</button>
                         <span id="travel-settings-status"></span>
                     </div>
+                    <details class="help-details">
+                        <summary>How trains and buses work</summary>
+                        <ul>
+                            <li><strong>Trains:</strong> Today lists every train leaving your stations in the next hour, in every direction, in departure order. Each shows its platform, how many minutes until it leaves, and its status: <span class="dep-state ok">On time</span>, <span class="dep-state late">Exp 14:32</span> (running late, with the new time), <span class="dep-state late">Delayed</span> or <span class="dep-state off">Cancelled</span>. It refreshes every minute. Disruption notices from National Rail show in yellow at the top.</li>
+                            <li><strong>Station codes:</strong> every station has a 3-letter code. Manchester Oxford Road is MCO, Piccadilly is MAN, Deansgate is DGT and Victoria is MCV. For any other station, search for it on nationalrail.co.uk and the code shows next to its name. Enter up to three, separated by commas, and press Save and test.</li>
+                            <li><strong>Live buses:</strong> the yellow button next to Refresh opens TfGM's live departures. To make it open straight to your stop, go to tfgm.com, choose Live departures, search for your stop and open it. Copy the address from your browser's address bar, paste it into Bus times page above and press Save and test.</li>
+                            <li><strong>"Live trains aren't switched on"</strong> means the train feed hasn't been connected on this copy of the app. Live buses still works. Whoever runs this copy can switch trains on using <a href="#" onclick="openGuide('owner-trains'); return false;">these steps</a>.</li>
+                        </ul>
+                    </details>
                 </div>
 
                 <div class="container">
@@ -1269,6 +1286,84 @@
         </div>
     </div>
 
+    <!-- Cloudflare Worker for live trains: copied or downloaded from How to use, Running your own copy -->
+    <script type="text/plain" id="worker-source">
+// =====================================================================
+// Life - Student Edition: live trains proxy (Cloudflare Worker)
+// =====================================================================
+// Why this exists: National Rail's data needs a private key, and the browser
+// can't call it directly. This Worker holds the key, asks National Rail for
+// the next hour of departures, and hands the result back to the web page.
+//
+// Set up once in the Cloudflare dashboard (Workers & Pages):
+//   1. Create a Worker, choose "Start with Hello World", then Edit code.
+//      Replace everything with this file and press Deploy.
+//   2. Settings > Variables and Secrets:
+//        RDM_KEY          (Secret)  your Rail Data Marketplace consumer key
+//        ALLOWED_ORIGINS  (Text)    e.g. https://dpaul.studio
+//                                   comma-separate several sites; leave unset to allow any
+//   3. Copy the Worker's address (https://something.workers.dev) into
+//      TRAINS_PROXY_URL near the top of index.html.
+//
+// Request:  GET /departures/MCO   ->   National Rail departure board JSON, next 60 minutes
+// =====================================================================
+
+const RDM_BOARD = 'https://api1.raildata.org.uk/1010-live-departure-board-dep/LDBWS/api/20220120/GetDepartureBoard/';
+const CACHE_SECONDS = 30;          // everyone viewing the same station shares one lookup
+const memo = new Map();            // crs -> { at, status, body }
+
+export default {
+  async fetch(request, env) {
+    const origin = request.headers.get('Origin') || '';
+    const allowed = (env.ALLOWED_ORIGINS || '*').split(',').map(s => s.trim()).filter(Boolean);
+    const allowOrigin = allowed.includes('*') ? '*' : (allowed.includes(origin) ? origin : '');
+    const cors = {
+      'Access-Control-Allow-Origin': allowOrigin || 'null',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Vary': 'Origin'
+    };
+
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method !== 'GET') return reply({ error: 'Only GET is supported.' }, 405, cors);
+    if (!allowOrigin) return reply({ error: 'This site is not allowed to use the trains proxy.' }, 403, cors);
+    if (!env.RDM_KEY) return reply({ error: 'RDM_KEY is not set on the Worker.' }, 500, cors);
+
+    const match = new URL(request.url).pathname.match(/^\/departures\/([A-Za-z]{3})\/?$/);
+    if (!match) return reply({ error: 'Use /departures/ followed by a 3-letter station code.' }, 404, cors);
+    const crs = match[1].toUpperCase();
+
+    const hit = memo.get(crs);
+    if (hit && Date.now() - hit.at < CACHE_SECONDS * 1000) {
+      return new Response(hit.body, { status: hit.status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    }
+
+    let upstream;
+    try {
+      upstream = await fetch(`${RDM_BOARD}${crs}?numRows=60&timeOffset=0&timeWindow=60`, {
+        headers: { 'x-apikey': env.RDM_KEY, 'Accept': 'application/json' }
+      });
+    } catch (e) {
+      return reply({ error: 'Could not reach National Rail.' }, 502, cors);
+    }
+
+    const body = await upstream.text();
+    const status = upstream.ok ? 200 : (upstream.status === 400 || upstream.status === 404 ? 404 : 502);
+    if (upstream.ok) {
+      memo.set(crs, { at: Date.now(), status, body });
+      if (memo.size > 200) memo.delete(memo.keys().next().value);
+    }
+    return new Response(upstream.ok ? body : JSON.stringify({ error: `National Rail returned ${upstream.status}.` }), {
+      status,
+      headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+    });
+  }
+};
+
+function reply(obj, status, headers) {
+  return new Response(JSON.stringify(obj), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
+}
+    </script>
+
     <!-- HOW TO USE GUIDE -->
     <div class="guide-overlay" id="guide-overlay" onclick="if(event.target === this) closeGuide()">
         <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">
@@ -1291,6 +1386,7 @@
                     </ol>
                     <p style="margin: 14px 0 0; font-size: 1.05rem;">Want a hand? Guided set up points you to each step with arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
+                    <p style="margin: 14px 0 0; font-size: 0.95rem; color: #555;">Hosting this app for other people? See <a href="#" onclick="openGuide('owner'); return false;">Running your own copy</a> at the bottom of this guide.</p>
                 </div>
                 <div class="guide-grid">
                     <div class="guide-card">
@@ -1378,6 +1474,85 @@
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                 </div>
+                <div class="guide-owner" id="guide-owner">
+                    <h3>Running your own copy</h3>
+                    <p>Only needed by whoever puts the app online. If someone shared a link with you, you can skip this section.</p>
+
+                    <details class="help-details" id="owner-hosting">
+                        <summary>1. Put the app online with GitHub Pages</summary>
+                        <ol>
+                            <li>Create a repository on GitHub and upload <code>index.html</code> and the <code>assets</code> folder to the top level.</li>
+                            <li>File names must match exactly, capitals included. The logo must be <code>assets/dpaul-logo.webp</code>. A Mac ignores capitals in file names, but GitHub Pages doesn't.</li>
+                            <li>Add an empty file called <code>.nojekyll</code> to the top level, using Add file, then Create new file.</li>
+                            <li>In the repository, go to <strong>Settings</strong>, then <strong>Pages</strong>. Under Source, choose <strong>GitHub Actions</strong>, press <strong>Configure</strong> on <strong>Static HTML</strong>, then Commit changes.</li>
+                            <li>Open the <strong>Actions</strong> tab and wait for the green tick. The app is then live at <code>https://your-username.github.io/your-repository/</code>.</li>
+                        </ol>
+                        <p>Don't upload a Python <code>venv</code> folder or other tool folders: they make the publish fail within seconds. A private repository needs GitHub Pro to publish, and the website is public either way. Nothing secret is stored in <code>index.html</code>.</p>
+                    </details>
+
+                    <details class="help-details" id="owner-google">
+                        <summary>2. Switch on Google Calendar</summary>
+                        <p>You do this once. Everyone who uses your copy then signs in with their own Google account. Access is read-only.</p>
+                        <ol>
+                            <li>Go to <strong>console.cloud.google.com</strong> and create a project. In APIs &amp; Services, then Library, find <strong>Google Calendar API</strong> and press Enable.</li>
+                            <li>Open <strong>Google Auth Platform</strong>:
+                                <ul>
+                                    <li><strong>Branding</strong>: enter the app name and your email.</li>
+                                    <li><strong>Audience</strong>: choose <strong>External</strong>, and add each person's Gmail address under Test users.</li>
+                                    <li><strong>Data access</strong>: add the scope <code>.../auth/calendar.readonly</code>.</li>
+                                </ul>
+                            </li>
+                            <li>Go to <strong>Clients</strong>, then Create client, and choose <strong>Web application</strong>. Under Authorised JavaScript origins, add your site's address with no path and no slash at the end. For this copy that's <code class="owner-origin">https://your-username.github.io</code>. Create it and copy the Client ID.</li>
+                            <li>Open <code>index.html</code>, find <code>const GOOGLE_CLIENT_ID = '';</code> near the top of the script, paste the Client ID between the quotes, then commit and push.</li>
+                        </ol>
+                        <p>While the app is in Testing, only people listed under Test users can connect, up to 100. Everyone else sees "Access blocked", so add their email. To let anyone connect, press <strong>Publish app</strong> and complete Google's free verification. That needs a privacy policy page, a homepage on your own domain and a short demo video.</p>
+                        <p>If Google shows <strong>origin_mismatch</strong>, the origin in step 3 doesn't exactly match your site's address.</p>
+                    </details>
+
+                    <details class="help-details" id="owner-trains">
+                        <summary>3. Switch on live trains</summary>
+                        <p>National Rail's data needs a private key, so the app talks to a small free Cloudflare Worker that keeps the key hidden. It also shares each station's times between everyone for 30 seconds.</p>
+                        <ol>
+                            <li>Sign up at <strong>raildata.org.uk</strong>, subscribe to <strong>Live Departure Board</strong>, and copy the <strong>consumer key</strong>.</li>
+                            <li>In <strong>Cloudflare</strong>, go to Workers &amp; Pages and press Create. Choose <strong>Start with Hello World</strong> and Deploy, then press <strong>Edit code</strong>. Replace everything with the Worker code below and press Deploy.</li>
+                            <li>In the Worker's <strong>Settings</strong>, then <strong>Variables and Secrets</strong>, add:
+                                <ul>
+                                    <li><code>RDM_KEY</code> as a <strong>Secret</strong>: your consumer key.</li>
+                                    <li><code>ALLOWED_ORIGINS</code> as <strong>Text</strong>: <code class="owner-origin">https://your-username.github.io</code>. Separate several sites with commas.</li>
+                                </ul>
+                            </li>
+                            <li>Test it by opening <code>https://your-worker.workers.dev/departures/MCO</code> in a browser. You should see departure data, not an error.</li>
+                            <li>Open <code>index.html</code>, find <code>const TRAINS_PROXY_URL = '';</code>, paste the Worker's address between the quotes, then commit and push.</li>
+                        </ol>
+                        <div class="row-gap">
+                            <button class="btn-small" onclick="copyWorkerCode()">Copy Worker code</button>
+                            <button class="btn-small btn-teal" onclick="downloadWorkerCode()">Download trains-worker.js</button>
+                            <span id="worker-copy-status"></span>
+                        </div>
+                    </details>
+
+                    <details class="help-details" id="owner-updating">
+                        <summary>4. Updating your copy</summary>
+                        <ol>
+                            <li>Make your changes to <code>index.html</code>. Change <code>APP_VERSION</code> and add a line to the version notes at the top of the script.</li>
+                            <li>Commit and push to the <code>main</code> branch. In Terminal: <code>git add -A</code>, then <code>git commit -m "What changed"</code>, then <code>git push</code>.</li>
+                            <li>If the push is rejected because GitHub has changes you don't have, run <code>git pull --rebase --autostash origin main</code>, then push again.</li>
+                            <li>Wait for the green tick in the Actions tab, then refresh the site with Cmd+Shift+R on a Mac or Ctrl+Shift+R on Windows so the browser doesn't show the old version.</li>
+                        </ol>
+                    </details>
+
+                    <details class="help-details" id="owner-trouble">
+                        <summary>Troubleshooting</summary>
+                        <ul>
+                            <li><strong>The site shows "404 Site not found".</strong> Check the Actions tab. A red cross usually means a <code>venv</code> or tool folder was uploaded, or <code>.nojekyll</code> is missing.</li>
+                            <li><strong>The logo is missing.</strong> The file must be exactly <code>assets/dpaul-logo.webp</code>, lowercase. In Terminal, <code>git ls-files | grep -i logo</code> shows the name GitHub actually has.</li>
+                            <li><strong>Settings says Google is "Not switched on yet".</strong> <code>GOOGLE_CLIENT_ID</code> is still empty, or the change hasn't been pushed and deployed.</li>
+                            <li><strong>Someone sees "Access blocked".</strong> Add their Gmail address under Test users in Google Auth Platform, then Audience.</li>
+                            <li><strong>Trains show an error.</strong> Open the Worker test link from step 3. If that fails, check <code>RDM_KEY</code>. If the test works but the app doesn't, check that <code>ALLOWED_ORIGINS</code> matches your site's address exactly.</li>
+                            <li><strong>Changes don't appear.</strong> Wait for the green tick in Actions, then hard refresh with Cmd+Shift+R.</li>
+                        </ul>
+                    </details>
+                </div>
             </div>
             <div class="guide-foot">
                 <span class="muted">Open this again any time with How to use at the top of the page.</span>
@@ -1398,7 +1573,9 @@
         // v1.5  Google is calendar-only, postcode search with location map, live trains (next hour) replace bus stop codes, TfGM bus link,
         //       Back up button moved to Settings, Today fits the screen with no page scrolling on laptops and desktops,
         //       larger title and top section on Today, Live buses button moved into the trains header,
-        //       first-time Google connection help in Settings and the guide, clearer Google error messages
+        //       first-time Google connection help in Settings and the guide, clearer Google error messages,
+        //       trains and buses help in Settings, "Running your own copy" set-up guide with built-in Worker code,
+        //       top section identical on every tab
         // v1.4  Guided set-up mode with floating red arrows (location, Google, bus, next payment, backup)
         // v1.3  Auto-save to a spreadsheet file (Chrome/Edge desktop), spreadsheet backup and restore, backup reminder pop-up, close warning
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
@@ -2544,7 +2721,7 @@
             const cfg = data.settings.travel;
             $('btn-live-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
             if (!TRAINS_PROXY_URL) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t switched on for this copy of the app yet. Live buses still works from the button above.</p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t switched on for this copy of the app yet. Live buses still works from the button above. <a href="#" onclick="openGuide(\'owner-trains\'); return false;">How to switch trains on</a></p>';
                 $('btn-train-refresh').title = '';
                 return;
             }
@@ -2689,7 +2866,7 @@
             const status = $('google-status');
             $('btn-google-connect').textContent = connected ? 'Reconnect' : 'Connect Google';
             $('btn-google-disconnect').style.display = connected ? '' : 'none';
-            if (!GOOGLE_CLIENT_ID) status.textContent = 'Not switched on yet. Whoever runs this copy of the app needs to add a Google client ID (see README.md).';
+            if (!GOOGLE_CLIENT_ID) status.innerHTML = 'Not switched on yet on this copy of the app. <a href="#" onclick="openGuide(\'owner-google\'); return false;">How to switch it on</a>';
             else status.textContent = message || (connected ? 'Connected' : 'Not connected');
             const prompt = msg => `<li class="empty">${msg}</li>`;
             if (!connected) {
@@ -4180,12 +4357,38 @@
         // HOW TO USE GUIDE
         // =====================================================================
         let guideReturnFocus = null;
-        function openGuide() {
+        function openGuide(section) {
             guideReturnFocus = document.activeElement;
             $('guide-overlay').classList.add('open');
             document.body.classList.add('guide-open');
-            $('guide-overlay').querySelector('.guide-body').scrollTop = 0;
+            // Show this copy's real address in the set-up steps
+            if (/^https?:$/.test(location.protocol)) document.querySelectorAll('.owner-origin').forEach(el => { el.textContent = location.origin; });
+            const body = $('guide-overlay').querySelector('.guide-body');
+            body.scrollTop = 0;
             $('guide-close').focus();
+            const target = typeof section === 'string' ? (section === 'owner' ? $('guide-owner') : $(section)) : null;
+            if (target) {
+                if (target.tagName === 'DETAILS') target.open = true;
+                setTimeout(() => target.scrollIntoView({ block: 'start' }), 30);
+            }
+        }
+
+        function workerCode() { return $('worker-source').textContent.trim() + '\n'; }
+        async function copyWorkerCode() {
+            try {
+                await navigator.clipboard.writeText(workerCode());
+                flash('worker-copy-status', 'Copied. Paste it into the Cloudflare editor.');
+            } catch (e) {
+                downloadWorkerCode();
+                flash('worker-copy-status', 'Copying isn\'t allowed here, so it downloaded as a file instead.');
+            }
+        }
+        function downloadWorkerCode() {
+            const url = URL.createObjectURL(new Blob([workerCode()], { type: 'text/javascript' }));
+            const a = document.createElement('a');
+            a.href = url; a.download = 'trains-worker.js';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
         function closeGuide() {
             $('guide-overlay').classList.remove('open');
