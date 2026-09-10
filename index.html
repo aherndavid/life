@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and next bus in one place.">
+    <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and live trains in one place.">
     <meta name="theme-color" content="#007bff">
     <title>Life - Student Edition | dPaul Studio</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -21,27 +21,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #eee;
         }
         .header-left h1 {
-            font-size: 4rem;
+            font-size: 2.8rem;
             line-height: 1.1;
             color: black;
             margin: 0;
             letter-spacing: 2px;
         }
         .header-left .clock {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #666;
-            margin-top: 5px;
+            margin: 6px 12px 0 0;
             font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
         }
         .header-left .weather-widget {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #555;
-            margin-top: 8px;
+            margin-top: 6px;
+            vertical-align: middle;
             background: #f1f3f5;
             padding: 8px 12px;
             border-radius: 6px;
@@ -55,7 +58,10 @@
         .header-left h1 { white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
         .header-right .version-tag { font-size: 1.1rem; color: #666; font-weight: bold; }
-        .header-right img { max-height: 80px; object-fit: contain; }
+        .header-right img { max-height: 56px; object-fit: contain; }
+        .header-left { flex: 1 1 auto; min-width: 0; }
+        .header-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
+        .header-meta .clock, .header-meta .weather-widget { margin: 0 !important; }
 
         .main-layout { display: flex; gap: 30px; align-items: flex-start; }
         .left-column { flex: 1.5; min-width: 0; width: 100%; }
@@ -176,11 +182,23 @@
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid #f1f3f5; padding-bottom: 12px; }
         .card-head h2 { margin: 0; font-size: 1.5rem; color: #007bff; }
 
-        .bus-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ddd; }
-        .bus-row:last-child { border-bottom: none; }
-        .bus-line { background: #dc3545; color: #fff; font-weight: bold; border-radius: 4px; padding: 4px 8px; min-width: 42px; text-align: center; }
-        .bus-dest { flex: 1; min-width: 0; }
-        .bus-due { font-weight: bold; font-size: 1.15rem; white-space: nowrap; }
+        .dep-list.all { max-height: 480px; overflow-y: auto; padding-right: 4px; }
+        .dep-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #ddd; }
+        .dep-row:last-child { border-bottom: none; }
+        .dep-time { background: #1f2d3d; color: #fff; font-weight: bold; border-radius: 4px; padding: 4px 7px; min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
+        .dep-row.cancelled .dep-time { background: #999; text-decoration: line-through; }
+        .dep-main { flex: 1; min-width: 0; line-height: 1.3; }
+        .dep-dest { font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dep-sub { color: #666; font-size: 0.88rem; }
+        .dep-when { text-align: right; white-space: nowrap; line-height: 1.3; }
+        .dep-mins { font-weight: bold; font-size: 1.1rem; display: block; }
+        .dep-state { font-size: 0.82rem; font-weight: bold; }
+        .dep-state.ok { color: #1e7e34; }
+        .dep-state.late { color: #b8860b; }
+        .dep-state.off { color: #dc3545; }
+        .btn-bus { background: #ffc20e; color: #1f2d3d; font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; white-space: nowrap; }
+        .btn-bus:hover { background: #f0b400; }
+        .dep-msg { background: #fff8e1; border-left: 4px solid #ffc20e; padding: 8px 10px; font-size: 0.88rem; margin: 0 0 10px; border-radius: 4px; }
 
         .timer-display { font-size: 3.4rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 10px 0 4px; font-variant-numeric: tabular-nums; }
         .timer-mode { text-align: center; color: #666; font-weight: bold; margin-bottom: 14px; }
@@ -411,6 +429,126 @@
             .guide-foot { padding: 14px 18px; border-radius: 0; }
         }
 
+        /* Today fits the screen on laptops and desktops: long lists scroll inside their panel, not the page.
+           On very short windows it falls back to normal page scrolling rather than cutting anything off. */
+        @media (min-width: 901px) and (min-height: 560px) {
+            body.on-today { height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; padding-top: 14px; padding-bottom: 6px; }
+            body.on-today > .header, body.on-today > .tab-bar, body.on-today > .footer { flex: none; }
+            /* Larger top section; the list panels below give up about 20% of their height for it */
+            body.on-today .header { padding-bottom: 18px; margin-bottom: 18px; }
+            body.on-today .header-left h1 { font-size: 4.2rem; letter-spacing: 2px; }
+            body.on-today .header-meta { margin-top: 10px; gap: 8px 16px; }
+            body.on-today .header-meta .clock { font-size: 1.45rem; }
+            body.on-today .header-meta .weather-widget { font-size: 1.25rem; padding: 10px 16px; }
+            body.on-today .header-right { gap: 14px; }
+            body.on-today .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
+            body.on-today .header-right .version-tag { font-size: 1.2rem; }
+            body.on-today .header-right img { max-height: 84px; }
+            body.on-today .tab-bar { margin-bottom: 14px; padding-bottom: 12px; }
+            body.on-today .main-layout { flex: 1 1 auto; min-height: 0; align-items: stretch; gap: 20px; }
+            body.on-today .left-column { display: flex; flex-direction: column; min-height: 0; }
+            body.on-today .right-column { position: static; display: flex !important; flex-direction: column; gap: 14px; min-height: 0; }
+            body.on-today #view-today { display: flex !important; flex-direction: column; gap: 14px; flex: 1 1 auto; min-height: 0; }
+
+            body.on-today .fit-fixed, body.on-today .fit-scroll { margin: 0; padding: 14px 20px; display: flex; flex-direction: column; }
+            body.on-today .fit-fixed { flex: none; }
+            body.on-today .fit-scroll { flex: 0 1 auto; min-height: 84px; overflow: hidden; }
+            body.on-today .fit-grow { flex: 1 1 0; min-height: 150px; }
+            body.on-today #today-classes, body.on-today #today-due, body.on-today #train-content, body.on-today #calendar-content { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+            body.on-today .dep-list.all { max-height: none; overflow: visible; }
+            body.on-today .dep-msg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+            /* Classes and Coming up share the leftover height, side by side when there's room */
+            body.on-today .today-pair { flex: 1 1 0; min-height: 150px; display: flex; flex-direction: column; gap: 14px; }
+            body.on-today .today-pair > .fit-scroll { flex: 1 1 0; min-height: 0; }
+
+            body.on-today #view-today .controls-row { margin-bottom: 10px; }
+            body.on-today #view-today h2, body.on-today .quick-task-title { font-size: 1.3rem; }
+            body.on-today .quick-task-title { margin-bottom: 10px !important; }
+            body.on-today .finance-summary { gap: 12px; margin-bottom: 6px !important; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            body.on-today .summary-card { padding: 12px 10px; }
+            body.on-today .task-item { padding: 9px 0; }
+
+            /* Focus timer in two rows instead of five */
+            body.on-today .focus-panel { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "head head" "time ctrl" "mode count"; column-gap: 16px; align-items: center; }
+            body.on-today .focus-panel > .controls-row { grid-area: head; margin-bottom: 4px !important; }
+            body.on-today .focus-panel .timer-display { grid-area: time; font-size: 2.4rem; margin: 0; text-align: left; }
+            body.on-today .focus-panel .timer-controls { grid-area: ctrl; justify-content: flex-end; }
+            body.on-today .focus-panel .timer-controls button { padding: 9px 14px !important; font-size: 0.95rem !important; }
+            body.on-today .focus-panel .timer-mode { grid-area: mode; margin: 0; text-align: left; font-size: 0.9rem; }
+            body.on-today .focus-panel #timer-count { grid-area: count; margin: 0 !important; text-align: right !important; font-size: 0.85rem; }
+
+            body.on-today .footer { padding: 8px 0 0; font-size: 0.85rem; line-height: 1.4; }
+        }
+        @media (min-width: 1100px) and (min-height: 560px) {
+            body.on-today .today-pair { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); }
+        }
+        @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
+            body.on-today .header-left h1 { font-size: 3rem; }
+            body.on-today .header-meta { margin-top: 6px; }
+            body.on-today .header-meta .clock { font-size: 1.25rem; }
+            body.on-today .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
+            body.on-today .header-right img { max-height: 60px; }
+            body.on-today .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
+            body.on-today .header { margin-bottom: 10px; padding-bottom: 10px; }
+            body.on-today .tab-btn { padding: 7px 16px; font-size: 1rem; }
+            body.on-today .tab-bar { margin-bottom: 10px; padding-bottom: 10px; }
+            body.on-today #today-money-note { display: none; }
+            body.on-today .summary-card { padding: 8px; }
+            body.on-today .summary-card h3 { margin-bottom: 4px; }
+            body.on-today #view-today, body.on-today .right-column { gap: 10px; }
+            body.on-today .fit-fixed, body.on-today .fit-scroll { padding: 10px 16px; }
+            body.on-today .footer { display: none; }
+        }
+
+        /* Location section: map sits beside the text and controls, never below them */
+        .place-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            grid-template-areas: "text map" "controls map";
+            column-gap: 24px;
+            align-items: start;
+        }
+        .place-text { grid-area: text; }
+        .place-controls { grid-area: controls; }
+        .place-controls .task-input-row { margin-bottom: 8px; }
+        .place-map {
+            grid-area: map;
+            align-self: stretch;
+            min-height: 140px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #e9ecef;
+            position: relative;
+            z-index: 0;
+        }
+        .place-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
+        .place-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #888; font-size: 0.9rem; text-align: center; padding: 8px; box-sizing: border-box; }
+        .place-pin { position: relative; }
+        .place-pin-dot { display: block; width: 12px; height: 12px; margin: 1px; border-radius: 50%; background: #007bff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3); }
+        .place-pin.pulse::after {
+            content: ''; position: absolute; left: 50%; top: 50%;
+            width: 18px; height: 18px; margin: -9px 0 0 -9px;
+            border-radius: 50%; border: 2px solid #007bff;
+            animation: place-pulse 1.2s ease-out 2;
+            opacity: 0;
+        }
+        @keyframes place-pulse {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(3.2); opacity: 0; }
+        }
+        @media (max-width: 640px) {
+            .place-grid {
+                grid-template-columns: minmax(0, 1fr) 110px;
+                grid-template-areas: "text map" "controls controls";
+                column-gap: 14px;
+            }
+            .place-map { min-height: 100px; margin-bottom: 15px; }
+            .place-text h2 { margin-bottom: 8px; }
+            .place-map .leaflet-control-attribution { font-size: 8px; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -421,15 +559,16 @@
     <div class="header">
         <div class="header-left">
             <h1>Life - Student Edition</h1>
-            <div class="clock" id="live-clock">Loading time...</div>
-            <div class="weather-widget" id="weather-widget">Loading weather data...</div>
+            <div class="header-meta">
+                <div class="clock" id="live-clock">Loading time...</div>
+                <div class="weather-widget" id="weather-widget">Loading weather data...</div>
+            </div>
         </div>
         <div class="header-right">
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
-            <button class="btn-help" id="btn-save" onclick="saveButtonClick()" data-dot="amber">Back up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v1.4</span>
+            <span class="version-tag" id="app-version">v1.5</span>
             <img src="assets/dpaul-logo.webp" alt="dpaul.studio logo">
         </div>
     </div>
@@ -454,7 +593,7 @@
 
             <!-- TODAY VIEW -->
             <div id="view-today" class="view">
-                <div class="container">
+                <div class="container fit-fixed">
                     <div class="controls-row">
                         <h2>Money until next payment</h2>
                         <button class="btn-toggle" onclick="switchTab('budget')">Open budget</button>
@@ -463,7 +602,8 @@
                     <p class="note" id="today-money-note" style="margin: 10px 0 0;"></p>
                 </div>
 
-                <div class="container">
+                <div class="today-pair">
+                <div class="container fit-scroll">
                     <div class="controls-row">
                         <h2>Classes today</h2>
                         <button class="btn-toggle" id="btn-toggle-today-classes" onclick="toggleSection('today-classes', 'btn-toggle-today-classes')">Hide</button>
@@ -471,16 +611,17 @@
                     <ul class="task-list" id="today-classes"></ul>
                 </div>
 
-                <div class="container">
+                <div class="container fit-scroll">
                     <div class="controls-row">
                         <h2>Coming up</h2>
                         <button class="btn-toggle" id="btn-toggle-today-due" onclick="toggleSection('today-due', 'btn-toggle-today-due')">Hide</button>
                     </div>
                     <ul class="task-list" id="today-due"></ul>
                 </div>
+                </div>
 
-                <div class="container">
-                    <h2 style="margin-top: 0; margin-bottom: 20px;">Quick task</h2>
+                <div class="container fit-fixed">
+                    <h2 class="quick-task-title" style="margin-top: 0; margin-bottom: 20px;">Quick task</h2>
                     <div class="task-input-row" style="margin-bottom: 0;">
                         <input type="text" id="quick-task-input" placeholder="What needs doing?" style="flex: 1; min-width: 200px;" onkeydown="if(event.key==='Enter') quickAddTask()">
                         <button onclick="quickAddTask()">Add Task</button>
@@ -878,15 +1019,20 @@
                     </div>
                 </div>
 
-                <div class="container">
-                    <h2 style="margin-top: 0;">Location</h2>
-                    <p class="note">Used for weather, sunrise and sunset. Currently: <strong id="set-place-current"></strong></p>
-                    <div class="task-input-row">
-                        <input type="text" id="set-place" placeholder="Town or city, e.g., Reading" style="flex: 1; min-width: 200px;" onkeydown="if(event.key==='Enter') findPlace()">
-                        <button id="btn-find-place" onclick="findPlace()">Find</button>
-                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" id="btn-my-location" onclick="useMyLocation()">Use my location</button>
+                <div class="container place-grid">
+                    <div class="place-text">
+                        <h2 style="margin-top: 0;">Location</h2>
+                        <p class="note">Used for weather, sunrise and sunset. Currently: <strong id="set-place-current"></strong></p>
                     </div>
-                    <span id="set-place-status"></span>
+                    <div class="place-controls">
+                        <div class="task-input-row">
+                            <input type="text" id="set-place" placeholder="Town or postcode, e.g., Reading or SL6 1AA" style="flex: 1; min-width: 200px;" onkeydown="if(event.key==='Enter') findPlace()">
+                            <button id="btn-find-place" onclick="findPlace()">Find</button>
+                            <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" id="btn-my-location" onclick="useMyLocation()">Use my location</button>
+                        </div>
+                        <span id="set-place-status"></span>
+                    </div>
+                    <div class="place-map" id="place-map" role="img" aria-label="Map of your saved location"></div>
                 </div>
 
                 <div class="container">
@@ -900,39 +1046,22 @@
                 </div>
 
                 <div class="container">
-                    <h2 style="margin-top: 0;">Next bus</h2>
-                    <p class="note">Pick a provider and enter your stop code. TfL uses London stop IDs (e.g., 490008660N). TransportAPI covers the rest of the UK and uses ATCO codes, which you can find on bustimes.org.</p>
+                    <h2 style="margin-top: 0;">Trains and buses</h2>
+                    <p class="note">Live trains leaving in the next hour, in every direction, show on Today. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
                     <div class="form-row form-group">
                         <div>
-                            <label for="bus-provider">Provider</label>
-                            <select id="bus-provider" onchange="updateBusFields()">
-                                <option value="tfl">TfL (London)</option>
-                                <option value="transportapi">TransportAPI (UK-wide)</option>
-                                <option value="custom">Custom</option>
-                            </select>
+                            <label for="travel-stations">Stations</label>
+                            <input type="text" id="travel-stations" placeholder="e.g., MCO, MAN" autocomplete="off" style="text-transform: uppercase;">
                         </div>
-                        <div>
-                            <label for="bus-stop">Stop code</label>
-                            <input type="text" id="bus-stop" placeholder="e.g., 490008660N">
-                        </div>
-                        <div>
-                            <label for="bus-label">Stop name</label>
-                            <input type="text" id="bus-label" placeholder="e.g., Campus, Stop B">
+                        <div class="grow2">
+                            <label for="travel-bus-link">Bus times page</label>
+                            <input type="url" id="travel-bus-link" placeholder="Leave blank for TfGM live departures" autocomplete="off">
                         </div>
                     </div>
-                    <div class="form-row form-group" id="bus-key-row">
-                        <div>
-                            <label for="bus-app-id">App ID</label>
-                            <input type="text" id="bus-app-id" autocomplete="off">
-                        </div>
-                        <div>
-                            <label for="bus-app-key">App key</label>
-                            <input type="text" id="bus-app-key" autocomplete="off">
-                        </div>
-                    </div>
+                    <p class="note">For the Live buses button: find your stop on TfGM's live departures page, then paste that page's web address here so the button opens straight to it.</p>
                     <div class="row-gap">
-                        <button id="btn-bus-save" onclick="saveBusSettings()">Save and test</button>
-                        <span id="bus-settings-status"></span>
+                        <button id="btn-travel-save" onclick="saveTravelSettings()">Save and test</button>
+                        <span id="travel-settings-status"></span>
                     </div>
                 </div>
 
@@ -956,7 +1085,7 @@
                     <h2 style="margin-top: 0;">Your data</h2>
                     <p class="note">Everything saves in this browser automatically as you go. <span id="settings-backup-line"></span></p>
                     <div class="row-gap">
-                        <button onclick="openBackup()">Back Up and Auto-save</button>
+                        <button class="btn-help" id="btn-save" onclick="saveButtonClick()" data-dot="amber" style="padding: 12px 24px; font-size: 1.1rem;">Back up</button>
                         <button class="btn-teal" onclick="document.getElementById('import-file').click()">Restore from a File</button>
                         <input type="file" id="import-file" accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;" onchange="importData(event)">
                         <button class="btn-delete" style="padding: 12px 20px; font-size: 1rem; margin-left: auto;" onclick="clearAll()">Delete all my data</button>
@@ -969,15 +1098,18 @@
 
         <!-- Right Column: shown on Today -->
         <div class="right-column" id="right-column-sidebar">
-            <div class="container compact">
+            <div class="container compact fit-scroll fit-grow">
                 <div class="controls-row" style="margin-bottom: 10px;">
-                    <h2 class="sidebar-title" id="bus-title">Next bus</h2>
-                    <button class="btn-cal-filter" onclick="fetchBuses()">Refresh</button>
+                    <h2 class="sidebar-title">Trains in the next hour</h2>
+                    <div class="row-gap" style="gap: 6px;">
+                        <a class="btn-bus" id="btn-live-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
+                        <button class="btn-cal-filter" id="btn-train-refresh" onclick="fetchTrains()">Refresh</button>
+                    </div>
                 </div>
-                <div id="bus-content"></div>
+                <div id="train-content"></div>
             </div>
 
-            <div class="container compact">
+            <div class="container compact fit-scroll">
                 <div class="controls-row" style="margin-bottom: 15px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <h2 class="sidebar-title">Agenda</h2>
@@ -991,7 +1123,7 @@
                 </div>
             </div>
 
-            <div class="container compact">
+            <div class="container compact fit-fixed focus-panel">
                 <div class="controls-row" style="margin-bottom: 0;">
                     <h2 class="sidebar-title">Focus timer</h2>
                     <select id="focus-length" onchange="setFocusLength(this.value)" style="width: auto; padding: 6px 10px; font-size: 0.95rem;">
@@ -1137,7 +1269,7 @@
                         <li>Enter your balance and next payment date in <strong>Budget</strong>.</li>
                         <li>Add your classes to <strong>Timetable</strong>.</li>
                         <li>Add assignment and exam dates to <strong>Deadlines</strong>.</li>
-                        <li>Optionally connect Google and your bus stop in <strong>Settings</strong>.</li>
+                        <li>Optionally connect Google and check your train stations in <strong>Settings</strong>.</li>
                     </ol>
                     <p style="margin: 14px 0 0; font-size: 1.05rem;">Want a hand? Guided set up points you to each step with arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
@@ -1146,7 +1278,7 @@
                     <div class="guide-card">
                         <h3>Today</h3>
                         <p>Your home screen. It shows how much you can safely spend, today's classes with the one happening now highlighted, and anything due in the next two weeks.</p>
-                        <p>Next bus, your Google agenda and the focus timer sit down the right-hand side.</p>
+                        <p>Live trains, your Google agenda and the focus timer sit down the right-hand side.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
                     </div>
                     <div class="guide-card">
@@ -1186,9 +1318,9 @@
                         <button class="btn-small" onclick="guideGo('grades')">Go to Grades</button>
                     </div>
                     <div class="guide-card">
-                        <h3>Next bus</h3>
-                        <p>In Settings, pick TfL if you're in London, or TransportAPI for the rest of the UK, then enter your stop code. You can find stop codes on bustimes.org.</p>
-                        <p>Live times show on Today and refresh every 30 seconds.</p>
+                        <h3>Trains and buses</h3>
+                        <p>Today lists every train leaving your stations in the next hour, with platforms, delays and cancellations. It refreshes every minute.</p>
+                        <p>Live buses opens TfGM's departure board. In Settings you can point it at your own stop.</p>
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                     <div class="guide-card">
@@ -1245,12 +1377,15 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v1.5  Google is calendar-only, postcode search with location map, live trains (next hour) replace bus stop codes, TfGM bus link,
+        //       Back up button moved to Settings, Today fits the screen with no page scrolling on laptops and desktops,
+        //       larger title and top section on Today, Live buses button moved into the trains header
         // v1.4  Guided set-up mode with floating red arrows (location, Google, bus, next payment, backup)
         // v1.3  Auto-save to a spreadsheet file (Chrome/Edge desktop), spreadsheet backup and restore, backup reminder pop-up, close warning
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '1.4';
+        const APP_VERSION = '1.5';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -1259,6 +1394,10 @@
         // Type: "Web application". Add your site (e.g. https://dpaul.studio) to
         // Authorised JavaScript origins. No client secret is used or needed here.
         const GOOGLE_CLIENT_ID = '';
+        // Live trains: the web address of your Cloudflare Worker (see trains-worker.js).
+        // It holds the Rail Data Marketplace key so the key never appears in this page.
+        const TRAINS_PROXY_URL = '';
+        const TFGM_DEPARTURES_URL = 'https://tfgm.com/travel-updates/live-departures';
         const GOOGLE_SCOPES = [
             'https://www.googleapis.com/auth/calendar.readonly'
         ].join(' ');
@@ -1353,7 +1492,7 @@
                 },
                 settings: {
                     place: 'Maidenhead', lat: 51.5227, lon: -0.7153,
-                    bus: { provider: 'tfl', stop: '', label: '', appId: '', appKey: '' },
+                    travel: { stations: ['MCO', 'MAN'], busLink: '' },
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false
                 },
                 focus: { date: '', sessions: 0 },
@@ -1370,7 +1509,9 @@
             const out = { ...base, ...raw };
             out.budget = { ...base.budget, ...(raw.budget || {}) };
             out.settings = { ...base.settings, ...(raw.settings || {}) };
-            out.settings.bus = { ...base.settings.bus, ...((raw.settings || {}).bus || {}) };
+            out.settings.travel = { ...base.settings.travel, ...((raw.settings || {}).travel || {}) };
+            if (!Array.isArray(out.settings.travel.stations)) out.settings.travel.stations = [...base.settings.travel.stations];
+            delete out.settings.bus; // replaced by travel in v1.5
             out.focus = { ...base.focus, ...(raw.focus || {}) };
             out.music = { ...base.music, ...(raw.music || {}) };
             if (!Array.isArray(out.music.tracks)) out.music.tracks = [];
@@ -1448,6 +1589,7 @@
             TABS.forEach(t => {
                 $('view-' + t).style.display = t === tab ? 'block' : 'none';
             });
+            document.body.classList.toggle('on-today', tab === 'today');
             document.querySelectorAll('.tab-btn').forEach(b => {
                 const on = b.dataset.tab === tab;
                 b.classList.toggle('active', on);
@@ -1458,7 +1600,7 @@
             saveData(true);
             const renderers = { today: renderToday, budget: renderBudget, food: renderFood, tasks: renderTasks, deadlines: renderDeadlines, timetable: renderTimetable, projects: renderProjects, grades: renderGrades, settings: renderSettings };
             renderers[tab]();
-            if (tab === 'today') fetchBuses();
+            if (tab === 'today') fetchTrains();
         }
 
         function toggleSection(contentId, btnId) {
@@ -1521,17 +1663,53 @@
             }
         }
 
+        // UK postcodes go to postcodes.io (free, no key). Everything else goes to Open-Meteo's town search.
+        const FULL_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+        const OUTCODE = /^[A-Z]{1,2}\d[A-Z\d]?$/i;
+
+        async function lookupPostcode(q) {
+            const pc = q.toUpperCase().replace(/\s+/g, '');
+            if (FULL_POSTCODE.test(q)) {
+                const r = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc)}`);
+                if (r.status === 404) return null;
+                const j = await r.json();
+                if (!j.result) return null;
+                const p = j.result;
+                const town = p.parish && !/unparished/i.test(p.parish) ? p.parish : p.admin_district;
+                return { place: [p.postcode, town].filter(Boolean).join(', '), lat: p.latitude, lon: p.longitude };
+            }
+            const r = await fetch(`https://api.postcodes.io/outcodes/${encodeURIComponent(pc)}`);
+            if (r.status === 404) return null;
+            const j = await r.json();
+            if (!j.result) return null;
+            const p = j.result;
+            const town = (p.admin_district || [])[0];
+            return { place: [p.outcode, town].filter(Boolean).join(', '), lat: p.latitude, lon: p.longitude };
+        }
+
+        async function lookupTown(q) {
+            const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
+            const j = await r.json();
+            if (!j.results || !j.results.length) return null;
+            const p = j.results[0];
+            return { place: [p.name, p.admin1].filter(Boolean).join(', '), lat: p.latitude, lon: p.longitude };
+        }
+
         async function findPlace() {
             const q = $('set-place').value.trim();
             if (!q) return;
+            const isPostcode = FULL_POSTCODE.test(q) || OUTCODE.test(q);
             try {
-                const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
-                const j = await r.json();
-                if (!j.results || !j.results.length) { flash('set-place-status', `Couldn't find "${q}". Try a nearby town or add the county.`, true); return; }
-                const p = j.results[0];
-                data.settings.place = [p.name, p.admin1].filter(Boolean).join(', ');
-                data.settings.lat = p.latitude;
-                data.settings.lon = p.longitude;
+                const found = isPostcode ? await lookupPostcode(q) : await lookupTown(q);
+                if (!found || found.lat == null) {
+                    flash('set-place-status', isPostcode
+                        ? `Couldn't find the postcode "${q.toUpperCase()}". Check it, or search for your town instead.`
+                        : `Couldn't find "${q}". Try a nearby town, add the county, or use your postcode.`, true);
+                    return;
+                }
+                data.settings.place = found.place;
+                data.settings.lat = +(+found.lat).toFixed(4);
+                data.settings.lon = +(+found.lon).toFixed(4);
                 saveData();
                 renderSettings();
                 fetchWeather();
@@ -1554,6 +1732,74 @@
                 flash('set-place-status', 'Location saved');
                 markSetupDone('location');
             }, () => flash('set-place-status', 'Location permission was denied. Search for your town instead.', true));
+        }
+
+        // Location map: Leaflet + OpenStreetMap tiles, loaded only when Settings is opened
+        const LEAFLET_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+        const LEAFLET_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        let leafletPromise = null;
+        const placeMap = { map: null, marker: null, key: '' };
+
+        function loadLeaflet() {
+            if (window.L) return Promise.resolve();
+            if (leafletPromise) return leafletPromise;
+            leafletPromise = new Promise((resolve, reject) => {
+                let left = 2;
+                const done = () => { if (--left === 0) resolve(); };
+                const fail = () => { leafletPromise = null; reject(new Error('leaflet')); };
+                const css = document.createElement('link');
+                css.rel = 'stylesheet';
+                css.href = LEAFLET_CSS;
+                css.onload = done; css.onerror = fail;
+                document.head.appendChild(css);
+                const tag = document.createElement('script');
+                tag.src = LEAFLET_JS;
+                tag.onload = done; tag.onerror = fail;
+                document.head.appendChild(tag);
+            });
+            return leafletPromise;
+        }
+
+        function placeZoom(place) {
+            if (FULL_POSTCODE.test((place || '').split(',')[0].trim()) || place === 'My location') return 15;
+            return 12;
+        }
+
+        function placePin(pulse) {
+            return L.divIcon({ className: 'place-pin' + (pulse ? ' pulse' : ''), html: '<span class="place-pin-dot"></span>', iconSize: [20, 20], iconAnchor: [10, 10] });
+        }
+
+        async function renderPlaceMap() {
+            const box = $('place-map');
+            const { lat, lon, place } = data.settings;
+            if (!box) return;
+            if (lat == null || lon == null) { box.innerHTML = '<div class="place-map-empty">Find a place to see it here</div>'; return; }
+            box.setAttribute('aria-label', `Map showing ${place || 'your saved location'}`);
+            if (box.offsetParent === null) return; // Settings not on screen; draw when it is
+            try { await loadLeaflet(); }
+            catch (e) { if (!placeMap.map) box.innerHTML = '<div class="place-map-empty">Map couldn\'t load</div>'; return; }
+            const key = `${lat},${lon}`;
+            const zoom = placeZoom(place);
+            if (!placeMap.map) {
+                box.innerHTML = '';
+                placeMap.map = L.map(box, {
+                    zoomControl: false, dragging: false, touchZoom: false, scrollWheelZoom: false,
+                    doubleClickZoom: false, boxZoom: false, keyboard: false, attributionControl: true
+                }).setView([lat, lon], zoom);
+                placeMap.map.attributionControl.setPrefix(false);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+                }).addTo(placeMap.map);
+                placeMap.marker = L.marker([lat, lon], { icon: placePin(false), interactive: false, keyboard: false }).addTo(placeMap.map);
+                placeMap.key = key;
+                return;
+            }
+            placeMap.map.invalidateSize();
+            if (key === placeMap.key) return;
+            placeMap.key = key;
+            placeMap.map.setView([lat, lon], zoom, { animate: false });
+            placeMap.marker.setLatLng([lat, lon]).setIcon(placePin(true));
         }
 
         // =====================================================================
@@ -2217,95 +2463,144 @@
         }
 
         // =====================================================================
-        // NEXT BUS: pluggable providers. Each returns [{ line, destination, due: Date }]
+        // TRAINS: next hour of departures from up to 3 stations, via your Worker
         // =====================================================================
-        const BUS_PROVIDERS = {
-            tfl: {
-                needsKey: false,
-                async fetch(cfg) {
-                    const key = cfg.appKey ? `?app_key=${encodeURIComponent(cfg.appKey)}` : '';
-                    const r = await fetch(`https://api.tfl.gov.uk/StopPoint/${encodeURIComponent(cfg.stop)}/Arrivals${key}`);
-                    if (!r.ok) throw new Error(r.status === 404 ? 'TfL doesn\'t recognise that stop code.' : `TfL returned an error (${r.status}).`);
-                    const j = await r.json();
-                    return j.map(a => ({ line: a.lineName, destination: a.destinationName, due: new Date(a.expectedArrival) }));
-                }
-            },
-            transportapi: {
-                needsKey: true,
-                async fetch(cfg) {
-                    if (!cfg.appId || !cfg.appKey) throw new Error('TransportAPI needs an App ID and App key in Settings.');
-                    const url = `https://transportapi.com/v3/uk/bus/stop/${encodeURIComponent(cfg.stop)}/live.json?group=no&nextbuses=yes&limit=8&app_id=${encodeURIComponent(cfg.appId)}&app_key=${encodeURIComponent(cfg.appKey)}`;
-                    const r = await fetch(url);
-                    if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'TransportAPI rejected the App ID or key.' : `TransportAPI returned an error (${r.status}).`);
-                    const j = await r.json();
-                    const deps = j.departures || {};
-                    const list = Array.isArray(deps.all) ? deps.all : Object.values(deps).flat();
-                    if (!cfg.label && j.stop_name) cfg.label = j.stop_name;
-                    return list.map(d => {
-                        const date = d.expected_departure_date || d.date;
-                        const time = d.best_departure_estimate || d.expected_departure_time || d.aimed_departure_time;
-                        return { line: d.line_name || d.line, destination: d.direction, due: new Date(`${date}T${time}:00`) };
-                    });
-                }
-            },
-            custom: {
-                needsKey: true,
-                // Wire your own feed here. Return [{ line, destination, due: Date }].
-                async fetch(cfg) {
-                    throw new Error('The custom bus provider isn\'t set up yet. Edit BUS_PROVIDERS.custom in the code.');
-                }
-            }
-        };
+        const CRS_RE = /^[A-Z]{3}$/;
 
-        let busTimer = null;
-        async function fetchBuses() {
-            const box = $('bus-content');
-            const cfg = data.settings.bus;
-            $('bus-title').textContent = cfg.label ? `Next bus: ${cfg.label}` : 'Next bus';
-            if (!cfg.stop) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Add your stop in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live times.</p>';
+        function parseStations(text) {
+            return [...new Set(String(text || '').toUpperCase().split(/[\s,;]+/).filter(Boolean))];
+        }
+
+        // "14:32" today, rolling over midnight when the time is well in the past
+        function boardTime(hhmm) {
+            const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
+            if (!m) return null;
+            const d = new Date();
+            d.setHours(+m[1], +m[2], 0, 0);
+            if (d.getTime() < Date.now() - 12 * 3600000) d.setDate(d.getDate() + 1);
+            return d;
+        }
+
+        async function fetchBoard(crs) {
+            const r = await fetch(`${TRAINS_PROXY_URL.replace(/\/$/, '')}/departures/${crs}`);
+            if (!r.ok) throw new Error(r.status === 404 || r.status === 400 ? `${crs} isn't a station code National Rail recognises.` : `Train times returned an error (${r.status}).`);
+            const j = await r.json();
+            const station = j.locationName || crs;
+            const services = [
+                ...(j.trainServices || []).map(x => ({ ...x, isBus: false })),
+                ...(j.busServices || []).map(x => ({ ...x, isBus: true }))
+            ];
+            const deps = services.map(sv => {
+                const sched = boardTime(sv.std);
+                const etd = sv.etd || '';
+                const expected = boardTime(etd) || sched;
+                const cancelled = !!sv.isCancelled || /cancel/i.test(etd);
+                const dests = (sv.destination || []).map(d => d.locationName + (d.via ? ` ${d.via}` : '')).join(' & ');
+                return {
+                    station, crs, sched, expected, cancelled,
+                    delayed: /delayed/i.test(etd),
+                    late: !!boardTime(etd) && etd !== sv.std,
+                    std: sv.std, etd, platform: sv.platform || '',
+                    destination: dests || 'Unknown destination',
+                    operator: sv.operator || '',
+                    isBus: sv.isBus
+                };
+            }).filter(d => d.sched);
+            const messages = (j.nrccMessages || []).map(m => (m.Value || m.value || '').replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+            return { station, deps, messages };
+        }
+
+        // Drop the shared first word ("Manchester") when showing more than one station
+        function shortStationNames(names) {
+            if (names.length < 2) return names;
+            const first = names.map(n => n.split(' ')[0]);
+            if (first.every(w => w === first[0]) && names.every(n => n.includes(' '))) return names.map(n => n.slice(first[0].length + 1));
+            return names;
+        }
+
+        let trainTimer = null;
+        let trainShowAll = false;
+        async function fetchTrains() {
+            const box = $('train-content');
+            const cfg = data.settings.travel;
+            $('btn-live-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
+            if (!TRAINS_PROXY_URL) {
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t switched on for this copy of the app yet. Live buses still works from the button above.</p>';
+                $('btn-train-refresh').title = '';
                 return;
             }
-            try {
-                const provider = BUS_PROVIDERS[cfg.provider] || BUS_PROVIDERS.tfl;
-                const now = Date.now();
-                const buses = (await provider.fetch(cfg))
-                    .filter(b => b.due instanceof Date && !isNaN(b.due) && b.due.getTime() > now - 60000)
-                    .sort((a, b) => a.due - b.due)
-                    .slice(0, 5);
-                if (!buses.length) { box.innerHTML = '<p class="empty" style="margin: 0;">No buses due from this stop right now.</p>'; return; }
-                box.innerHTML = buses.map(b => {
-                    const mins = Math.round((b.due.getTime() - now) / 60000);
-                    const due = mins <= 0 ? 'Due' : `${mins} min`;
-                    return `<div class="bus-row"><span class="bus-line">${esc(b.line)}</span><span class="bus-dest">${esc(b.destination)}</span><span class="bus-due">${due}</span></div>`;
-                }).join('') + `<p class="muted" style="font-size: 0.85rem; margin: 8px 0 0;">Updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>`;
-            } catch (e) {
-                console.error('Bus fetch failed:', e);
-                box.innerHTML = `<p class="status-err" style="margin: 0;">${esc(e.message || 'Couldn\'t load bus times.')}</p>`;
+            const stations = cfg.stations.filter(c => CRS_RE.test(c)).slice(0, 3);
+            if (!stations.length) {
+                box.innerHTML = '<p class="empty" style="margin: 0;">Add a station in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live trains.</p>';
+                return;
             }
+            const results = await Promise.allSettled(stations.map(fetchBoard));
+            const ok = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+            if (!ok.length) {
+                const err = results[0].reason;
+                box.innerHTML = `<p class="status-err" style="margin: 0;">${esc((err && err.message) || 'Couldn\'t load train times.')} Check your connection and press Refresh.</p>`;
+                return;
+            }
+            const shortNames = shortStationNames(ok.map(b => b.station));
+            ok.forEach((b, i) => b.deps.forEach(d => { d.stationShort = shortNames[i]; }));
+            const now = Date.now();
+            const horizon = now + 60 * 60000;
+            const all = ok.flatMap(b => b.deps)
+                .filter(d => d.expected.getTime() > now - 60000 && d.sched.getTime() <= horizon)
+                .sort((a, b) => a.sched - b.sched || a.expected - b.expected);
+            const multi = ok.length > 1;
+            const failed = results.map((r, i) => r.status === 'rejected' ? stations[i] : null).filter(Boolean);
+            const messages = [...new Set(ok.flatMap(b => b.messages))].slice(0, 2);
+
+            let html = messages.map(m => `<p class="dep-msg" title="${esc(m)}">${esc(m)}</p>`).join('');
+            if (failed.length) html += `<p class="dep-msg">Couldn't load ${esc(failed.join(', '))} this time.</p>`;
+            if (!all.length) {
+                html += '<p class="empty" style="margin: 0;">No trains in the next hour.</p>';
+            } else {
+                const LIMIT = 8;
+                const shown = trainShowAll ? all : all.slice(0, LIMIT);
+                html += `<div class="dep-list${trainShowAll ? ' all' : ''}">` + shown.map(d => {
+                    const mins = Math.max(0, Math.round((d.expected.getTime() - now) / 60000));
+                    let state, cls;
+                    if (d.cancelled) { state = 'Cancelled'; cls = 'off'; }
+                    else if (d.delayed) { state = 'Delayed'; cls = 'late'; }
+                    else if (d.late) { state = `Exp ${d.etd}`; cls = 'late'; }
+                    else { state = 'On time'; cls = 'ok'; }
+                    const where = [multi ? d.stationShort : '', d.platform ? `Platform ${d.platform}` : '', d.isBus ? 'Replacement bus' : ''].filter(Boolean).join(', ');
+                    return `<div class="dep-row${d.cancelled ? ' cancelled' : ''}">
+                        <span class="dep-time">${esc(d.std)}</span>
+                        <span class="dep-main"><span class="dep-dest" title="${esc(d.destination)}">${esc(d.destination)}</span><span class="dep-sub">${esc(where || d.operator)}</span></span>
+                        <span class="dep-when">${d.cancelled ? '' : `<span class="dep-mins">${mins === 0 ? 'Now' : mins + ' min'}</span>`}<span class="dep-state ${cls}">${state}</span></span>
+                    </div>`;
+                }).join('') + '</div>';
+                if (all.length > LIMIT) {
+                    html += `<button class="btn-toggle" style="margin-top: 10px; padding: 6px 12px; font-size: 0.9rem;" onclick="trainShowAll = !trainShowAll; fetchTrains();">${trainShowAll ? 'Show fewer' : `Show all ${all.length}`}</button>`;
+                }
+            }
+            box.innerHTML = html;
+            $('btn-train-refresh').title = `Last updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}. Refreshes every minute.`;
         }
 
-        function updateBusFields() {
-            const p = $('bus-provider').value;
-            $('bus-key-row').style.display = p === 'tfl' ? 'none' : 'flex';
-        }
-
-        async function saveBusSettings() {
-            data.settings.bus = {
-                provider: $('bus-provider').value,
-                stop: $('bus-stop').value.trim(),
-                label: $('bus-label').value.trim(),
-                appId: $('bus-app-id').value.trim(),
-                appKey: $('bus-app-key').value.trim()
-            };
+        async function saveTravelSettings() {
+            const stations = parseStations($('travel-stations').value);
+            const bad = stations.filter(c => !CRS_RE.test(c));
+            if (bad.length) { flash('travel-settings-status', `Station codes are 3 letters. Check: ${bad.join(', ')}`, true); return; }
+            if (stations.length > 3) { flash('travel-settings-status', 'Up to three stations, please.', true); return; }
+            let link = $('travel-bus-link').value.trim();
+            if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+            data.settings.travel = { stations, busLink: link };
             saveData();
-            if (!data.settings.bus.stop) { flash('bus-settings-status', 'Saved. Add a stop code to see times.'); return; }
+            renderSettings();
+            markSetupDone('travel');
+            $('btn-live-buses').href = link || TFGM_DEPARTURES_URL;
+            if (!stations.length) { flash('travel-settings-status', 'Saved. Add a station to see live trains.'); return; }
+            if (!TRAINS_PROXY_URL) { flash('travel-settings-status', 'Saved. Live trains aren\'t switched on for this copy yet.'); return; }
             try {
-                const list = await BUS_PROVIDERS[data.settings.bus.provider].fetch(data.settings.bus);
-                saveData();
-                flash('bus-settings-status', `Saved. Found ${list.length} upcoming bus${list.length === 1 ? '' : 'es'}.`);
+                const boards = await Promise.all(stations.map(fetchBoard));
+                flash('travel-settings-status', `Saved. Found ${boards.map(b => b.station).join(' and ')}.`);
+                fetchTrains();
             } catch (e) {
-                flash('bus-settings-status', `Saved, but the test failed: ${e.message}`, true);
+                flash('travel-settings-status', `Saved, but the test failed: ${e.message}`, true);
             }
         }
 
@@ -2495,13 +2790,9 @@
         // =====================================================================
         function renderSettings() {
             $('set-place-current').textContent = data.settings.place;
-            const b = data.settings.bus;
-            $('bus-provider').value = b.provider;
-            $('bus-stop').value = b.stop;
-            $('bus-label').value = b.label;
-            $('bus-app-id').value = b.appId;
-            $('bus-app-key').value = b.appKey;
-            updateBusFields();
+            renderPlaceMap();
+            $('travel-stations').value = data.settings.travel.stations.join(', ');
+            $('travel-bus-link').value = data.settings.travel.busLink;
             renderGoogleState();
             $('rem-on').checked = !!data.reminders.on;
             $('rem-every').value = String(data.reminders.every);
@@ -3530,7 +3821,7 @@
         var SETUP_STEPS = [
             {
                 id: 'location', tab: 'settings', title: 'Set your location',
-                text: () => 'Type your town and press Find, or press Use my location. You\'ll get the right weather, sunrise and sunset at the top of the page.',
+                text: () => 'Type your town or postcode and press Find, or press Use my location. You\'ll get the right weather, sunrise and sunset at the top of the page.',
                 targets: () => ['#set-place', '#btn-find-place', '#btn-my-location'],
                 done: () => !!(data.setup.done && data.setup.done.location)
             },
@@ -3543,17 +3834,10 @@
                 done: () => tokenValid()
             },
             {
-                id: 'bus', tab: 'settings', title: 'Add your bus stop',
-                text: () => data.settings.bus.provider === 'tfl' && $('bus-provider').value === 'tfl'
-                    ? 'In London? Keep TfL, enter the code for the stop you use most, then press Save and test. Find your stop code on bustimes.org or on the stop itself. Outside London, pick TransportAPI instead.'
-                    : 'TransportAPI covers buses across the UK. Sign up at transportapi.com for an App ID and key, paste them in with your stop\'s ATCO code from bustimes.org, then press Save and test.',
-                targets: () => {
-                    const t = ['#bus-provider', '#bus-stop'];
-                    if ($('bus-provider').value !== 'tfl') t.push('#bus-app-id', '#bus-app-key');
-                    t.push('#btn-bus-save');
-                    return t;
-                },
-                done: () => !!data.settings.bus.stop
+                id: 'travel', tab: 'settings', title: 'Check your train stations',
+                text: () => 'Live trains for the next hour show on Today. MCO is Manchester Oxford Road and MAN is Piccadilly. Change them to the stations you use, then press Save and test.',
+                targets: () => ['#travel-stations', '#btn-travel-save'],
+                done: () => !!(data.setup.done && data.setup.done.travel)
             },
             {
                 id: 'budget', tab: 'budget', title: 'Add your next payment',
@@ -3562,10 +3846,10 @@
                 done: () => data.budget.income.some(i => i.date > todayISO())
             },
             {
-                id: 'backup', tab: null, title: 'Keep your data safe',
+                id: 'backup', tab: 'settings', title: 'Keep your data safe',
                 text: () => CAN_AUTOSAVE
-                    ? 'Press Back up at the top, then Choose Where to Auto-save. Pick a folder like OneDrive or Google Drive and every change is saved to your spreadsheet automatically.'
-                    : 'Press Back up at the top and download a spreadsheet copy of your data. Do this every few days so nothing gets lost.',
+                    ? 'Press Back up under Your data, then Choose Where to Auto-save. Pick a folder like OneDrive or Google Drive and every change is saved to your spreadsheet automatically.'
+                    : 'Press Back up under Your data and download a spreadsheet copy of your data. Do this every few days so nothing gets lost.',
                 targets: () => ['#btn-save'],
                 done: () => backup.status === 'active' || !!backupMeta.lastBackupAt
             }
@@ -3698,7 +3982,7 @@
             positionArrows();
             const step = SETUP_STEPS[setupState.index];
             if (!step) return;
-            // Targets can change inside a step (e.g. switching bus provider shows the key fields)
+            // Targets can change inside a step, so rebuild the arrows when they do
             const want = step.targets().join('|');
             const have = [...document.querySelectorAll('.setup-arrow')].map(a => a.dataset.target).join('|');
             if (want !== have) { clearSetupTargets(); buildArrows(step); renderSetupCard(); scrollToTargets(step); }
@@ -3918,10 +4202,10 @@
             setTimeout(checkBackupReminder, 4000);
             setInterval(renderSaveStatus, 60000);
 
-            // Live bits: bus every 30s while Today is on screen; Today re-renders each minute for Now / Next
-            busTimer = setInterval(() => {
-                if (document.visibilityState === 'visible' && $('view-today').style.display !== 'none') fetchBuses();
-            }, 30000);
+            // Live bits: trains every 60s while Today is on screen; Today re-renders each minute for Now / Next
+            trainTimer = setInterval(() => {
+                if (document.visibilityState === 'visible' && $('view-today').style.display !== 'none') fetchTrains();
+            }, 60000);
             setInterval(() => { if ($('view-today').style.display !== 'none') renderToday(); }, 60000);
             setInterval(checkReminder, 15000);
             document.addEventListener('visibilitychange', checkReminder);

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Setup Checklist</title>
+  <style>
+    :root {
+      --bg-color: #121214;
+      --card-bg: #1a1a1e;
+      --border-color: #2a2a30;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --accent: #3b82f6;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    .checklist-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 8px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-item:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .indicator.ready {
+      background-color: var(--success);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    }
+
+    .indicator.pending {
+      background-color: var(--warning);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    }
+
+    .item-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .item-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .action-badge {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .checklist-item.needs-setup .action-badge {
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Simple Settings Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      padding: 24px;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>System Status</h1>
+    <p class="subtitle">Click any pending component to configure its settings.</p>
+
+    <div class="checklist-card" id="checklist">
+      <!-- Populated dynamically via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h3 id="modalTitle">Configure Setting</h3>
+      <p id="modalDesc">Update your configuration parameters below.</p>
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeModal()">Cancel</button>
+        <button onclick="saveSettings()">Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management for setup items
+    const setupItems = [
+      { id: 'python', title: 'Python Runtime', desc: 'Python 3.10+ environment active', ready: true },
+      { id: 'api_core', title: 'Google API Core', desc: 'Library version compatibility checked', ready: true },
+      { id: 'ollama', title: 'Local LLM Service (Ollama)', desc: 'Daemon not responding on port 11434', ready: false, settingKey: 'ollama_host' },
+      { id: 'storage', title: 'Red Drive Mount', desc: 'Volume path mapped at /Volumes/Red Drive', ready: true },
+      { id: 'env', title: 'Environment Keys', desc: 'Missing production API authentication tokens', ready: false, settingKey: 'api_keys' }
+    ];
+
+    let activeItem = null;
+
+    function renderChecklist() {
+      const container = document.getElementById('checklist');
+      container.innerHTML = '';
+
+      setupItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `checklist-item ${item.ready ? 'ready' : 'needs-setup'}`;
+        
+        div.innerHTML = `
+          <div class="item-info">
+            <div class="indicator ${item.ready ? 'ready' : 'pending'}"></div>
+            <div>
+              <div class="item-title">${item.title}</div>
+              <div class="item-desc">${item.desc}</div>
+            </div>
+          </div>
+          <div class="action-badge">${item.ready ? 'Configured' : 'Configure →'}</div>
+        `;
+
+        // Click handler: if not ready, open settings; if ready, maybe show info or toggle
+        div.onclick = () => handleItemClick(item);
+        container.appendChild(div);
+      });
+    }
+
+    function handleItemClick(item) {
+      activeItem = item;
+      const modal = document.getElementById('settingsModal');
+      document.getElementById('modalTitle').innerText = `Configure ${item.title}`;
+      document.getElementById('modalDesc').innerText = `Current Status: ${item.desc}. Click below to initiate configuration setup.`;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('settingsModal').classList.remove('active');
+      activeItem = null;
+    }
+
+    function saveSettings() {
+      if (activeItem) {
+        // Simulate fixing the setup item
+        activeItem.ready = true;
+        activeItem.desc = 'Successfully configured and verified';
+        renderChecklist();
+      }
+      closeModal();
+    }
+
+    // Initial render call
+    renderChecklist();
+  </script>
+
+</body>
+</html>
