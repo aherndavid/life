@@ -405,6 +405,12 @@
         .guide-start h3 { margin: 0 0 12px; font-size: 1.25rem; color: #0056b3; }
         .guide-start ol { margin: 0; padding-left: 22px; line-height: 1.8; font-size: 1.05rem; }
         .guide-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .help-details { margin-top: 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+        .help-details summary { cursor: pointer; padding: 12px 16px; font-weight: bold; color: #007bff; }
+        .help-details[open] summary { border-bottom: 1px solid #eee; }
+        .help-details ol, .help-details ul { margin: 12px 16px 14px 36px; padding: 0; line-height: 1.6; color: #444; }
+        .help-details li { margin-bottom: 8px; }
+        .help-details p { margin: 12px 16px; color: #444; line-height: 1.55; }
         .guide-card { background: white; border: 1px solid #ddd; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; }
         .guide-card h3 { margin: 0 0 8px; font-size: 1.2rem; color: #007bff; }
         .guide-card p { margin: 0 0 10px; line-height: 1.55; font-size: 1rem; color: #444; }
@@ -569,7 +575,7 @@
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
             <span class="version-tag" id="app-version">v1.5</span>
-            <img src="assets/dpaul-logo.webp" alt="dpaul.studio logo">
+            <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
         </div>
     </div>
 
@@ -1043,6 +1049,18 @@
                         <button id="btn-google-disconnect" class="btn-toggle" style="padding: 12px 20px; font-size: 1rem;" onclick="disconnectGoogle()">Disconnect</button>
                         <span id="google-status" class="muted"></span>
                     </div>
+                    <details class="help-details" id="google-help">
+                        <summary>Connecting for the first time? What you'll see</summary>
+                        <ol>
+                            <li>Press <strong>Connect Google</strong>. A Google window opens. If nothing happens, your browser blocked the pop-up: allow pop-ups for this site and press it again.</li>
+                            <li>Choose the Google account your calendar is on.</li>
+                            <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This shows while the app is being tested and is expected.</li>
+                            <li>If asked, tick the box to let the app <strong>see your calendar events</strong>, then press <strong>Continue</strong>. Without that tick, your agenda stays empty.</li>
+                            <li>Your next 7 days of events appear under Agenda on the Today tab.</li>
+                        </ol>
+                        <p><strong>"Access blocked"</strong> or <strong>"has not completed the Google verification process"</strong> means your email isn't on this app's tester list yet. Send your Gmail address to whoever shared the link with you and ask them to add it, then try again.</p>
+                        <p>Google signs you out after about an hour. When the agenda says your session expired, press <strong>Reconnect</strong>. To remove access completely, press Disconnect, or go to your Google Account under Security, then Third-party connections.</p>
+                    </details>
                 </div>
 
                 <div class="container">
@@ -1058,7 +1076,7 @@
                             <input type="url" id="travel-bus-link" placeholder="Leave blank for TfGM live departures" autocomplete="off">
                         </div>
                     </div>
-                    <p class="note">For the Live buses button: find your stop on TfGM's live departures page, then paste that page's web address here so the button opens straight to it.</p>
+                    <p class="note">For the Live buses button: open TfGM's live departures page, search for your stop, then copy the address from your browser's address bar and paste it here. The button will then open straight to your stop.</p>
                     <div class="row-gap">
                         <button id="btn-travel-save" onclick="saveTravelSettings()">Save and test</button>
                         <span id="travel-settings-status"></span>
@@ -1269,7 +1287,7 @@
                         <li>Enter your balance and next payment date in <strong>Budget</strong>.</li>
                         <li>Add your classes to <strong>Timetable</strong>.</li>
                         <li>Add assignment and exam dates to <strong>Deadlines</strong>.</li>
-                        <li>Optionally connect Google and check your train stations in <strong>Settings</strong>.</li>
+                        <li>Optionally connect Google and check your train stations in <strong>Settings</strong>. The help under Connect Google explains what you'll see.</li>
                     </ol>
                     <p style="margin: 14px 0 0; font-size: 1.05rem;">Want a hand? Guided set up points you to each step with arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
@@ -1320,13 +1338,13 @@
                     <div class="guide-card">
                         <h3>Trains and buses</h3>
                         <p>Today lists every train leaving your stations in the next hour, with platforms, delays and cancellations. It refreshes every minute.</p>
-                        <p>Live buses opens TfGM's departure board. In Settings you can point it at your own stop.</p>
+                        <p>Live buses opens TfGM's departure board. In Settings you can paste the link to your own stop so it opens straight to it. If the panel says live trains aren't switched on, the train feed hasn't been connected on this copy yet.</p>
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                     <div class="guide-card">
                         <h3>Google Calendar</h3>
-                        <p>In Settings, choose Connect Google and sign in. Your next 7 or 30 days of events appear on Today.</p>
-                        <p>Access is read-only. Google signs you out after an hour, so choose Reconnect when prompted.</p>
+                        <p>In Settings, choose Connect Google and sign in. If Google warns it hasn't verified the app, press Continue, then tick the box to let it see your calendar. Your next 7 or 30 days of events appear on Today.</p>
+                        <p>"Access blocked" means your email isn't on the tester list yet: ask whoever shared the link to add it. Access is read-only, and Google signs you out after an hour, so press Reconnect when prompted.</p>
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                     <div class="guide-card">
@@ -1356,7 +1374,7 @@
                     <div class="guide-card">
                         <h3>Your data</h3>
                         <p>Everything saves in this browser automatically as you go. Nothing is uploaded, and no account is needed.</p>
-                        <p>To keep it safe, use the Back up button at the top. In Chrome or Edge on a computer you can pick a spreadsheet file once and every change is saved to it automatically. Anywhere else, download a spreadsheet copy now and then.</p>
+                        <p>To keep it safe, press Back up in Settings under Your data. In Chrome or Edge on a computer you can pick a spreadsheet file once and every change is saved to it automatically. Anywhere else, download a spreadsheet copy now and then.</p>
                         <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
                     </div>
                 </div>
@@ -1379,7 +1397,8 @@
         // =====================================================================
         // v1.5  Google is calendar-only, postcode search with location map, live trains (next hour) replace bus stop codes, TfGM bus link,
         //       Back up button moved to Settings, Today fits the screen with no page scrolling on laptops and desktops,
-        //       larger title and top section on Today, Live buses button moved into the trains header
+        //       larger title and top section on Today, Live buses button moved into the trains header,
+        //       first-time Google connection help in Settings and the guide, clearer Google error messages
         // v1.4  Guided set-up mode with floating red arrows (location, Google, bus, next payment, backup)
         // v1.3  Auto-save to a spreadsheet file (Chrome/Edge desktop), spreadsheet backup and restore, backup reminder pop-up, close warning
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
@@ -2626,11 +2645,26 @@
                 client_id: GOOGLE_CLIENT_ID,
                 scope: GOOGLE_SCOPES,
                 callback: resp => {
-                    if (resp.error) { renderGoogleState('Google sign-in was cancelled or failed.'); return; }
+                    if (resp.error) {
+                        $('google-help').open = true;
+                        renderGoogleState(resp.error === 'access_denied'
+                            ? 'Google didn\'t allow access. If it said "Access blocked", your email needs adding to the tester list. See the help below.'
+                            : 'Google sign-in didn\'t finish. Press Connect Google to try again.');
+                        return;
+                    }
+                    if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(resp, GOOGLE_SCOPES)) {
+                        $('google-help').open = true;
+                        renderGoogleState('Calendar access wasn\'t ticked. Press Connect Google again and tick the box to see your calendar events.');
+                        return;
+                    }
                     googleToken = { token: resp.access_token, expires: Date.now() + (Number(resp.expires_in) - 60) * 1000 };
                     saveToken();
                     renderGoogleState();
                     refreshGoogle();
+                },
+                error_callback: err => {
+                    if (err && err.type === 'popup_failed_to_open') renderGoogleState('Your browser blocked the Google window. Allow pop-ups for this site, then press Connect Google again.');
+                    else if (err && err.type === 'popup_closed') renderGoogleState('The Google window was closed before you finished. Press Connect Google to try again.');
                 }
             });
             renderGoogleState();
@@ -2655,7 +2689,7 @@
             const status = $('google-status');
             $('btn-google-connect').textContent = connected ? 'Reconnect' : 'Connect Google';
             $('btn-google-disconnect').style.display = connected ? '' : 'none';
-            if (!GOOGLE_CLIENT_ID) status.textContent = 'Not available yet: this copy has no Google client ID set.';
+            if (!GOOGLE_CLIENT_ID) status.textContent = 'Not switched on yet. Whoever runs this copy of the app needs to add a Google client ID (see README.md).';
             else status.textContent = message || (connected ? 'Connected' : 'Not connected');
             const prompt = msg => `<li class="empty">${msg}</li>`;
             if (!connected) {
@@ -3508,7 +3542,7 @@
                 ['App version', 'v' + APP_VERSION],
                 [],
                 ['This file is written by the app. Changes you make here are not read back into the app.'],
-                ['To restore: open the app, press Back up at the top, then Open a Saved Spreadsheet.'],
+                ['To restore: open the app, go to Settings, press Back up under Your data, then Open a Saved Spreadsheet.'],
                 ['Keep the hidden Backup sheet. It holds everything the app needs to restore your data.']
             ], [22, 90]);
             add('Spending', ['Date', 'Category', 'Note', 'Amount'], [...b.spends].sort((x, y) => y.date.localeCompare(x.date)).map(x => [x.date, x.category, x.note, Number(x.amount) || 0]), [12, 16, 40, 12], [3]);
@@ -3828,7 +3862,7 @@
             {
                 id: 'google', tab: 'settings', title: 'Connect your Google account',
                 text: () => GOOGLE_CLIENT_ID
-                    ? 'Press Connect Google and sign in. Your calendar will show on the Today tab. It\'s read-only, so nothing can be added, changed or deleted.'
+                    ? 'Press Connect Google and sign in. If Google says it hasn\'t verified the app, press Continue, and tick the box to let it see your calendar. It\'s read-only, so nothing can be added, changed or deleted.'
                     : 'Google connection isn\'t switched on for this copy of the app yet, so skip this step for now. Once it is, this is where you\'ll connect your calendar.',
                 targets: () => ['#btn-google-connect'],
                 done: () => tokenValid()
