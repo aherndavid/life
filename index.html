@@ -8,9 +8,13 @@
     <title>Life - Student Edition | dPaul Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=block" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        try { var t = (JSON.parse(localStorage.getItem('dpaul_student_life_v1') || '{}').settings || {}).theme;
+              document.documentElement.dataset.theme = t === 'green' ? 'green' : 'amber'; } catch (e) {}
+    </script>
     <style>
         body { 
             font-family: sans-serif; 
@@ -18,7 +22,7 @@
             margin: 0 auto; 
             padding: 20px; 
             background-color: #1f1f1f; 
-            color: #ffb000;
+            color: var(--fg);
         }
         
         .header {
@@ -32,13 +36,13 @@
         .header-left h1 {
             font-size: 2.8rem;
             line-height: 1.1;
-            color: #ffb000;
+            color: var(--fg);
             margin: 0;
             letter-spacing: 2px;
         }
         .header-left .clock {
             font-size: 1.1rem;
-            color: #d99a14;
+            color: var(--fg-soft);
             margin: 6px 12px 0 0;
             font-weight: bold;
             display: inline-block;
@@ -46,7 +50,7 @@
         }
         .header-left .weather-widget {
             font-size: 1rem;
-            color: #d99a14;
+            color: var(--fg-soft);
             margin-top: 6px;
             vertical-align: middle;
             background: #242424;
@@ -55,14 +59,22 @@
             display: inline-block;
             border: 1px solid #3a3a3a;
         }
+        /* Title banner (v2.6): an image in place of the typed title. It is sized by the heading's font size,
+           so the existing size rules for each screen still apply. */
+        .title-banner-h1 { line-height: 1 !important; text-shadow: none !important; }
+        .title-banner { display: block; height: 1.1em; width: auto; max-width: 100%; object-fit: contain; object-position: left center; }
+        .brand-logo { display: block; height: 56px; width: auto; object-fit: contain; background: transparent; pointer-events: none; }
         .weather-emoji { font-size: 1.4em; vertical-align: middle; margin-right: 2px; }
+        .dot-icon { display: inline-block; height: 1em; width: auto; vertical-align: -0.12em; filter: drop-shadow(0 0 3px rgba(var(--glow), .45)); }
+        .dot-icon.weather-icon { height: 1.35em; vertical-align: -0.3em; margin-right: 2px; }
+        .leaflet-container { font-family: "Doto", ui-monospace, monospace !important; }
         .custom-icon { height: 1.4em; vertical-align: middle; margin-top: -4px; margin-right: 4px; }
 
         .header-left { flex: 1 1 auto; min-width: 0; }
         .header-left h1 { white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-        .header-right .version-tag { font-size: 1.1rem; color: #d99a14; font-weight: bold; }
-        .header-right img { max-height: 56px; object-fit: contain; }
+        .header-right .version-tag { font-size: 1.1rem; color: var(--fg-soft); font-weight: bold; }
+        .header-right img, .header-right .brand-logo { max-height: 56px; height: 56px; object-fit: contain; }
         .header-left { flex: 1 1 auto; min-width: 0; }
         .header-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
         .header-meta .clock, .header-meta .weather-widget { margin: 0 !important; }
@@ -105,27 +117,27 @@
         button { 
             padding: 12px 24px; 
             cursor: pointer; 
-            background: #ffb000; 
+            background: var(--fg); 
             color: #171717; 
             border: none; 
             border-radius: 6px; 
             font-weight: bold; 
             font-size: 1.1rem;
         }
-        button:hover { background: #ffc633; }
+        button:hover { background: var(--fg-hi); }
         button:disabled { background: #3a3a3a; cursor: not-allowed; }
         button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
-            outline: 3px solid #ffcf5c; outline-offset: 2px;
+            outline: 3px solid var(--link); outline-offset: 2px;
         }
         
         .btn-toggle { background: #333; padding: 6px 12px; font-size: 0.9rem; }
         .btn-toggle:hover { background: #3d3d3d; }
-        .btn-cal-filter { background: #ffb000; padding: 6px 12px; font-size: 0.9rem; }
-        .btn-cal-filter:hover { background: #ffc633; }
-        .btn-teal { background: #ffb000; }
-        .btn-teal:hover { background: #ffc633; }
-        .btn-purple { background: #ffb000; }
-        .btn-purple:hover { background: #ffc633; }
+        .btn-cal-filter { background: var(--fg); padding: 6px 12px; font-size: 0.9rem; }
+        .btn-cal-filter:hover { background: var(--fg-hi); }
+        .btn-teal { background: var(--fg); }
+        .btn-teal:hover { background: var(--fg-hi); }
+        .btn-purple { background: var(--fg); }
+        .btn-purple:hover { background: var(--fg-hi); }
         .btn-small { padding: 8px 14px; font-size: 0.95rem; }
         .btn-delete { background: #ff5b4d; padding: 8px 12px; font-size: 0.95rem; }
         .btn-delete:hover { background: #ff7a6e; }
@@ -148,67 +160,67 @@
         .task-item:last-child { border-bottom: none; }
         .task-checkbox { transform: scale(1.4); cursor: pointer; margin: 0; }
         .task-text { flex: 1; font-size: 1.1rem; transition: all 0.2s; min-width: 0; overflow-wrap: anywhere; }
-        .task-text.completed { text-decoration: line-through; color: #a07a1c; }
+        .task-text.completed { text-decoration: line-through; color: var(--fg-muted); }
         .btn-task-del { background: transparent; color: #ff5b4d; border: none; padding: 0 5px; font-size: 1.3rem; }
         .btn-task-del:hover { background: transparent; color: #ff5b4d; }
 
         .tab-bar { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #3a3a3a; padding-bottom: 15px; flex-wrap: wrap; }
-        .tab-btn { background: #2a2a2a; color: #ffb000; padding: 10px 20px; font-size: 1.1rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .tab-btn { background: #2a2a2a; color: var(--fg); padding: 10px 20px; font-size: 1.1rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
         .tab-btn:hover { background: #333; }
-        .tab-btn.active { background: #ffb000; color: #171717; }
+        .tab-btn.active { background: var(--fg); color: #171717; }
 
         .finance-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
         .summary-card { background: #1f1f1f; padding: 20px 15px; border-radius: 6px; border: 1px solid #3a3a3a; text-align: center; }
-        .summary-card h3 { margin: 0 0 10px 0; font-size: 0.95rem; color: #d99a14; }
+        .summary-card h3 { margin: 0 0 10px 0; font-size: 0.95rem; color: var(--fg-soft); }
         .summary-card p { margin: 0; font-size: 1.35rem; font-weight: bold; }
-        .summary-card.hero { background: #2a2110; }
-        .summary-card .sub { font-size: 0.8rem; color: #d99a14; margin-top: 6px; }
+        .summary-card.hero { background: var(--tint); }
+        .summary-card .sub { font-size: 0.8rem; color: var(--fg-soft); margin-top: 6px; }
 
         /* Student additions, same visual language */
-        .badge { font-size: 0.85rem; background: #2a2a2a; color: #ffb000; padding: 2px 8px; border-radius: 4px; margin-left: 8px; font-weight: bold; white-space: nowrap; display: inline-block; }
+        .badge { font-size: 0.85rem; background: #2a2a2a; color: var(--fg); padding: 2px 8px; border-radius: 4px; margin-left: 8px; font-weight: bold; white-space: nowrap; display: inline-block; }
         .badge.red { background: #2d1513; color: #ff7a6e; }
-        .badge.amber { background: #2a2110; color: #ffb000; }
+        .badge.amber { background: var(--tint); color: var(--fg); }
         .badge.green { background: #172614; color: #9be15d; }
-        .badge.blue { background: #2a2110; color: #ffe08a; }
-        .muted { color: #a07a1c; }
-        .empty { color: #a07a1c; padding: 10px 0; font-style: italic; }
-        .empty a { color: #ffcf5c; font-weight: bold; }
-        .note { font-size: 0.95rem; color: #d99a14; line-height: 1.5; margin: 0 0 15px 0; }
+        .badge.blue { background: var(--tint); color: var(--link-hi); }
+        .muted { color: var(--fg-muted); }
+        .empty { color: var(--fg-muted); padding: 10px 0; font-style: italic; }
+        .empty a { color: var(--link); font-weight: bold; }
+        .note { font-size: 0.95rem; color: var(--fg-soft); line-height: 1.5; margin: 0 0 15px 0; }
         .status-ok { color: green; font-weight: bold; font-size: 1.05rem; }
         .status-err { color: #ff5b4d; font-weight: bold; }
         .money-in { color: #9be15d; }
         .money-out { color: #ff5b4d; }
         .progress { background: #2a2a2a; border-radius: 4px; height: 10px; width: 100%; overflow: hidden; }
-        .progress > div { background: #ffb000; height: 100%; transition: width 0.3s; }
-        .section-title { margin: 0 0 12px 0; color: #ffb000; font-size: 1.1rem; }
+        .progress > div { background: var(--fg); height: 100%; transition: width 0.3s; }
+        .section-title { margin: 0 0 12px 0; color: var(--fg); font-size: 1.1rem; }
         .sidebar-title { margin: 0; font-size: 1.3rem; }
         .card { background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid #2e2e2e; padding-bottom: 12px; }
-        .card-head h2 { margin: 0; font-size: 1.5rem; color: #ffcf5c; }
+        .card-head h2 { margin: 0; font-size: 1.5rem; color: var(--link); }
 
         .dep-list.all { max-height: 480px; overflow-y: auto; padding-right: 4px; }
         .dep-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #3a3a3a; }
         .dep-row:last-child { border-bottom: none; }
-        .dep-time { background: #ffb000; color: #171717; font-weight: bold; border-radius: 4px; padding: 4px 7px; min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
+        .dep-time { background: var(--fg); color: #171717; font-weight: bold; border-radius: 4px; padding: 4px 7px; min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
         .dep-row.cancelled .dep-time { background: #4a4a4a; text-decoration: line-through; }
         .dep-main { flex: 1; min-width: 0; line-height: 1.3; }
         .dep-dest { font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .dep-sub { color: #d99a14; font-size: 0.88rem; }
+        .dep-sub { color: var(--fg-soft); font-size: 0.88rem; }
         .dep-when { text-align: right; white-space: nowrap; line-height: 1.3; }
         .dep-mins { font-weight: bold; font-size: 1.1rem; display: block; }
         .dep-state { font-size: 0.82rem; font-weight: bold; }
         .dep-state.ok { color: #9be15d; }
-        .dep-state.late { color: #ffb000; }
+        .dep-state.late { color: var(--warn); }
         .dep-state.off { color: #ff5b4d; }
-        .btn-bus { background: #ffb000; color: #ffb000; font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; white-space: nowrap; }
-        .btn-bus:hover { background: #ffc633; }
+        .btn-bus { background: var(--fg); color: var(--fg); font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; white-space: nowrap; }
+        .btn-bus:hover { background: var(--fg-hi); }
         /* ---- Travel tab: station-style departure boards (v2.0) ---- */
         .travel-boards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
         .travel-boards > .rail-board { min-width: 0; overflow: hidden; }
-        .rail-board { --amber: #ffb000; --amber-dim: #6b4a00; font-family: "Doto", monospace; font-weight: 800; color: var(--amber);
-            background: #000 radial-gradient(rgba(255,176,0,.05) 1px, transparent 1.2px) 0 0 / 4px 4px;
+        .rail-board { font-family: "Doto", monospace; font-weight: 800; color: var(--amber);
+            background: #000 radial-gradient(rgba(var(--glow), .05) 1px, transparent 1.2px) 0 0 / 4px 4px;
             border: 10px solid #1d1f22; border-radius: 6px; box-shadow: inset 0 0 0 2px #3a3d42, 0 10px 24px rgba(0,0,0,.25);
-            padding: 16px 20px 12px; text-shadow: 0 0 6px rgba(255,176,0,.55); }
+            padding: 16px 20px 12px; text-shadow: 0 0 6px rgba(var(--glow), .55); }
         .rail-board * { box-sizing: border-box; margin: 0; }
         .rb-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 1.05rem;
             padding-bottom: 10px; margin-bottom: 8px; border-bottom: 2px dotted var(--amber-dim); }
@@ -235,20 +247,20 @@
             .rb-ticker span { animation: none; padding-left: 0; white-space: normal; }
             .rb-cancel .rb-exp { animation: none; }
         }
-        .dep-msg { background: #2a2110; border-left: 4px solid #ffb000; padding: 8px 10px; font-size: 0.88rem; margin: 0 0 10px; border-radius: 4px; }
+        .dep-msg { background: var(--tint); border-left: 4px solid var(--fg); padding: 8px 10px; font-size: 0.88rem; margin: 0 0 10px; border-radius: 4px; }
 
         .timer-display { font-size: 3.4rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 10px 0 4px; font-variant-numeric: tabular-nums; }
-        .timer-mode { text-align: center; color: #d99a14; font-weight: bold; margin-bottom: 14px; }
+        .timer-mode { text-align: center; color: var(--fg-soft); font-weight: bold; margin-bottom: 14px; }
         .timer-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
         .day-block { margin-bottom: 20px; }
-        .day-block h3 { margin: 0 0 8px 0; font-size: 1.1rem; color: #ffcf5c; }
-        .class-now { background: #2a2110; border-radius: 6px; padding-left: 8px; padding-right: 8px; }
+        .day-block h3 { margin: 0 0 8px 0; font-size: 1.1rem; color: var(--link); }
+        .class-now { background: var(--tint); border-radius: 6px; padding-left: 8px; padding-right: 8px; }
 
         .grade-input { width: 90px !important; padding: 8px !important; font-size: 1rem !important; text-align: center; }
 
-        .footer { text-align: center; color: #a07a1c; font-size: 0.95rem; padding: 10px 0 30px; line-height: 1.8; }
-        .footer a { color: #ffcf5c; font-weight: bold; text-decoration: none; }
+        .footer { text-align: center; color: var(--fg-muted); font-size: 0.95rem; padding: 10px 0 30px; line-height: 1.8; }
+        .footer a { color: var(--link); font-weight: bold; text-decoration: none; }
 
         @media (max-width: 1100px) {
             .finance-summary { grid-template-columns: repeat(2, 1fr); }
@@ -260,7 +272,7 @@
             .header-right { justify-content: flex-start; }
             .header-left .clock { font-size: 1rem; }
             .header-left .weather-widget { font-size: 0.95rem; }
-            .header-right img { max-height: 50px; }
+            .header-right img, .header-right .brand-logo { max-height: 50px; height: 50px; }
             .tab-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
             .tab-btn { white-space: nowrap; padding: 8px 14px; font-size: 1rem; }
             .main-layout { flex-direction: column; gap: 0; }
@@ -277,16 +289,16 @@
         }
         /* Food shop */
         .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .chip { background: #2a2a2a; color: #ffb000; padding: 7px 12px; font-size: 0.95rem; font-weight: bold; border-radius: 20px; }
+        .chip { background: #2a2a2a; color: var(--fg); padding: 7px 12px; font-size: 0.95rem; font-weight: bold; border-radius: 20px; }
         .chip:hover { background: #333; }
         .shop-section { margin-bottom: 18px; }
-        .shop-section h3 { margin: 0 0 4px; font-size: 1rem; color: #ffcf5c; }
-        .shop-qty { color: #d99a14; font-weight: bold; min-width: 34px; }
-        .shop-price { font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; color: #d99a14; }
+        .shop-section h3 { margin: 0 0 4px; font-size: 1rem; color: var(--link); }
+        .shop-qty { color: var(--fg-soft); font-weight: bold; min-width: 34px; }
+        .shop-price { font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; color: var(--fg-soft); }
         .meal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .meal-card { background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; padding: 18px; display: flex; flex-direction: column; }
-        .meal-card h3 { margin: 0 0 6px; font-size: 1.1rem; color: #ffcf5c; }
-        .meal-card p { margin: 0 0 12px; color: #d99a14; font-size: 0.95rem; line-height: 1.5; }
+        .meal-card h3 { margin: 0 0 6px; font-size: 1.1rem; color: var(--link); }
+        .meal-card p { margin: 0 0 12px; color: var(--fg-soft); font-size: 0.95rem; line-height: 1.5; }
         .meal-card button { align-self: flex-start; margin-top: auto; }
         @media (max-width: 1100px) { .meal-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .meal-grid { grid-template-columns: 1fr; } }
@@ -302,8 +314,8 @@
         .setup-card.open { display: block; }
         .setup-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
         .setup-label { font-size: 0.9rem; font-weight: bold; color: #ff5b4d; letter-spacing: 0.5px; text-transform: uppercase; }
-        .setup-card h3 { margin: 10px 0 8px; font-size: 1.35rem; color: #ffb000; }
-        .setup-card p { margin: 0 0 14px; line-height: 1.55; color: #ffb000; font-size: 1rem; }
+        .setup-card h3 { margin: 10px 0 8px; font-size: 1.35rem; color: var(--fg); }
+        .setup-card p { margin: 0 0 14px; line-height: 1.55; color: var(--fg); font-size: 1rem; }
         .setup-card .progress > div { background: #ff5b4d; }
         .setup-actions { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .setup-actions button { padding: 10px 18px; font-size: 1rem; }
@@ -327,24 +339,24 @@
 
         /* Save status pill + backup pop-up */
         .btn-help[data-dot]::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; background: #3a3a3a; }
-        .btn-help[data-dot="green"]::before { background: #ffb000; }
-        .btn-help[data-dot="amber"]::before { background: #ffc633; }
+        .btn-help[data-dot="green"]::before { background: var(--fg); }
+        .btn-help[data-dot="amber"]::before { background: var(--fg-hi); }
         .btn-help[data-dot="red"]::before { background: #ff5b4d; }
         .backup-section { background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; padding: 18px 22px; margin-bottom: 15px; }
-        .backup-section.highlight { background: #2a2110; border-color: #6b4a00; }
-        .backup-section h3 { margin: 0 0 8px; font-size: 1.15rem; color: #ffe08a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .backup-section p { margin: 0 0 14px; line-height: 1.6; color: #ffb000; }
+        .backup-section.highlight { background: var(--tint); border-color: var(--fg-dim); }
+        .backup-section h3 { margin: 0 0 8px; font-size: 1.15rem; color: var(--link-hi); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .backup-section p { margin: 0 0 14px; line-height: 1.6; color: var(--fg); }
         .backup-section .row-gap button { padding: 10px 16px; font-size: 1rem; }
         .backup-section .row-gap .link-btn { padding: 0 4px; font-size: 0.95rem; }
-        .link-btn { background: transparent; color: #ffcf5c; padding: 0; font-size: 0.95rem; text-decoration: underline; font-weight: normal; }
-        .link-btn:hover { background: transparent; color: #ffe08a; }
+        .link-btn { background: transparent; color: var(--link); padding: 0; font-size: 0.95rem; text-decoration: underline; font-weight: normal; }
+        .link-btn:hover { background: transparent; color: var(--link-hi); }
 
         /* Break reminder (uses the guide overlay) */
         .reminder-modal { max-width: 680px; }
-        .reminder-msg { font-size: 1.2rem; line-height: 1.6; color: #ffb000; margin: 0 0 22px; }
-        .fact-box { background: #2a2110; border: 1px solid #6b4a00; border-radius: 6px; padding: 18px 22px; }
-        .fact-box h3 { margin: 0 0 8px; font-size: 1.1rem; color: #ffe08a; display: flex; align-items: center; gap: 8px; }
-        .fact-box p { margin: 0; font-size: 1.05rem; line-height: 1.6; color: #ffb000; }
+        .reminder-msg { font-size: 1.2rem; line-height: 1.6; color: var(--fg); margin: 0 0 22px; }
+        .fact-box { background: var(--tint); border: 1px solid var(--fg-dim); border-radius: 6px; padding: 18px 22px; }
+        .fact-box h3 { margin: 0 0 8px; font-size: 1.1rem; color: var(--link-hi); display: flex; align-items: center; gap: 8px; }
+        .fact-box p { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--fg); }
         .reminder-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
         /* Background music dock */
@@ -363,7 +375,7 @@
             border-bottom: 1px solid #3a3a3a; border-radius: 8px 8px 0 0;
         }
         .music-head:hover { background: #242424; }
-        .music-head:focus-visible { outline: 3px solid #ffcf5c; outline-offset: -3px; }
+        .music-head:focus-visible { outline: 3px solid var(--link); outline-offset: -3px; }
         .music-head h2 { margin: 0; font-size: 1.3rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .music-head-btns { display: flex; gap: 6px; flex: 0 0 auto; }
         .music-head-btns button { padding: 6px 10px; font-size: 0.9rem; }
@@ -382,25 +394,25 @@
         .music-dock.mini .music-head h2 { font-size: 1rem; }
         .music-player { width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; border-radius: 6px; overflow: hidden; }
         .music-player iframe, .music-player > div { width: 100%; height: 100%; display: block; border: 0; }
-        .music-placeholder { display: flex !important; align-items: center; justify-content: center; color: #a07a1c; font-size: 0.95rem; text-align: center; padding: 20px; box-sizing: border-box; }
+        .music-placeholder { display: flex !important; align-items: center; justify-content: center; color: var(--fg-muted); font-size: 0.95rem; text-align: center; padding: 20px; box-sizing: border-box; }
         .music-now { padding: 12px 2px 0; }
-        .music-title { font-weight: bold; font-size: 1.05rem; color: #ffb000; text-decoration: none; display: block; overflow-wrap: anywhere; line-height: 1.35; }
-        .music-title:hover { color: #ffcf5c; }
-        .music-meta { color: #d99a14; font-size: 0.95rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
-        .music-meta a { color: #ffcf5c; font-weight: bold; text-decoration: none; }
-        .music-progress { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #d99a14; font-variant-numeric: tabular-nums; margin: 10px 0; }
-        .music-progress input[type="range"] { flex: 1; accent-color: #ffcf5c; }
+        .music-title { font-weight: bold; font-size: 1.05rem; color: var(--fg); text-decoration: none; display: block; overflow-wrap: anywhere; line-height: 1.35; }
+        .music-title:hover { color: var(--link); }
+        .music-meta { color: var(--fg-soft); font-size: 0.95rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+        .music-meta a { color: var(--link); font-weight: bold; text-decoration: none; }
+        .music-progress { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--fg-soft); font-variant-numeric: tabular-nums; margin: 10px 0; }
+        .music-progress input[type="range"] { flex: 1; accent-color: var(--link); }
         .music-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .music-controls button { padding: 8px 12px; font-size: 0.95rem; }
-        .music-vol { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.9rem; color: #d99a14; }
-        .music-vol input { width: 80px; accent-color: #ffcf5c; }
+        .music-vol { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.9rem; color: var(--fg-soft); }
+        .music-vol input { width: 80px; accent-color: var(--link); }
         .music-lib { border-top: 2px solid #2e2e2e; margin-top: 12px; padding-top: 12px; }
         .music-add { display: flex; gap: 8px; margin-bottom: 8px; }
         .music-add input { padding: 10px !important; font-size: 0.95rem !important; }
         .music-add button { padding: 10px 14px; font-size: 0.95rem; white-space: nowrap; }
         .music-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-bottom: 1px solid #3a3a3a; border-radius: 6px; }
         .music-row:last-child { border-bottom: none; }
-        .music-row.playing { background: #2a2110; }
+        .music-row.playing { background: var(--tint); }
         .music-share-row { display: flex; justify-content: flex-end; margin-top: 10px; }
         .music-share-row button { padding: 8px 14px; font-size: 0.95rem; }
         .share-link-row { display: flex; gap: 8px; margin: 6px 0 4px; }
@@ -413,9 +425,9 @@
         .music-row img, .music-row .thumb { width: 72px; height: 40px; object-fit: cover; border-radius: 4px; background: #2a2a2a; flex: 0 0 auto; }
         .music-row .info { flex: 1; min-width: 0; font-size: 0.92rem; line-height: 1.3; }
         .music-row .info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .music-row .info span { color: #d99a14; }
+        .music-row .info span { color: var(--fg-soft); }
         .music-row button.play { padding: 6px 10px; font-size: 0.85rem; }
-        .btn-help.playing::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffb000; margin-right: 8px; vertical-align: middle; }
+        .btn-help.playing::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--fg); margin-right: 8px; vertical-align: middle; }
         @media (max-width: 900px) {
             .music-dock { left: 12px; right: auto; bottom: 12px; width: calc(100vw - 24px); max-width: none; max-height: 75vh; }
             .music-head-btns button { padding: 6px 8px; font-size: 0.85rem; }
@@ -442,39 +454,39 @@
             display: flex; justify-content: space-between; align-items: center; gap: 15px;
             padding: 25px 30px 20px; border-bottom: 2px solid #2e2e2e;
         }
-        .guide-head h2 { margin: 0; font-size: 2rem; color: #ffb000; letter-spacing: 1px; }
-        .guide-head p { margin: 6px 0 0; color: #d99a14; font-size: 1.05rem; }
-        .guide-close { background: transparent; color: #a07a1c; font-size: 2rem; line-height: 1; padding: 4px 10px; }
-        .guide-close:hover { background: #2a2a2a; color: #ffb000; }
+        .guide-head h2 { margin: 0; font-size: 2rem; color: var(--fg); letter-spacing: 1px; }
+        .guide-head p { margin: 6px 0 0; color: var(--fg-soft); font-size: 1.05rem; }
+        .guide-close { background: transparent; color: var(--fg-muted); font-size: 2rem; line-height: 1; padding: 4px 10px; }
+        .guide-close:hover { background: #2a2a2a; color: var(--fg); }
         .guide-body { overflow-y: auto; padding: 25px 30px; }
-        .guide-start { background: #2a2110; border: 1px solid #6b4a00; border-radius: 6px; padding: 20px 25px; margin-bottom: 25px; }
-        .guide-start h3 { margin: 0 0 12px; font-size: 1.25rem; color: #ffe08a; }
+        .guide-start { background: var(--tint); border: 1px solid var(--fg-dim); border-radius: 6px; padding: 20px 25px; margin-bottom: 25px; }
+        .guide-start h3 { margin: 0 0 12px; font-size: 1.25rem; color: var(--link-hi); }
         .guide-start ol { margin: 0; padding-left: 22px; line-height: 1.8; font-size: 1.05rem; }
         .guide-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .help-details { margin-top: 16px; background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; }
-        .help-details summary { cursor: pointer; padding: 12px 16px; font-weight: bold; color: #ffcf5c; }
+        .help-details summary { cursor: pointer; padding: 12px 16px; font-weight: bold; color: var(--link); }
         .help-details[open] summary { border-bottom: 1px solid #2e2e2e; }
-        .help-details ol, .help-details ul { margin: 12px 16px 14px 36px; padding: 0; line-height: 1.6; color: #ffb000; }
+        .help-details ol, .help-details ul { margin: 12px 16px 14px 36px; padding: 0; line-height: 1.6; color: var(--fg); }
         .help-details li { margin-bottom: 8px; }
-        .help-details p { margin: 12px 16px; color: #ffb000; line-height: 1.55; }
+        .help-details p { margin: 12px 16px; color: var(--fg); line-height: 1.55; }
         .help-details code { background: #242424; border: 1px solid #3a3a3a; border-radius: 4px; padding: 1px 6px; font-size: 0.92em; word-break: break-all; }
-        .guide-section-title { margin: 30px 0 12px; padding-top: 20px; border-top: 2px solid #2e2e2e; font-size: 1.3rem; color: #ffb000; }
+        .guide-section-title { margin: 30px 0 12px; padding-top: 20px; border-top: 2px solid #2e2e2e; font-size: 1.3rem; color: var(--fg); }
         .guide-body > .help-details { margin-top: 10px; }
-        .guide-body > .help-details summary { color: #ffb000; }
-        .guide-support { margin-top: 26px; background: #2a2110; border: 1px solid #6b4a00; border-radius: 6px; padding: 16px 20px; }
+        .guide-body > .help-details summary { color: var(--fg); }
+        .guide-support { margin-top: 26px; background: var(--tint); border: 1px solid var(--fg-dim); border-radius: 6px; padding: 16px 20px; }
         .guide-support h3 { margin: 0 0 6px; font-size: 1.15rem; }
         .guide-support p { margin: 0; line-height: 1.55; }
         .support-mail { font-weight: bold; }
         .guide-card { background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; }
-        .guide-card h3 { margin: 0 0 8px; font-size: 1.2rem; color: #ffcf5c; }
-        .guide-card p { margin: 0 0 10px; line-height: 1.55; font-size: 1rem; color: #ffb000; }
+        .guide-card h3 { margin: 0 0 8px; font-size: 1.2rem; color: var(--link); }
+        .guide-card p { margin: 0 0 10px; line-height: 1.55; font-size: 1rem; color: var(--fg); }
         .guide-card p:last-of-type { margin-bottom: 14px; }
         .guide-card button { align-self: flex-start; margin-top: auto; }
         .guide-foot {
             display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;
             padding: 18px 30px; border-top: 2px solid #2e2e2e; background: #1f1f1f; border-radius: 0 0 8px 8px;
         }
-        .btn-help { background: #2a2a2a; color: #ffb000; padding: 10px 18px; font-size: 1rem; white-space: nowrap; }
+        .btn-help { background: #2a2a2a; color: var(--fg); padding: 10px 18px; font-size: 1rem; white-space: nowrap; }
         .btn-help:hover { background: #333; }
         body.guide-open { overflow: hidden; }
         @keyframes guide-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -489,12 +501,8 @@
             .guide-foot { padding: 14px 18px; border-radius: 0; }
         }
 
-        /* Today fits the screen on laptops and desktops: long lists scroll inside their panel, not the page.
-           On very short windows it falls back to normal page scrolling rather than cutting anything off. */
+        /* Larger top section, identical on every tab */
         @media (min-width: 901px) and (min-height: 560px) {
-            body.on-today { height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; padding-top: 14px; padding-bottom: 6px; }
-            body.on-today > .header, body.on-today > .tab-bar, body.on-today > .footer { flex: none; }
-            /* Larger top section, identical on every tab (Today's panels give up about 20% of their height for it) */
             body { padding-top: 14px; }
             body .header { padding-bottom: 18px; margin-bottom: 18px; }
             body .header-left h1 { font-size: 4.2rem; letter-spacing: 2px; }
@@ -504,62 +512,19 @@
             body .header-right { gap: 14px; }
             body .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
             body .header-right .version-tag { font-size: 1.2rem; }
-            body .header-right img { max-height: 84px; }
+            body .header-right img, body .header-right .brand-logo { max-height: 84px; height: 84px; }
             body .tab-bar { margin-bottom: 14px; padding-bottom: 12px; }
-            body.on-today .main-layout { flex: 1 1 auto; min-height: 0; align-items: stretch; gap: 20px; }
-            body.on-today .left-column { display: flex; flex-direction: column; min-height: 0; }
-            body.on-today .right-column { position: static; display: flex !important; flex-direction: column; gap: 14px; min-height: 0; }
-            body.on-today #view-today { display: flex !important; flex-direction: column; gap: 14px; flex: 1 1 auto; min-height: 0; }
-
-            body.on-today .fit-fixed, body.on-today .fit-scroll { margin: 0; padding: 14px 20px; display: flex; flex-direction: column; }
-            body.on-today .fit-fixed { flex: none; }
-            body.on-today .fit-scroll { flex: 0 1 auto; min-height: 84px; overflow: hidden; }
-            body.on-today .fit-grow { flex: 1 1 0; min-height: 150px; }
-            body.on-today #today-classes, body.on-today #today-due, body.on-today #train-content, body.on-today #calendar-content { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-            body.on-today .dep-list.all { max-height: none; overflow: visible; }
-            body.on-today .dep-msg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-            /* Classes and Coming up share the leftover height, side by side when there's room */
-            body.on-today .today-pair { flex: 1 1 0; min-height: 150px; display: flex; flex-direction: column; gap: 14px; }
-            body.on-today .today-pair > .fit-scroll { flex: 1 1 0; min-height: 0; }
-
-            body.on-today #view-today .controls-row { margin-bottom: 10px; }
-            body.on-today #view-today h2, body.on-today .quick-task-title { font-size: 1.3rem; }
-            body.on-today .quick-task-title { margin-bottom: 10px !important; }
-            body.on-today .finance-summary { gap: 12px; margin-bottom: 6px !important; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-            body.on-today .summary-card { padding: 12px 10px; }
-            body.on-today .task-item { padding: 9px 0; }
-
-            /* Focus timer in two rows instead of five */
-            body.on-today .focus-panel { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "head head" "time ctrl" "mode count"; column-gap: 16px; align-items: center; }
-            body.on-today .focus-panel > .controls-row { grid-area: head; margin-bottom: 4px !important; }
-            body.on-today .focus-panel .timer-display { grid-area: time; font-size: 2.4rem; margin: 0; text-align: left; }
-            body.on-today .focus-panel .timer-controls { grid-area: ctrl; justify-content: flex-end; }
-            body.on-today .focus-panel .timer-controls button { padding: 9px 14px !important; font-size: 0.95rem !important; }
-            body.on-today .focus-panel .timer-mode { grid-area: mode; margin: 0; text-align: left; font-size: 0.9rem; }
-            body.on-today .focus-panel #timer-count { grid-area: count; margin: 0 !important; text-align: right !important; font-size: 0.85rem; }
-
-            body.on-today .footer { padding: 8px 0 0; font-size: 0.85rem; line-height: 1.4; }
-        }
-        @media (min-width: 1100px) and (min-height: 560px) {
-            body.on-today .today-pair { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); }
         }
         @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
             body .header-left h1 { font-size: 3rem; }
             body .header-meta { margin-top: 6px; }
             body .header-meta .clock { font-size: 1.25rem; }
             body .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
-            body .header-right img { max-height: 60px; }
+            body .header-right img, body .header-right .brand-logo { max-height: 60px; height: 60px; }
             body .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
             body .header { margin-bottom: 10px; padding-bottom: 10px; }
             body .tab-btn { padding: 7px 16px; font-size: 1rem; }
             body .tab-bar { margin-bottom: 10px; padding-bottom: 10px; }
-            body.on-today #today-money-note { display: none; }
-            body.on-today .summary-card { padding: 8px; }
-            body.on-today .summary-card h3 { margin-bottom: 4px; }
-            body.on-today #view-today, body.on-today .right-column { gap: 10px; }
-            body.on-today .fit-fixed, body.on-today .fit-scroll { padding: 10px 16px; }
-            body.on-today .footer { display: none; }
         }
 
         /* Location section: map sits beside the text and controls, never below them */
@@ -585,13 +550,13 @@
             z-index: 0;
         }
         .place-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
-        .place-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #a07a1c; font-size: 0.9rem; text-align: center; padding: 8px; box-sizing: border-box; }
+        .place-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fg-muted); font-size: 0.9rem; text-align: center; padding: 8px; box-sizing: border-box; }
         .place-pin { position: relative; }
-        .place-pin-dot { display: block; width: 12px; height: 12px; margin: 1px; border-radius: 50%; background: #ffb000; border: 3px solid #171717; box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3); }
+        .place-pin-dot { display: block; width: 12px; height: 12px; margin: 1px; border-radius: 50%; background: var(--fg); border: 3px solid #171717; box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3); }
         .place-pin.pulse::after {
             content: ''; position: absolute; left: 50%; top: 50%;
             width: 18px; height: 18px; margin: -9px 0 0 -9px;
-            border-radius: 50%; border: 2px solid #ffb000;
+            border-radius: 50%; border: 2px solid var(--fg);
             animation: place-pulse 1.2s ease-out 2;
             opacity: 0;
         }
@@ -622,12 +587,12 @@
             animation: guide-fade 0.3s ease-out;
         }
         .welcome-main { width: 100%; max-width: 820px; margin: auto 0; padding: 40px 0; }
-        .welcome-main h2 { font-size: clamp(2.4rem, 5.5vw, 4.4rem); line-height: 1.05; color: #ffb000; margin: 0 0 24px; letter-spacing: 2px; }
-        .welcome-lead { font-size: clamp(1.2rem, 2.2vw, 1.55rem); line-height: 1.5; color: #ffb000; margin: 0 0 28px; max-width: 34em; }
+        .welcome-main h2 { font-size: clamp(2.4rem, 5.5vw, 4.4rem); line-height: 1.05; color: var(--fg); margin: 0 0 24px; letter-spacing: 2px; }
+        .welcome-lead { font-size: clamp(1.2rem, 2.2vw, 1.55rem); line-height: 1.5; color: var(--fg); margin: 0 0 28px; max-width: 34em; }
         .welcome-note { border-radius: 6px; padding: 16px 20px; margin: 0 0 14px; font-size: 1.1rem; line-height: 1.55; max-width: 40em; }
-        .welcome-note.beta { background: #2a2110; border: 1px solid #6b4a00; }
-        .welcome-note.data { background: #2a2110; border: 1px solid #6b4a00; }
-        .welcome-note strong { color: #ffb000; }
+        .welcome-note.beta { background: var(--tint); border: 1px solid var(--fg-dim); }
+        .welcome-note.data { background: var(--tint); border: 1px solid var(--fg-dim); }
+        .welcome-note strong { color: var(--fg); }
         .welcome-main button { margin-top: 16px; padding: 16px 40px; font-size: 1.25rem; }
         @media (max-width: 700px) {
             .welcome-main { padding: 24px 0; }
@@ -635,8 +600,8 @@
             .welcome-main button { width: 100%; }
         }
 
-        .btn-link { display: inline-block; background: #ffb000; color: #171717; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 1.1rem; text-decoration: none; white-space: nowrap; }
-        .btn-link:hover { background: #ffc633; }
+        .btn-link { display: inline-block; background: var(--fg); color: #171717; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 1.1rem; text-decoration: none; white-space: nowrap; }
+        .btn-link:hover { background: var(--fg-hi); }
 
         /* ---- Sign-in screen: covers the whole app until you're signed in ---- */
         html.auth-locked body { overflow: hidden; }
@@ -649,55 +614,67 @@
         }
         .auth-top { width: 100%; max-width: 1700px; display: flex; justify-content: space-between; align-items: center;
             padding-bottom: 12px; border-bottom: 2px solid #2e2e2e; }
-        .auth-top h1 { font-size: 2.8rem; line-height: 1.1; color: #ffb000; margin: 0; letter-spacing: 2px; }
-        .auth-top img { max-height: 56px; object-fit: contain; }
+        .auth-top h1 { font-size: 2.8rem; line-height: 1.1; color: var(--fg); margin: 0; letter-spacing: 2px; }
+        .auth-top img, .auth-top .brand-logo { max-height: 56px; height: 56px; object-fit: contain; }
         .auth-main { width: 100%; max-width: 480px; margin: auto 0; padding: 40px 0; }
         .auth-card { border: 1px solid #3a3a3a; border-radius: 6px; padding: 30px; background: #1f1f1f; }
-        .auth-card h2 { margin: 0 0 8px; font-size: 1.8rem; color: #ffb000; }
-        .auth-card p { margin: 0 0 18px; line-height: 1.55; font-size: 1.05rem; color: #ffb000; }
+        .auth-card h2 { margin: 0 0 8px; font-size: 1.8rem; color: var(--fg); }
+        .auth-card p { margin: 0 0 18px; line-height: 1.55; font-size: 1.05rem; color: var(--fg); }
         .auth-card label { display: block; font-weight: bold; margin-bottom: 6px; }
         .auth-card input[type="email"] { width: 100%; padding: 14px; font-size: 1.1rem; border: 1px solid #3a3a3a; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
         .auth-card button { width: 100%; }
         .auth-card input.auth-code { width: 100%; padding: 14px; font-size: 1.8rem; letter-spacing: 0.4em; text-align: center; font-variant-numeric: tabular-nums;
             border: 1px solid #3a3a3a; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
         .auth-code-actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .auth-code-actions .auth-link:disabled { color: #a07a1c; background: none; cursor: default; text-decoration: none; }
+        .auth-code-actions .auth-link:disabled { color: var(--fg-muted); background: none; cursor: default; text-decoration: none; }
         .auth-msg { margin: 14px 0 0; padding: 12px 14px; border-radius: 6px; font-size: 1rem; line-height: 1.5; display: none; }
         .auth-msg.show { display: block; }
         .auth-msg.error { background: #2d1513; border: 1px solid #5a2420; color: #ff7a6e; }
-        .auth-msg.info { background: #2a2110; border: 1px solid #6b4a00; color: #ffb000; }
-        .auth-link { background: none; color: #ffcf5c; padding: 0; font-size: 1rem; font-weight: bold; width: auto !important; margin-top: 16px; }
+        .auth-msg.info { background: var(--tint); border: 1px solid var(--fg-dim); color: var(--fg); }
+        .auth-link { background: none; color: var(--link); padding: 0; font-size: 1rem; font-weight: bold; width: auto !important; margin-top: 16px; }
         .auth-link:hover { background: none; text-decoration: underline; }
         .auth-help { margin-top: 20px; }
-        .auth-help summary { cursor: pointer; font-weight: bold; color: #ffb000; }
-        .auth-help ul { margin: 10px 0 0; padding-left: 22px; line-height: 1.7; color: #ffb000; }
-        .auth-foot { color: #a07a1c; font-size: 0.95rem; text-align: center; line-height: 1.8; padding: 10px 0; }
-        .auth-foot a { color: #ffcf5c; font-weight: bold; text-decoration: none; }
+        .auth-help summary { cursor: pointer; font-weight: bold; color: var(--fg); }
+        .auth-help ul { margin: 10px 0 0; padding-left: 22px; line-height: 1.7; color: var(--fg); }
+        .auth-foot { color: var(--fg-muted); font-size: 0.95rem; text-align: center; line-height: 1.8; padding: 10px 0; }
+        .auth-foot a { color: var(--link); font-weight: bold; text-decoration: none; }
         @media (max-width: 700px) {
             .auth-top h1 { font-size: 1.7rem; letter-spacing: 1px; white-space: normal; }
-            .auth-top img { max-height: 40px; }
+            .auth-top img, .auth-top .brand-logo { max-height: 40px; height: 40px; }
             .auth-card { padding: 22px 18px; }
             .auth-main { padding: 24px 0; }
         }
         /* =====================================================================
            THEME (v2.1): departure-board look. Dark #171717, amber dot-matrix
            ===================================================================== */
-        :root { color-scheme: dark; --bg: #171717; --panel: #1f1f1f; --amber: #ffb000; --amber-soft: #d99a14; --amber-dim: #6b4a00; }
+        :root, html[data-theme="amber"] { color-scheme: dark; --bg: #171717; --panel: #1f1f1f;
+            --fg: #ffb000; --fg-hi: #ffc633; --fg-soft: #d99a14; --fg-muted: #a07a1c; --fg-dim: #6b4a00; --fg-ph: #8a6a22;
+            --link: #ffcf5c; --link-hi: #ffe08a; --tint: #2a2110; --tint-2: #3d2f0f; --glow: 255, 176, 0; --warn: #ffb000;
+            --amber: var(--fg); --amber-soft: var(--fg-soft); --amber-dim: var(--fg-dim); }
+        html[data-theme="green"] {
+            --fg: #39ff6a; --fg-hi: #7dff9a; --fg-soft: #2fd45a; --fg-muted: #25a847; --fg-dim: #0f5a24; --fg-ph: #1f7a38;
+            --link: #7dffa0; --link-hi: #b0ffc4; --tint: #10261a; --tint-2: #163a22; --glow: 57, 255, 106; --warn: #ffb000; }
+        .theme-switch { display: inline-flex; border: 1px solid #3a3a3a; border-radius: 8px; overflow: hidden; }
+        .theme-switch button { background: transparent; color: var(--fg-soft); border-radius: 0; padding: 10px 20px; }
+        .theme-switch button:hover { background: #2a2a2a; }
+        .theme-switch button[aria-pressed="true"] { background: var(--fg); color: #171717; }
+        .theme-switch button[aria-pressed="true"] .theme-swatch { box-shadow: 0 0 0 2px #171717; }
+        .theme-swatch { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
         html { background: var(--bg); }
         body { background: var(--bg); color: var(--amber); font-family: "Doto", ui-monospace, monospace; font-weight: 700; }
         h1, h2, h3, h4, .tab-btn, button, label, strong, b, th { font-weight: 900; }
         button, input, select, textarea { font-family: inherit; font-weight: 800; }
-        .header-left h1 { color: var(--amber); text-shadow: 0 0 10px rgba(255,176,0,.45); letter-spacing: 1px; }
-        h2, h3 { text-shadow: 0 0 6px rgba(255,176,0,.3); }
+        .header-left h1 { color: var(--amber); text-shadow: 0 0 10px rgba(var(--glow), .45); letter-spacing: 1px; }
+        h2, h3 { text-shadow: 0 0 6px rgba(var(--glow), .3); }
         .tab-btn { color: var(--amber); }
         .tab-btn.active { color: #171717; }
         .btn-toggle, .btn-toggle:hover { color: var(--amber); }
-        button:disabled { color: #8a6a22; }
+        button:disabled { color: var(--fg-ph); }
         input, select, textarea { color: var(--amber); }
-        input::placeholder, textarea::placeholder { color: #8a6a22; opacity: 1; }
+        input::placeholder, textarea::placeholder { color: var(--fg-ph); opacity: 1; }
         select option { background: #1f1f1f; color: var(--amber); }
         input[type="checkbox"], input[type="radio"], input[type="range"], progress { accent-color: var(--amber); }
-        a { color: #ffcf5c; }
+        a { color: var(--link); }
         ::selection { background: var(--amber); color: #171717; }
         .btn-bus, .btn-bus:hover { color: #171717; }
         .dep-row.cancelled .dep-time { color: var(--amber-soft); }
@@ -707,6 +684,192 @@
         .header-left h1 { letter-spacing: 0; }
         table { color: var(--amber); }
         hr { border-color: #3a3a3a; }
+
+        /* =====================================================================
+           v2.3 STATIC LAYOUT: on laptops and desktops no tab scrolls the page.
+           Every tab fits the window; long lists scroll inside their own box, and
+           tabs with more than fits are split into pages (switcher at the top of the tab).
+           Phones and very short windows still scroll normally so nothing gets cut off.
+           ===================================================================== */
+        .tab-tools { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+        .tab-tools:empty { display: none; }
+        .tab-tools button { padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
+        .tab-btn { white-space: nowrap; flex: none; }
+        .fit-pagebar { display: none; }
+        .fit-col > .container { container-type: inline-size; }
+        @container (max-width: 540px) {
+            .fit-col .finance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .fit-col .summary-card { padding: 10px 8px; }
+            .fit-col .summary-card h3 { margin-bottom: 4px; }
+        }
+        @container (max-width: 640px) { .meal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .tools-note { font-size: 0.9rem; color: var(--fg-soft); white-space: nowrap; }
+        .subtabs { display: inline-flex; border: 1px solid #3a3a3a; border-radius: 6px; overflow: hidden; }
+        .subtabs button { background: #1f1f1f; color: var(--fg); border-radius: 0; padding: 8px 14px; }
+        .subtabs button:hover { background: #2a2a2a; }
+        .subtabs button + button { border-left: 1px solid #3a3a3a; }
+        .subtabs button[aria-pressed="true"] { background: var(--tint-2); color: var(--fg-hi); box-shadow: inset 0 -3px 0 var(--fg); }
+
+        /* Home Page */
+        .home-grid { display: grid; grid-template-columns: repeat(var(--home-cols, 3), minmax(0, 1fr)); gap: 16px; align-items: start; }
+        .home-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+        .home-col.col-off { display: none; }
+        .home-col > .container { margin: 0; }
+        .home-panel { container-type: inline-size; padding: 18px 20px; }
+        .home-panel.is-hidden { display: none; }
+        .home-panel .controls-row { margin-bottom: 12px; }
+        .home-panel .controls-row h2 { font-size: 1.3rem; margin: 0; }
+        .panel-actions { gap: 6px; }
+        .home-panel .btn-toggle.panel-hide { padding: 5px 10px; font-size: 0.85rem; }
+        .panel-scroll { max-height: 340px; overflow-y: auto; }
+        .home-panel .finance-summary { gap: 10px; margin-bottom: 0; }
+        @container (max-width: 560px) {
+            .home-panel .finance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .home-panel .summary-card { padding: 8px 6px; }
+            .home-panel .summary-card h3 { font-size: 0.85rem; margin-bottom: 2px; }
+            .home-panel .summary-card p { font-size: 1.15rem; margin: 0; }
+            .home-panel .summary-card .sub { font-size: 0.72rem; }
+            #today-money-note { display: none; }  /* same line is on the Budget tab */
+        }
+        .home-empty { display: none; text-align: center; color: var(--fg-muted); padding: 60px 20px; font-size: 1.1rem; }
+        .home-empty.on { display: block; }
+
+        /* News */
+        .news-src { font-size: 0.8rem; color: var(--fg-muted); margin-left: 4px; text-shadow: none; white-space: nowrap; }
+        .news-list { list-style: none; margin: 0; padding: 0; }
+        .news-item { padding: 9px 0; border-bottom: 1px solid #3a3a3a; }
+        .news-item:last-child { border-bottom: none; }
+        .news-item a { display: block; color: var(--fg); text-decoration: none; line-height: 1.35; font-size: 1rem; }
+        .news-item a:hover { color: var(--fg-hi); text-decoration: underline; }
+        .news-time { display: block; margin-top: 3px; font-size: 0.8rem; color: var(--fg-muted); }
+
+        /* Arrange mode */
+        .arrange-bar { display: none; }
+        .arranging .home-panel { outline: 2px dashed var(--fg-dim); outline-offset: -2px; }
+        .arranging .home-panel[draggable="true"] { cursor: grab; }
+        .arranging .home-panel > :not(.arrange-bar) { opacity: 0.22; pointer-events: none; }
+        .arranging .home-panel > .controls-row { display: none; }
+        .arranging .arrange-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .arranging .home-panel.is-hidden { display: flex; flex-direction: column; flex: none !important; min-height: 0 !important; outline-color: #3a3a3a; }
+        .arranging .home-panel.is-hidden > :not(.arrange-bar) { display: none; }
+        .arranging .home-panel.is-hidden .arrange-bar { margin: 0; opacity: 0.75; }
+        .arrange-grip { flex: none; width: 14px; height: 22px; background-image: radial-gradient(var(--fg) 1.5px, transparent 1.8px); background-size: 7px 7px; }
+        .arrange-name { flex: 1; min-width: 0; font-weight: 900; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .arrange-name small { color: var(--fg-muted); font-size: 0.85rem; display: none; }
+        .home-panel.is-hidden .arrange-name small { display: inline; }
+        .arrange-bar button { padding: 6px 9px; font-size: 0.95rem; background: #333; color: var(--fg); line-height: 1; }
+        .arrange-bar button .dot-icon { height: 1.1em; filter: none; }
+        .arrange-bar button:hover { background: #3d3d3d; }
+        .arrange-bar button:disabled { opacity: 0.3; background: #333; cursor: default; }
+        .arrange-bar .arr-vis { font-family: inherit; min-width: 58px; }
+        .arrange-bar .arr-vis.arr-show { background: var(--fg); color: #171717; }
+        .home-panel.dragging { opacity: 0.35; }
+        .home-panel.drop-before { box-shadow: 0 -10px 0 -6px var(--fg); }
+        .home-panel.drop-after { box-shadow: 0 10px 0 -6px var(--fg); }
+        .arranging .home-col.is-empty { min-height: 120px; border: 2px dashed #3a3a3a; border-radius: 8px; align-items: center; justify-content: center; }
+        .arranging .home-col.is-empty::before { content: 'Drag a panel here'; color: var(--fg-muted); }
+        .arranging .home-col.drop-here { border-color: var(--fg); }
+
+        /* Pages on longer tabs: on phones every page shows, one after the other */
+        .fit-page + .fit-page { margin-top: 0; }
+
+        @media (min-width: 901px) and (min-height: 560px) {
+            html, body { overflow: hidden; }
+            body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; box-sizing: border-box; padding-bottom: 6px; }
+            body > .header, body > .tab-bar, body > .footer { flex: none; }
+            body .tab-bar { align-items: center; }
+            .main-layout { flex: 1 1 auto; min-height: 0; align-items: stretch; }
+            .left-column { display: flex; flex-direction: column; min-height: 0; }
+            .view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+            .footer { padding: 6px 0 0; font-size: 0.85rem; line-height: 1.4; }
+
+            /* Home Page columns fill the window */
+            .home-grid { flex: 1 1 auto; min-height: 0; align-items: stretch; grid-template-rows: minmax(0, 1fr); }
+            .home-col { min-height: 0; overflow-y: auto; }
+            .home-panel { display: flex; flex-direction: column; flex: none; }
+            .home-panel.grow { flex: 1 1 0; min-height: 120px; overflow: hidden; }
+            .home-panel.grow .panel-scroll { flex: 1 1 auto; min-height: 0; max-height: none; }
+            .home-panel .task-item { padding: 9px 0; }
+            .home-panel .dep-list.all { max-height: none; overflow: visible; }
+            .home-panel .dep-msg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+            /* Focus timer in two rows */
+            .focus-panel { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "bar bar" "head head" "time ctrl" "mode count"; column-gap: 16px; align-items: center; }
+            .focus-panel > .arrange-bar { grid-area: bar; }
+            .focus-panel > .controls-row { grid-area: head; margin-bottom: 4px !important; }
+            .focus-panel .timer-display { grid-area: time; font-size: 2.4rem; margin: 0; text-align: left; }
+            .focus-panel .timer-controls { grid-area: ctrl; justify-content: flex-end; }
+            .focus-panel .timer-controls button { padding: 9px 14px !important; font-size: 0.95rem !important; }
+            .focus-panel .timer-mode { grid-area: mode; margin: 0; text-align: left; font-size: 0.9rem; }
+            .focus-panel #timer-count { grid-area: count; margin: 0 !important; text-align: right !important; font-size: 0.85rem; }
+            .arranging .focus-panel.is-hidden { display: flex; }
+
+            /* Every other tab: pages of columns */
+            .fit-pages { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+            .fit-pagebar { display: flex; flex: none; }
+            .fit-page { display: none; flex: 1 1 auto; min-height: 0; gap: 16px; grid-template-rows: minmax(0, 1fr); }
+            .fit-page.active { display: grid; }
+            .fit-col { display: flex; flex-direction: column; gap: 16px; min-height: 0; min-width: 0; overflow-y: auto; }
+            .fit-col > * { margin: 0 !important; flex: none; }
+            .fit-col > .container { padding: 20px 24px; }
+            .fit-col > .fit-grow { flex: 1 1 0; min-height: 140px; display: flex; flex-direction: column; overflow: hidden; }
+            .fit-col > .fit-grow.fit-self { display: block; overflow-y: auto; }
+            .fit-grow > :not(.fit-flex):not(.fit-scroller), .fit-flex > :not(.fit-flex):not(.fit-scroller) { flex: none; }
+            .fit-flex { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+            .fit-flex > form { display: block; }
+            .fit-scroller { flex: 1 1 auto; min-height: 60px; max-height: none !important; overflow-y: auto; }
+            .fit-col .controls-row { margin-bottom: 14px; }
+            .fit-col h2 { margin-top: 0; }
+            .fit-col .form-group { margin-bottom: 14px; }
+            .fit-col .meal-grid { gap: 10px; }
+            .fit-col .meal-card { padding: 12px 14px; }
+            .fit-col .meal-card h3 { font-size: 1rem; margin-bottom: 4px; }
+            .fit-col .meal-card p { font-size: 0.88rem; line-height: 1.4; margin-bottom: 8px; }
+            .fit-col .meal-card button { padding: 6px 12px; font-size: 0.9rem; }
+            .fit-col #btn-save, .fit-col .row-gap > button { padding: 9px 16px !important; font-size: 1rem !important; }
+        }
+        @media (min-width: 1100px) and (min-height: 560px) {
+            body .tab-bar { flex-wrap: nowrap; }
+            body .tab-btn { padding: 7px 11px; font-size: 0.92rem; }
+            body .tab-bar { gap: 6px; }
+        }
+        @media (min-width: 901px) and (min-height: 560px) and (max-height: 760px) {
+            body .header-left h1 { font-size: 2.5rem; }
+            body .header-meta .clock { font-size: 1.1rem; }
+            body .header-meta .weather-widget { font-size: 0.95rem; padding: 5px 10px; }
+            body .header-right img, body .header-right .brand-logo { max-height: 48px; height: 48px; }
+            body .header-right .btn-help { padding: 7px 14px; font-size: 0.95rem; }
+            body .header { margin-bottom: 8px; padding-bottom: 8px; }
+            body .tab-bar { margin-bottom: 8px; padding-bottom: 8px; }
+            .fit-pagebar .subtabs button { padding: 6px 12px; }
+            .fit-col .note { line-height: 1.4; }
+            .fit-col .meal-card p { font-size: 0.84rem; line-height: 1.35; }
+            .fit-col .meal-card button { padding: 5px 10px; }
+        }
+        /* Shorter laptop screens: tighter spacing so more fits */
+        @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
+            .home-panel, .fit-col > .container { padding: 12px 16px; }
+            .home-grid, .home-col, .fit-page, .fit-col { gap: 12px; }
+            #today-money-note { display: none; }
+            .home-panel .controls-row { margin-bottom: 8px; }
+            .home-panel.grow { min-height: 90px; }
+            .home-panel .summary-card { padding: 8px; }
+            .home-panel .summary-card h3 { margin-bottom: 4px; }
+            .fit-col .note { margin-bottom: 10px; }
+            input[type="text"], input[type="date"], input[type="time"], input[type="number"], input[type="url"], select { padding: 10px 12px; }
+            label { margin-bottom: 5px; font-size: 1rem; }
+            th, td { padding: 10px 12px; }
+            .footer { display: none; }
+        }
+        @media (max-width: 900px), (max-height: 559px) {
+            .home-grid { grid-template-columns: 1fr !important; }
+            .home-col { display: contents; }
+            .home-col.col-off { display: none; }
+            .home-panel { margin-bottom: 0; }
+            .tab-tools .tools-note { display: none; }
+            .fit-page { display: block !important; }
+            .fit-col > * { margin-bottom: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -714,7 +877,7 @@
     <!-- Welcome screen (v1.7): first visit on each device. Add ?welcome to the address to see it again. -->
     <div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
         <div class="auth-top" style="justify-content: flex-end; border-bottom: none;">
-            <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
+            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="welcome-main">
             <h2 id="welcome-title">Welcome to <span style="white-space: nowrap;">Life - Student</span> Edition</h2>
@@ -732,8 +895,8 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1>Life - Student Edition</h1>
-            <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
+            <h1 class="title-banner-h1"><img class="title-banner" src="Assets/life-student-edition.webp" alt="Life - Student Edition" onerror="var h=this.parentNode;h.classList.remove('title-banner-h1');h.textContent='Life - Student Edition';"></h1>
+            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
             <div class="auth-card" id="auth-step-email">
@@ -742,7 +905,7 @@
                 <label for="auth-email">Email address</label>
                 <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter') sendMagicLink()">
                 <button id="auth-send" onclick="sendMagicLink()">Email me a sign-in code</button>
-                <p style="margin: 14px 0 0; font-size: 0.95rem; color: #d99a14;">First time here? The same code sets up your account.</p>
+                <p style="margin: 14px 0 0; font-size: 0.95rem; color: var(--fg-soft);">First time here? The same code sets up your account.</p>
                 <div class="auth-msg" id="auth-msg" role="alert"></div>
             </div>
 
@@ -780,7 +943,7 @@
 
     <div class="header">
         <div class="header-left">
-            <h1>Life - Student Edition</h1>
+            <h1 class="title-banner-h1"><img class="title-banner" src="Assets/life-student-edition.webp" alt="Life - Student Edition" onerror="var h=this.parentNode;h.classList.remove('title-banner-h1');h.textContent='Life - Student Edition';"></h1>
             <div class="header-meta">
                 <div class="clock" id="live-clock">Loading time...</div>
                 <div class="weather-widget" id="weather-widget">Loading weather data...</div>
@@ -790,14 +953,14 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v2.1</span>
-            <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
+            <span class="version-tag" id="app-version">v2.6</span>
+            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
 
     <!-- Main Navigation Tabs -->
     <div class="tab-bar" role="tablist">
-        <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Today</button>
+        <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Home Page</button>
         <button class="tab-btn" data-tab="budget" onclick="switchTab('budget')">Budget</button>
         <button class="tab-btn" data-tab="food" onclick="switchTab('food')">Food Shop</button>
         <button class="tab-btn" data-tab="tasks" onclick="switchTab('tasks')">Tasks</button>
@@ -807,6 +970,7 @@
         <button class="tab-btn" data-tab="grades" onclick="switchTab('grades')">Grades</button>
         <button class="tab-btn" data-tab="travel" onclick="switchTab('travel')">Travel</button>
         <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+        <div class="tab-tools" id="tab-tools"></div>
     </div>
 
     <datalist id="module-list"></datalist>
@@ -814,42 +978,115 @@
     <div class="main-layout">
         <div class="left-column">
 
-            <!-- TODAY VIEW -->
+            <!-- HOME PAGE (v2.3): panels in three columns. Each can be hidden, and Arrange moves them around. -->
             <div id="view-today" class="view">
-                <div class="container fit-fixed">
+                <div class="home-grid" id="home-grid">
+                    <div class="home-col" data-col="0"></div>
+                    <div class="home-col" data-col="1"></div>
+                    <div class="home-col" data-col="2"></div>
+                </div>
+
+                <div class="container home-panel" data-panel="money" data-name="Money until next payment">
                     <div class="controls-row">
                         <h2>Money until next payment</h2>
-                        <button class="btn-toggle" onclick="switchTab('budget')">Open budget</button>
+                        <div class="row-gap panel-actions">
+                            <button class="btn-toggle" onclick="switchTab('budget')">Open budget</button>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('money')">Hide</button>
+                        </div>
                     </div>
-                    <div class="finance-summary" id="today-money" style="margin-bottom: 10px;"></div>
+                    <div class="finance-summary" id="today-money"></div>
                     <p class="note" id="today-money-note" style="margin: 10px 0 0;"></p>
                 </div>
 
-                <div class="today-pair">
-                <div class="container fit-scroll">
+                <div class="container home-panel grow" data-panel="classes" data-name="Classes today">
                     <div class="controls-row">
                         <h2>Classes today</h2>
-                        <button class="btn-toggle" id="btn-toggle-today-classes" onclick="toggleSection('today-classes', 'btn-toggle-today-classes')">Hide</button>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('classes')">Hide</button>
                     </div>
-                    <ul class="task-list" id="today-classes"></ul>
+                    <ul class="task-list panel-scroll" id="today-classes"></ul>
                 </div>
 
-                <div class="container fit-scroll">
+                <div class="container home-panel grow" data-panel="due" data-name="Coming up">
                     <div class="controls-row">
                         <h2>Coming up</h2>
-                        <button class="btn-toggle" id="btn-toggle-today-due" onclick="toggleSection('today-due', 'btn-toggle-today-due')">Hide</button>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('due')">Hide</button>
                     </div>
-                    <ul class="task-list" id="today-due"></ul>
-                </div>
+                    <ul class="task-list panel-scroll" id="today-due"></ul>
                 </div>
 
-                <div class="container fit-fixed">
-                    <h2 class="quick-task-title" style="margin-top: 0; margin-bottom: 20px;">Quick task</h2>
+                <div class="container home-panel" data-panel="quick" data-name="Quick task">
+                    <div class="controls-row">
+                        <h2 class="quick-task-title">Quick task</h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('quick')">Hide</button>
+                    </div>
                     <div class="task-input-row" style="margin-bottom: 0;">
-                        <input type="text" id="quick-task-input" placeholder="What needs doing?" style="flex: 1; min-width: 200px;" onkeydown="if(event.key==='Enter') quickAddTask()">
+                        <input type="text" id="quick-task-input" placeholder="What needs doing?" style="flex: 1; min-width: 140px;" onkeydown="if(event.key==='Enter') quickAddTask()">
                         <button onclick="quickAddTask()">Add Task</button>
                     </div>
                     <span id="quick-task-status" class="status-ok"></span>
+                </div>
+
+                <div class="container home-panel grow" data-panel="trains" data-name="Trains in the next hour">
+                    <div class="controls-row">
+                        <h2>Trains in the next hour</h2>
+                        <div class="row-gap panel-actions">
+                            <a class="btn-bus" id="btn-live-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
+                            <button class="btn-cal-filter" id="btn-train-refresh" onclick="fetchTrains()">Refresh</button>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('trains')">Hide</button>
+                        </div>
+                    </div>
+                    <div id="train-content" class="panel-scroll"></div>
+                </div>
+
+                <div class="container home-panel grow" data-panel="agenda" data-name="Agenda">
+                    <div class="controls-row">
+                        <div class="row-gap" style="gap: 6px;">
+                            <h2>Agenda</h2>
+                            <button class="btn-cal-filter" onclick="fetchCalendar(7)">7D</button>
+                            <button class="btn-cal-filter" onclick="fetchCalendar(30)">30D</button>
+                        </div>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('agenda')">Hide</button>
+                    </div>
+                    <div id="calendar-content" class="panel-scroll">
+                        <ul class="task-list" id="calendar-list"></ul>
+                    </div>
+                </div>
+
+                <div class="container home-panel focus-panel" data-panel="focus" data-name="Focus timer">
+                    <div class="controls-row">
+                        <h2>Focus timer</h2>
+                        <div class="row-gap panel-actions">
+                            <select id="focus-length" onchange="setFocusLength(this.value)" style="width: auto; padding: 6px 10px; font-size: 0.95rem;">
+                                <option value="25">25 / 5 min</option>
+                                <option value="50">50 / 10 min</option>
+                            </select>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('focus')">Hide</button>
+                        </div>
+                    </div>
+                    <div class="timer-display" id="timer-display" aria-live="polite">25:00</div>
+                    <div class="timer-mode" id="timer-mode">Focus</div>
+                    <div class="timer-controls">
+                        <button id="timer-start" onclick="toggleTimer()">Start</button>
+                        <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="resetTimer()">Reset</button>
+                        <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="skipTimer()">Skip</button>
+                    </div>
+                    <p class="note" id="timer-count" style="text-align: center; margin: 14px 0 0;"></p>
+                </div>
+
+                <div class="container home-panel grow" data-panel="newsLocal" data-name="Local news">
+                    <div class="controls-row">
+                        <h2>Local news <span class="news-src" id="news-local-src"></span></h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('newsLocal')">Hide</button>
+                    </div>
+                    <ul class="news-list panel-scroll" id="news-local"></ul>
+                </div>
+
+                <div class="container home-panel grow" data-panel="newsUk" data-name="UK news">
+                    <div class="controls-row">
+                        <h2>UK news <span class="news-src">BBC News</span></h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('newsUk')">Hide</button>
+                    </div>
+                    <ul class="news-list panel-scroll" id="news-uk"></ul>
                 </div>
             </div>
 
@@ -1035,10 +1272,11 @@
                         </div>
                     </form>
                     <datalist id="food-known"></datalist>
-                    <h4 class="section-title">Quick add</h4>
-                    <div class="chip-row" id="food-staples" style="margin-bottom: 25px;"></div>
+                </div>
+
+                <div class="container">
                     <div class="controls-row" style="margin-bottom: 10px;">
-                        <h2 style="font-size: 1.3rem;">Your list</h2>
+                        <h2>Your list</h2>
                         <div class="row-gap">
                             <button class="btn-toggle" onclick="uncheckFood()">Untick all</button>
                             <button class="btn-toggle" onclick="clearFood()">Clear list</button>
@@ -1047,7 +1285,7 @@
                     <p class="note">Tick items off as they go in your basket. The list is sorted by aisle, and prices you enter are remembered for next time.</p>
                     <div id="food-list"></div>
                     <div class="summary-card" style="text-align: left; margin-top: 20px;">
-                        <h3 style="font-size: 1.05rem; color: #ffb000;">Finished shopping?</h3>
+                        <h3 style="font-size: 1.05rem; color: var(--fg);">Finished shopping?</h3>
                         <p class="note" style="font-size: 0.95rem; font-weight: normal;">Enter your receipt total. It's logged as Food shop spending in your Budget, and ticked items are cleared from the list.</p>
                         <div class="task-input-row" style="margin-bottom: 0;">
                             <input type="number" id="food-receipt" min="0" step="0.01" placeholder="Receipt total £" style="flex: 1; min-width: 160px;">
@@ -1055,6 +1293,12 @@
                         </div>
                         <span id="food-status" class="status-ok"></span>
                     </div>
+                </div>
+
+                <div class="container">
+                    <h2 style="margin-top: 0; margin-bottom: 8px;">Quick add</h2>
+                    <p class="note">Tap a staple to put it on your list. <span id="food-quick-status" class="status-ok"></span></p>
+                    <div class="chip-row" id="food-staples"></div>
                 </div>
 
                 <div class="container">
@@ -1250,6 +1494,18 @@
                 <div class="container">
                     <div class="controls-row" style="margin-bottom: 0;">
                         <div>
+                            <h2 style="margin: 0 0 6px;">Display colour</h2>
+                            <p class="note" style="margin: 0;">Amber or green text, like the two kinds of station departure board. Saved on this device.</p>
+                        </div>
+                        <div class="theme-switch" role="group" aria-label="Display colour">
+                            <button id="theme-amber" onclick="setTheme('amber')"><span class="theme-swatch" style="background: #ffb000;"></span>Amber</button>
+                            <button id="theme-green" onclick="setTheme('green')"><span class="theme-swatch" style="background: #39ff6a;"></span>Green</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="controls-row" style="margin-bottom: 0;">
+                        <div>
                             <h2 style="margin: 0 0 6px;">Guided set up</h2>
                             <p class="note" style="margin: 0;" id="setup-settings-line">Red arrows walk you through connecting everything, one step at a time.</p>
                         </div>
@@ -1275,7 +1531,7 @@
 
                 <div class="container">
                     <h2 style="margin-top: 0;">Google Calendar</h2>
-                    <p class="note">Connect to see your Google Calendar agenda on the Today tab. Read-only: this page can't add, delete or change anything. Nothing leaves your browser except the requests to Google.</p>
+                    <p class="note">Connect to see your Google Calendar agenda on the Home Page. Read-only: this page can't add, delete or change anything. Nothing leaves your browser except the requests to Google.</p>
                     <div class="row-gap">
                         <button id="btn-google-connect" onclick="connectGoogle()">Connect Google</button>
                         <button id="btn-google-disconnect" class="btn-toggle" style="padding: 12px 20px; font-size: 1rem;" onclick="disconnectGoogle()">Disconnect</button>
@@ -1288,7 +1544,7 @@
                             <li>Choose the Google account your calendar is on.</li>
                             <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This shows while the app is being tested and is expected.</li>
                             <li>If asked, tick the box to let the app <strong>see your calendar events</strong>, then press <strong>Continue</strong>. Without that tick, your agenda stays empty.</li>
-                            <li>Your next 7 days of events appear under Agenda on the Today tab.</li>
+                            <li>Your next 7 days of events appear under Agenda on the Home Page.</li>
                         </ol>
                         <p><strong>"Access blocked"</strong> or <strong>"has not completed the Google verification process"</strong> means your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
                         <p>Google signs you out after about an hour. When the agenda says your session expired, press <strong>Reconnect</strong>. To remove access completely, press Disconnect, or go to your Google Account under Security, then Third-party connections.</p>
@@ -1297,7 +1553,7 @@
 
                 <div class="container">
                     <h2 style="margin-top: 0;">Trains and buses</h2>
-                    <p class="note">Live trains leaving in the next hour, in every direction, show on Today, and each station gets its own departure board on Travel. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
+                    <p class="note">Live trains leaving in the next hour, in every direction, show on the Home Page, and each station gets its own departure board on Travel. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
                     <div class="form-row form-group">
                         <div>
                             <label for="travel-stations">Stations</label>
@@ -1316,12 +1572,20 @@
                     <details class="help-details">
                         <summary>How trains and buses work</summary>
                         <ul>
-                            <li><strong>Trains:</strong> Today lists every train leaving your stations in the next hour, in every direction, in departure order. Each shows its platform, how many minutes until it leaves, and its status: <span class="dep-state ok">On time</span>, <span class="dep-state late">Exp 14:32</span> (running late, with the new time), <span class="dep-state late">Delayed</span> or <span class="dep-state off">Cancelled</span>. It refreshes every minute. Disruption notices from National Rail show in yellow at the top.</li>
+                            <li><strong>Trains:</strong> the Home Page lists every train leaving your stations in the next hour, in every direction, in departure order. Each shows its platform, how many minutes until it leaves, and its status: <span class="dep-state ok">On time</span>, <span class="dep-state late">Exp 14:32</span> (running late, with the new time), <span class="dep-state late">Delayed</span> or <span class="dep-state off">Cancelled</span>. It refreshes every minute. Disruption notices from National Rail show in yellow at the top.</li>
                             <li><strong>Station codes:</strong> every station has a 3-letter code. Manchester Oxford Road is MCO, Piccadilly is MAN, Deansgate is DGT and Victoria is MCV. For any other station, search for it on nationalrail.co.uk and the code shows next to its name. Enter up to three, separated by commas, and press Save and test.</li>
                             <li><strong>Live buses:</strong> the yellow button next to Refresh opens TfGM's live departures. To make it open straight to your stop, go to tfgm.com, choose Live departures, search for your stop and open it. Copy the address from your browser's address bar, paste it into Bus times page above and press Save and test.</li>
                             <li><strong>"Live trains aren't available"</strong> means live trains haven't been turned on for this copy of the app yet. Live buses still works. Questions? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Trains%20in%20Life%20-%20Student%20Edition">Email support</a>.</li>
                         </ul>
                     </details>
+                </div>
+
+                <div class="container">
+                    <h2 style="margin-top: 0;">News</h2>
+                    <p class="note">Headlines from BBC News on the Home Page: one list for your area and one for the whole UK. Press a headline to read the story on the BBC website.</p>
+                    <label for="news-area">Local news area</label>
+                    <select id="news-area" onchange="setNewsArea(this.value)" style="max-width: 420px;"></select>
+                    <span id="news-settings-status" class="status-ok"></span>
                 </div>
 
                 <div class="container">
@@ -1375,51 +1639,6 @@
 
         </div>
 
-        <!-- Right Column: shown on Today -->
-        <div class="right-column" id="right-column-sidebar">
-            <div class="container compact fit-scroll fit-grow">
-                <div class="controls-row" style="margin-bottom: 10px;">
-                    <h2 class="sidebar-title">Trains in the next hour</h2>
-                    <div class="row-gap" style="gap: 6px;">
-                        <a class="btn-bus" id="btn-live-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
-                        <button class="btn-cal-filter" id="btn-train-refresh" onclick="fetchTrains()">Refresh</button>
-                    </div>
-                </div>
-                <div id="train-content"></div>
-            </div>
-
-            <div class="container compact fit-scroll">
-                <div class="controls-row" style="margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <h2 class="sidebar-title">Agenda</h2>
-                        <button class="btn-cal-filter" onclick="fetchCalendar(7)">7D</button>
-                        <button class="btn-cal-filter" onclick="fetchCalendar(30)">30D</button>
-                    </div>
-                    <button class="btn-toggle" id="btn-toggle-cal" onclick="toggleSection('calendar-content', 'btn-toggle-cal')">Hide</button>
-                </div>
-                <div id="calendar-content">
-                    <ul class="task-list" id="calendar-list"></ul>
-                </div>
-            </div>
-
-            <div class="container compact fit-fixed focus-panel">
-                <div class="controls-row" style="margin-bottom: 0;">
-                    <h2 class="sidebar-title">Focus timer</h2>
-                    <select id="focus-length" onchange="setFocusLength(this.value)" style="width: auto; padding: 6px 10px; font-size: 0.95rem;">
-                        <option value="25">25 / 5 min</option>
-                        <option value="50">50 / 10 min</option>
-                    </select>
-                </div>
-                <div class="timer-display" id="timer-display" aria-live="polite">25:00</div>
-                <div class="timer-mode" id="timer-mode">Focus</div>
-                <div class="timer-controls">
-                    <button id="timer-start" onclick="toggleTimer()">Start</button>
-                    <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="resetTimer()">Reset</button>
-                    <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="skipTimer()">Skip</button>
-                </div>
-                <p class="note" id="timer-count" style="text-align: center; margin: 14px 0 0;"></p>
-            </div>
-        </div>
     </div>
 
     <!-- BACKGROUND MUSIC DOCK -->
@@ -1488,9 +1707,9 @@
             <span id="music-duration">0:00</span>
         </div>
         <div class="music-controls full-only">
-            <button class="btn-toggle" onclick="stepTrack(-1)" title="Previous" aria-label="Previous">⏮</button>
+            <button class="btn-toggle" onclick="stepTrack(-1)" title="Previous" aria-label="Previous" data-icon="prev"></button>
             <button id="music-play" onclick="togglePlay()" style="min-width: 76px;">Play</button>
-            <button class="btn-toggle" onclick="stepTrack(1)" title="Next" aria-label="Next">⏭</button>
+            <button class="btn-toggle" onclick="stepTrack(1)" title="Next" aria-label="Next" data-icon="next"></button>
             <button class="btn-toggle" id="music-repeat" onclick="toggleRepeat()" aria-pressed="false">Repeat</button>
             <label class="music-vol" for="music-volume">Vol <input type="range" id="music-volume" min="0" max="100" step="1" oninput="setMusicVolume(this.value)" onchange="saveData(true)"></label>
         </div>
@@ -1604,11 +1823,13 @@
                 </div>
 
                 <h3 class="guide-section-title">What each tab does</h3>
+                <p style="margin: 0 0 14px; line-height: 1.55;">Everything fits on one screen, so there's no scrolling. Budget, Food Shop and Settings have more than one page. Switch pages with the buttons at the top of the tab. Long lists scroll inside their own box.</p>
                 <div class="guide-grid">
                     <div class="guide-card">
-                        <h3>Today</h3>
-                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar and a focus timer, all on one screen.</p>
-                        <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
+                        <h3>Home Page</h3>
+                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar, local and UK news and a focus timer, all on one screen.</p>
+                        <p>Press <strong>Hide</strong> on any panel you don't need. Press <strong>Arrange</strong> at the top right to drag panels where you want them, or to bring hidden ones back. Press <strong>Done</strong> when you're finished.</p>
+                        <button class="btn-small" onclick="guideGo('today')">Go to Home Page</button>
                     </div>
                     <div class="guide-card">
                         <h3>Budget</h3>
@@ -1623,7 +1844,7 @@
                     </div>
                     <div class="guide-card">
                         <h3>Tasks</h3>
-                        <p>A simple to-do list. Add a due date and it shows on Today when it's coming up.</p>
+                        <p>A simple to-do list. Add a due date and it shows on the Home Page when it's coming up.</p>
                         <button class="btn-small" onclick="guideGo('tasks')">Go to Tasks</button>
                     </div>
                     <div class="guide-card">
@@ -1633,7 +1854,7 @@
                     </div>
                     <div class="guide-card">
                         <h3>Timetable</h3>
-                        <p>Add each class once with its day, time and room. Today then shows which class is on now and which is next.</p>
+                        <p>Add each class once with its day, time and room. The Home Page then shows which class is on now and which is next.</p>
                         <button class="btn-small" onclick="guideGo('timetable')">Go to Timetable</button>
                     </div>
                     <div class="guide-card">
@@ -1654,7 +1875,7 @@
                     <div class="guide-card">
                         <h3>Focus timer</h3>
                         <p>Press Start and work until the chime, then take a short break. After four sessions you get a longer break.</p>
-                        <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
+                        <button class="btn-small" onclick="guideGo('today')">Go to Home Page</button>
                     </div>
                     <div class="guide-card">
                         <h3>Music and break reminders</h3>
@@ -1672,7 +1893,7 @@
                         <li>Choose the Google account your calendar is on.</li>
                         <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This is normal while the app is new.</li>
                         <li>Tick the box that lets the app <strong>see your calendar</strong>, then press <strong>Continue</strong>.</li>
-                        <li>Your events now show under Agenda on Today.</li>
+                        <li>Your events now show under Agenda on the Home Page.</li>
                     </ol>
                     <p><strong>Seeing "Access blocked"?</strong> Your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
                     <p><strong>Nothing happened when you pressed the button?</strong> Your browser blocked the pop-up window. Allow pop-ups for this site and try again.</p>
@@ -1684,7 +1905,7 @@
                     <ol>
                         <li>Go to <strong>Settings</strong> and find <strong>Trains and buses</strong>.</li>
                         <li>Type your station codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the 3-letter code is shown next to its name.</li>
-                        <li>Press <strong>Save and test</strong>. Trains leaving in the next hour now show on Today.</li>
+                        <li>Press <strong>Save and test</strong>. Trains leaving in the next hour now show on the Home Page.</li>
                     </ol>
                     <p><strong>For buses</strong>, the yellow Live buses button opens TfGM's live times. To go straight to your stop, open tfgm.com, choose Live departures and find your stop. Copy the web address from the top of your browser, paste it into <strong>Bus times page</strong> in Settings, and press Save and test.</p>
                 </details>
@@ -1712,7 +1933,7 @@
                 </details>
                 <details class="help-details">
                     <summary>What does Google Calendar access allow?</summary>
-                    <p>Read-only access to your events, so they can show on Today. The app can't add, change or delete anything. Your calendar goes straight from Google to your browser and never passes through us. Access lasts about an hour and is forgotten when you close the tab.</p>
+                    <p>Read-only access to your events, so they can show on the Home Page. The app can't add, change or delete anything. Your calendar goes straight from Google to your browser and never passes through us. Access lasts about an hour and is forgotten when you close the tab.</p>
                     <p>To remove it completely, press <strong>Disconnect</strong> in Settings, or go to your Google Account, then Security, then Third-party connections.</p>
                 </details>
                 <details class="help-details">
@@ -1722,6 +1943,7 @@
                         <li><strong>Signing in:</strong> your email address goes to Supabase, the service that sends your sign-in codes and remembers that you're signed in.</li>
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked.</li>
+                        <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to BBC News, never your exact location. It doesn't record who asked. Opening a headline takes you to the BBC website.</li>
                         <li><strong>Music:</strong> YouTube videos play from YouTube, which has its own privacy rules.</li>
                     </ul>
                     <p>Like any website, these services see a normal web request, which includes your internet address.</p>
@@ -1766,6 +1988,14 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v2.6  Title banner image Assets/life-student-edition.webp replaces the typed title (header and sign-in)
+        // v2.5  Animated logo: Assets/dpaul-logo-yello-fade.webm plays on open and every 30 seconds (still logo as fallback)
+        // v2.4  Dot-matrix font everywhere: Doto loads before any text shows, and arrows, music buttons and
+        //       weather symbols are drawn as dot-grid icons (the font has no glyphs for them)
+        // v2.3  Static layout: no tab scrolls the page on laptops and desktops. Budget, Food Shop and Settings split
+        //       into pages. Today renamed Home Page, with Hide on every panel, Arrange (drag or arrows) and Reset,
+        //       and local plus UK headlines from BBC News via the Supabase Edge Function "news"
+        // v2.2  Display colour in Settings: amber or green dot-matrix, remembered on this device
         // v2.1  Departure-board theme: dark #171717 background, amber #ffb000 text, Doto dot-matrix font throughout
         // v2.0  Travel tab with station-style live departure boards (one per saved station), live trains switched on
         //       via the Supabase Edge Function "trains", cancel and delay reasons, trains that terminate early
@@ -1787,7 +2017,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '2.1';
+        const APP_VERSION = '2.6';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -1900,7 +2130,8 @@
                 settings: {
                     place: 'Maidenhead', lat: 51.5227, lon: -0.7153,
                     travel: { stations: ['MCO', 'MAN'], busLink: '' },
-                    gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false
+                    gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, theme: 'amber',
+                    home: null, pages: {}, newsArea: ''
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, pos: null, open: true, seeded: true },
@@ -1989,12 +2220,529 @@
         }
 
         // =====================================================================
+        // ANIMATED LOGO (v2.5): the yellow fade plays when the page opens, then again every 30 seconds.
+        // It rests on its last frame in between. Reduced motion: it shows the still logo instead.
+        // If the video can't play, the still logo image takes its place.
+        // =====================================================================
+        const LOGO_EVERY = 30000;
+        function logoFallback(v) {
+            if (!v.parentNode) return;
+            const img = document.createElement('img');
+            img.src = 'Assets/dpaul-logo.webp';
+            img.alt = 'dpaul.studio logo';
+            v.replaceWith(img);
+        }
+        function playLogos() {
+            if (document.hidden) return;
+            document.querySelectorAll('video.brand-logo').forEach(v => {
+                if (!v.offsetParent) return; // not on screen (e.g. the sign-in logo once you're in)
+                try { v.currentTime = 0; } catch (e) {}
+                const p = v.play();
+                if (p && p.catch) p.catch(() => {});
+            });
+        }
+        (function initLogos() {
+            const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            document.querySelectorAll('video.brand-logo').forEach(v => {
+                v.muted = true;
+                v.addEventListener('error', () => logoFallback(v));
+                if (v.error) logoFallback(v);
+                const src = v.querySelector('source') || v;
+                if (src !== v) src.addEventListener('error', () => logoFallback(v));
+                if (still) logoFallback(v);
+            });
+            if (still) return;
+            const start = () => { playLogos(); setInterval(playLogos, LOGO_EVERY); };
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+        })();
+
+        // =====================================================================
+        // DOT-MATRIX ICONS (v2.4): the Doto font has no arrows or weather symbols, so these
+        // are drawn as dot grids in the text colour. '#' is a lit dot, '.' is an unlit one.
+        // =====================================================================
+        const DOT_ICONS = {
+            up:    ['...#...', '..###..', '.#.#.#.', '#..#..#', '...#...', '...#...', '...#...'],
+            down:  ['...#...', '...#...', '...#...', '#..#..#', '.#.#.#.', '..###..', '...#...'],
+            left:  ['...#...', '..#....', '.#.....', '#######', '.#.....', '..#....', '...#...'],
+            right: ['...#...', '....#..', '.....#.', '#######', '.....#.', '....#..', '...#...'],
+            prev:  ['#...#', '#..##', '#.###', '#..##', '#...#'],
+            next:  ['#...#', '##..#', '###.#', '##..#', '#...#'],
+            sun:     ['....#....', '.#.....#.', '...###...', '..#####..', '#.#####.#', '..#####..', '...###...', '.#.....#.', '....#....'],
+            cloud:   ['.........', '.........', '...###...', '..#####..', '.#######.', '#########', '#########', '.#######.', '.........'],
+            partly:  ['..#......', '#.#.#....', '.###.....', '##.###...', '..#####..', '.#######.', '#########', '.#######.', '.........'],
+            fog:     ['.........', '#######..', '.........', '..#######', '.........', '#######..', '.........', '..#######', '.........'],
+            rain:    ['...###...', '..#####..', '.#######.', '#########', '.#######.', '.........', '.#..#..#.', '#..#..#..', '.........'],
+            snow:    ['....#....', '.#..#..#.', '..#.#.#..', '...###...', '#########', '...###...', '..#.#.#..', '.#..#..#.', '....#....'],
+            showers: ['#.#......', '.###.....', '#####....', '..#####..', '.#######.', '#########', '.#######.', '..#...#..', '.#...#...'],
+            storm:   ['...###...', '..#####..', '.#######.', '#########', '.#######.', '....##...', '...##....', '....##...', '...#.....']
+        };
+        function dotIcon(name, cls) {
+            const g = DOT_ICONS[name];
+            const unlit = g && g.length > 7; // faint unlit dots on the bigger icons, like a real display
+            if (!g) return '';
+            const h = g.length, w = g[0].length;
+            let dots = '';
+            g.forEach((row, y) => [...row].forEach((c, x) => {
+                if (c === '#') dots += `<circle cx="${x * 2 + 1}" cy="${y * 2 + 1}" r="0.8"/>`;
+                else if (unlit) dots += `<circle cx="${x * 2 + 1}" cy="${y * 2 + 1}" r="0.4" opacity="0.14"/>`;
+            }));
+            return `<svg class="dot-icon ${cls || ''}" viewBox="0 0 ${w * 2} ${h * 2}" fill="currentColor" aria-hidden="true" focusable="false">${dots}</svg>`;
+        }
+        function renderDotIcons(root) {
+            (root || document).querySelectorAll('[data-icon]').forEach(el => { if (!el.querySelector('.dot-icon')) el.insertAdjacentHTML('afterbegin', dotIcon(el.dataset.icon)); });
+        }
+
+        // =====================================================================
+        // STATIC LAYOUT (v2.3): longer tabs are split into pages of columns so
+        // nothing scrolls the page on a laptop. Lists scroll inside their own box.
+        // Sections are the view's children in page order; grow = the one that fills
+        // the leftover height, with the selector of the list inside it that scrolls.
+        // =====================================================================
+        const FIT_LAYOUT = {
+            budget: [
+                { label: 'Spending', cols: '1fr 1fr', sections: [[0], [{ i: 1, grow: '#spend-content .table-wrap' }]] },
+                { label: 'Bills and income', cols: '1fr 1fr', sections: [[{ i: 2, grow: '#income-content .table-wrap' }], [{ i: 3, grow: '#bills-content .table-wrap' }]] }
+            ],
+            food: [
+                { label: 'Shopping list', cols: '1fr 1fr', sections: [[0], [{ i: 1, grow: '#food-list' }]] },
+                { label: 'Quick add and meal ideas', cols: '1fr 3fr', sections: [[2], [{ i: 3, grow: '#meal-grid' }]] }
+            ],
+            tasks: [{ cols: '1fr', sections: [[{ i: 0, grow: '#task-list' }]] }],
+            deadlines: [{ cols: '2fr 3fr', sections: [[0], [{ i: 1, grow: '#deadline-list' }]] }],
+            timetable: [{ cols: '1fr', sections: [[0, { i: 1, grow: '#timetable-week' }]] }],
+            projects: [{ cols: '1fr', sections: [[{ i: 0, grow: '#projects-roadmap-container' }]] }],
+            grades: [{ cols: '1fr', sections: [[0, { i: 1, grow: true }]] }],
+            travel: [{ cols: '1fr', sections: [[{ i: 0, grow: '#travel-boards' }]] }],
+            settings: [
+                { label: 'General', cols: '1fr 1fr 1.3fr', sections: [[0, 6], [1, 8], [7, 9]] },
+                { label: 'Location and trains', cols: '1fr 1fr', sections: [[2], [4]] },
+                { label: 'Calendar and news', cols: '1fr 1fr', sections: [[3], [5]] }
+            ]
+        };
+        const fitPages = {};
+        const FIT_QUERY = window.matchMedia('(min-width: 901px) and (min-height: 560px)');
+        function isFitMode() { return FIT_QUERY.matches; }
+
+        function initFitPages() {
+            Object.entries(FIT_LAYOUT).forEach(([tab, pages]) => {
+                const view = $('view-' + tab);
+                if (!view || view.querySelector('.fit-pages')) return;
+                const secs = [...view.children];
+                const wrap = document.createElement('div');
+                wrap.className = 'fit-pages';
+                if (pages.length > 1) {
+                    const bar = document.createElement('div');
+                    bar.className = 'fit-pagebar';
+                    bar.innerHTML = `<div class="subtabs" role="group" aria-label="Pages">${pages.map((pg, i) =>
+                        `<button data-page="${i}" onclick="showFitPage('${tab}', ${i})">${esc(pg.label)}</button>`).join('')}</div>`;
+                    wrap.appendChild(bar);
+                }
+                let lastCol = null;
+                pages.forEach((pg, pi) => {
+                    const page = document.createElement('div');
+                    page.className = 'fit-page';
+                    page.dataset.page = pi;
+                    page.style.gridTemplateColumns = pg.cols;
+                    pg.sections.forEach(colSpec => {
+                        const col = document.createElement('div');
+                        col.className = 'fit-col';
+                        colSpec.forEach(spec => {
+                            const o = typeof spec === 'number' ? { i: spec } : spec;
+                            const el = secs[o.i];
+                            if (!el) return;
+                            col.appendChild(el);
+                            if (!o.grow) return;
+                            el.classList.add('fit-grow');
+                            const sc = typeof o.grow === 'string' ? el.querySelector(o.grow) : null;
+                            if (sc) {
+                                sc.classList.add('fit-scroller');
+                                for (let n = sc.parentElement; n && n !== el; n = n.parentElement) n.classList.add('fit-flex');
+                            } else el.classList.add('fit-self');
+                        });
+                        page.appendChild(col);
+                        lastCol = col;
+                    });
+                    wrap.appendChild(page);
+                });
+                secs.forEach(el => { if (el.parentElement === view && lastCol) lastCol.appendChild(el); }); // nothing gets lost
+                view.appendChild(wrap);
+                fitPages[tab] = pages;
+                showFitPage(tab, fitPageIndex(tab), true);
+            });
+        }
+
+        function fitPageIndex(tab) {
+            const n = ((data.settings.pages || {})[tab]) || 0;
+            return fitPages[tab] && n < fitPages[tab].length ? n : 0;
+        }
+
+        function showFitPage(tab, i, quiet) {
+            const view = $('view-' + tab);
+            if (!view) return;
+            view.querySelectorAll('.fit-page').forEach(pg => pg.classList.toggle('active', +pg.dataset.page === i));
+            view.querySelectorAll('.fit-pagebar button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.page === i));
+            data.settings.pages = { ...(data.settings.pages || {}), [tab]: i };
+            if (!quiet) saveData(true);
+        }
+
+        // Guided set up and help links: open the page a control lives on
+        function revealFitTarget(el) {
+            const page = el && el.closest('.fit-page');
+            if (!page || page.classList.contains('active')) return;
+            const view = el.closest('.view');
+            if (view) showFitPage(view.id.replace('view-', ''), +page.dataset.page);
+        }
+
+        // Right end of the tab bar: Arrange on the Home Page, the page switcher on longer tabs
+        function renderTabTools() {
+            const box = $('tab-tools');
+            if (!box) return;
+            const tab = data.settings.lastTab;
+            if (tab === 'today') {
+                const n = homeLayout().hidden.length;
+                box.innerHTML = homeState.arranging
+                    ? `<button class="btn-toggle" onclick="homeReset()" title="Put every panel back where it started">Reset layout</button>
+                       <button onclick="homeArrange(false)">Done</button>`
+                    : `<span class="tools-note" id="home-note"></span>
+                       <button class="btn-toggle" id="btn-arrange" onclick="homeArrange(true)" title="Move panels around, or bring hidden ones back">Arrange${n ? ` (${n} hidden)` : ''}</button>`;
+            } else box.innerHTML = '';
+        }
+
+        // =====================================================================
+        // HOME PAGE (v2.3): hide any panel, and Arrange to move them or bring hidden ones back
+        // =====================================================================
+        const HOME_DEFAULT = {
+            cols: [['money', 'classes', 'quick'], ['due', 'agenda', 'focus'], ['trains', 'newsLocal', 'newsUk']],
+            hidden: []
+        };
+        const homePanels = {};
+        const homeState = { arranging: false, dragId: null, noteTimer: null };
+
+        function homeLayout() {
+            const ids = Object.keys(homePanels);
+            let L = data.settings.home;
+            if (!L || !Array.isArray(L.cols) || L.cols.length !== 3) L = JSON.parse(JSON.stringify(HOME_DEFAULT));
+            if (!ids.length) return L;
+            const seen = new Set();
+            L.cols = L.cols.map(c => (Array.isArray(c) ? c : []).filter(id => ids.includes(id) && !seen.has(id) && seen.add(id)));
+            // Panels added in later versions go where the default layout puts them
+            HOME_DEFAULT.cols.forEach((c, ci) => c.forEach(id => { if (!seen.has(id) && ids.includes(id)) { L.cols[ci].push(id); seen.add(id); } }));
+            L.hidden = (Array.isArray(L.hidden) ? L.hidden : []).filter((id, k, a) => ids.includes(id) && a.indexOf(id) === k);
+            data.settings.home = L;
+            return L;
+        }
+
+        function initHome() {
+            if (Object.keys(homePanels).length) return;
+            document.querySelectorAll('#view-today .home-panel').forEach(el => {
+                const id = el.dataset.panel;
+                const name = el.dataset.name;
+                homePanels[id] = el;
+                const bar = document.createElement('div');
+                bar.className = 'arrange-bar';
+                bar.innerHTML = `<span class="arrange-grip" aria-hidden="true"></span>
+                    <span class="arrange-name">${esc(name)}<small> (hidden)</small></span>
+                    <button data-move="up" title="Move up" aria-label="Move ${esc(name)} up">${dotIcon('up')}</button>
+                    <button data-move="down" title="Move down" aria-label="Move ${esc(name)} down">${dotIcon('down')}</button>
+                    <button data-move="left" class="arr-side" title="Move to the column on the left" aria-label="Move ${esc(name)} left">${dotIcon('left')}</button>
+                    <button data-move="right" class="arr-side" title="Move to the column on the right" aria-label="Move ${esc(name)} right">${dotIcon('right')}</button>
+                    <button data-move="toggle" class="arr-vis"></button>`;
+                bar.addEventListener('click', e => { const b = e.target.closest('button'); if (b) homeMove(id, b.dataset.move); });
+                el.prepend(bar);
+                el.addEventListener('dragstart', e => {
+                    if (!homeState.arranging) { e.preventDefault(); return; }
+                    homeState.dragId = id;
+                    el.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', id);
+                });
+                el.addEventListener('dragend', () => { el.classList.remove('dragging'); homeState.dragId = null; clearDropMarks(); });
+            });
+            document.querySelectorAll('#home-grid .home-col').forEach(col => {
+                col.addEventListener('dragover', homeDragOver);
+                col.addEventListener('drop', homeDrop);
+                col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) clearDropMarks(); });
+            });
+            const empty = document.createElement('p');
+            empty.className = 'home-empty';
+            empty.id = 'home-empty';
+            empty.textContent = 'Every panel is hidden. Press Arrange at the top right to bring them back.';
+            $('view-today').appendChild(empty);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && homeState.arranging) homeArrange(false); });
+            renderHomeLayout();
+        }
+
+        function renderHomeLayout() {
+            if (!Object.keys(homePanels).length) return;
+            const L = homeLayout();
+            const cols = document.querySelectorAll('#home-grid .home-col');
+            let shownCols = 0;
+            L.cols.forEach((ids, ci) => {
+                ids.forEach(id => cols[ci].appendChild(homePanels[id]));
+                const shown = ids.filter(id => !L.hidden.includes(id)).length;
+                const off = !homeState.arranging && !shown;
+                cols[ci].classList.toggle('col-off', off);
+                cols[ci].classList.toggle('is-empty', homeState.arranging && !ids.length);
+                if (!off) shownCols++;
+            });
+            $('home-grid').style.setProperty('--home-cols', homeState.arranging ? 3 : Math.max(1, shownCols));
+            const last = L.cols.length - 1;
+            Object.entries(homePanels).forEach(([id, el]) => {
+                const hidden = L.hidden.includes(id);
+                const ci = L.cols.findIndex(c => c.includes(id));
+                const at = L.cols[ci].indexOf(id);
+                el.classList.toggle('is-hidden', hidden);
+                el.draggable = homeState.arranging;
+                const q = m => el.querySelector(`.arrange-bar [data-move="${m}"]`);
+                q('up').disabled = ci === 0 && at === 0;
+                q('down').disabled = ci === last && at === L.cols[ci].length - 1;
+                q('left').disabled = ci === 0;
+                q('right').disabled = ci === last;
+                const vis = q('toggle');
+                vis.textContent = hidden ? 'Show' : 'Hide';
+                vis.classList.toggle('arr-show', hidden);
+                vis.setAttribute('aria-label', `${hidden ? 'Show' : 'Hide'} ${el.dataset.name}`);
+            });
+            $('view-today').classList.toggle('arranging', homeState.arranging);
+            $('home-empty').classList.toggle('on', !homeState.arranging && L.hidden.length === Object.keys(homePanels).length);
+            if (data.settings.lastTab === 'today') renderTabTools();
+        }
+
+        function homeArrange(on) {
+            homeState.arranging = !!on;
+            renderHomeLayout();
+            if (!on && data.settings.lastTab === 'today') fetchNews();
+        }
+
+        function homeHide(id) {
+            const L = homeLayout();
+            if (!L.hidden.includes(id)) L.hidden.push(id);
+            saveData();
+            renderHomeLayout();
+            const note = $('home-note');
+            if (note) {
+                note.textContent = `${homePanels[id].dataset.name} hidden. Arrange brings it back.`;
+                clearTimeout(homeState.noteTimer);
+                homeState.noteTimer = setTimeout(() => { const n = $('home-note'); if (n) n.textContent = ''; }, 6000);
+            }
+        }
+
+        function homeMove(id, how) {
+            const L = homeLayout();
+            const ci = L.cols.findIndex(c => c.includes(id));
+            const col = L.cols[ci];
+            const i = col.indexOf(id);
+            if (how === 'toggle') {
+                L.hidden = L.hidden.includes(id) ? L.hidden.filter(x => x !== id) : [...L.hidden, id];
+            } else if (how === 'up') {
+                if (i > 0) [col[i - 1], col[i]] = [col[i], col[i - 1]];
+                else if (ci > 0) { col.splice(i, 1); L.cols[ci - 1].push(id); }
+            } else if (how === 'down') {
+                if (i < col.length - 1) [col[i + 1], col[i]] = [col[i], col[i + 1]];
+                else if (ci < L.cols.length - 1) { col.splice(i, 1); L.cols[ci + 1].unshift(id); }
+            } else {
+                const to = ci + (how === 'left' ? -1 : 1);
+                if (to < 0 || to >= L.cols.length) return;
+                col.splice(i, 1);
+                L.cols[to].splice(Math.min(i, L.cols[to].length), 0, id);
+            }
+            saveData();
+            renderHomeLayout();
+            const btn = homePanels[id].querySelector(`.arrange-bar [data-move="${how}"]`);
+            if (btn && !btn.disabled) btn.focus(); else homePanels[id].querySelector('.arr-vis').focus();
+        }
+
+        function homeReset() {
+            if (!confirm('Put every Home Page panel back where it started, and show any hidden ones?')) return;
+            data.settings.home = JSON.parse(JSON.stringify(HOME_DEFAULT));
+            saveData();
+            renderHomeLayout();
+        }
+
+        function clearDropMarks() {
+            document.querySelectorAll('.drop-before, .drop-after, .drop-here').forEach(el => el.classList.remove('drop-before', 'drop-after', 'drop-here'));
+        }
+        function homeDropTarget(col, y) {
+            const panels = [...col.children].filter(p => p.classList.contains('home-panel') && p.dataset.panel !== homeState.dragId);
+            for (const p of panels) {
+                const r = p.getBoundingClientRect();
+                if (y < r.top + r.height / 2) return { before: p };
+            }
+            return { before: null, last: panels[panels.length - 1] || null };
+        }
+        function homeDragOver(e) {
+            if (!homeState.dragId) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            clearDropMarks();
+            const t = homeDropTarget(e.currentTarget, e.clientY);
+            if (t.before) t.before.classList.add('drop-before');
+            else if (t.last) t.last.classList.add('drop-after');
+            else e.currentTarget.classList.add('drop-here');
+        }
+        function homeDrop(e) {
+            if (!homeState.dragId) return;
+            e.preventDefault();
+            const id = homeState.dragId;
+            const ci = +e.currentTarget.dataset.col;
+            const t = homeDropTarget(e.currentTarget, e.clientY);
+            const L = homeLayout();
+            L.cols.forEach(c => { const k = c.indexOf(id); if (k > -1) c.splice(k, 1); });
+            const at = t.before ? L.cols[ci].indexOf(t.before.dataset.panel) : L.cols[ci].length;
+            L.cols[ci].splice(at < 0 ? L.cols[ci].length : at, 0, id);
+            clearDropMarks();
+            saveData();
+            renderHomeLayout();
+        }
+
+        // =====================================================================
+        // NEWS (v2.3): BBC News headlines through the Supabase Edge Function "news"
+        // (browsers can't read BBC feeds directly). Called as ?area=berkshire or ?area=uk
+        // =====================================================================
+        const NEWS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/news';
+        // BBC local news areas, with a few towns in each so the nearest one can be picked from your location
+        const NEWS_AREAS = {
+            beds_bucks_and_herts: ['Beds, Herts and Bucks', [[51.88, -0.42], [51.82, -0.81], [51.80, -0.08], [52.04, -0.76], [51.75, -0.34], [52.14, -0.47]]],
+            berkshire: ['Berkshire', [[51.45, -0.97], [51.52, -0.72], [51.40, -1.32], [51.41, -0.75], [51.48, -0.61], [51.51, -0.59]]],
+            birmingham_and_black_country: ['Birmingham and Black Country', [[52.48, -1.90], [52.59, -2.13], [52.51, -2.08], [52.59, -1.98]]],
+            bristol: ['Bristol', [[51.45, -2.59], [51.54, -2.41], [51.35, -2.98]]],
+            cambridgeshire: ['Cambridgeshire', [[52.20, 0.12], [52.57, -0.24], [52.33, -0.18], [52.40, 0.26]]],
+            cornwall: ['Cornwall', [[50.26, -5.05], [50.12, -5.54], [50.47, -4.72], [50.15, -5.07]]],
+            coventry_and_warwickshire: ['Coventry and Warwickshire', [[52.41, -1.51], [52.28, -1.58], [52.37, -1.26], [52.19, -1.71]]],
+            cumbria: ['Cumbria', [[54.89, -2.93], [54.33, -2.75], [54.60, -3.14], [54.12, -3.23]]],
+            derby: ['Derby', [[52.92, -1.48], [53.23, -1.42], [53.26, -1.91], [53.14, -1.55]]],
+            devon: ['Devon', [[50.72, -3.53], [50.38, -4.14], [51.08, -4.06], [50.46, -3.53]]],
+            dorset: ['Dorset', [[50.72, -1.88], [50.71, -2.44], [50.61, -2.45], [50.95, -2.52]]],
+            essex: ['Essex', [[51.74, 0.47], [51.89, 0.90], [51.54, 0.71], [51.57, 0.46]]],
+            gloucestershire: ['Gloucestershire', [[51.86, -2.24], [51.90, -2.08], [51.75, -2.22]]],
+            hampshire: ['Hampshire', [[50.91, -1.40], [50.80, -1.09], [51.06, -1.31], [51.27, -1.09], [51.25, -0.76]]],
+            hereford_and_worcester: ['Hereford and Worcester', [[52.06, -2.72], [52.19, -2.22], [52.39, -2.25]]],
+            humberside: ['Humberside', [[53.74, -0.33], [53.57, -0.08], [53.59, -0.65]]],
+            kent: ['Kent', [[51.27, 0.52], [51.28, 1.08], [51.13, 1.31], [51.44, 0.37], [51.13, 0.26]]],
+            lancashire: ['Lancashire', [[53.76, -2.70], [53.82, -3.05], [53.75, -2.48], [54.05, -2.80], [53.79, -2.25]]],
+            leeds_and_west_yorkshire: ['Leeds and West Yorkshire', [[53.80, -1.55], [53.80, -1.75], [53.65, -1.78], [53.68, -1.50], [53.72, -1.86]]],
+            leicester: ['Leicester', [[52.64, -1.13], [52.77, -1.20], [52.54, -1.37]]],
+            lincolnshire: ['Lincolnshire', [[53.23, -0.54], [52.98, -0.03], [52.91, -0.64], [53.15, 0.34]]],
+            london: ['London', [[51.51, -0.13], [51.37, -0.10], [51.58, -0.34], [51.58, 0.18], [51.46, -0.30], [51.55, -0.05], [51.45, 0.05]]],
+            manchester: ['Manchester', [[53.48, -2.24], [53.41, -2.16], [53.58, -2.43], [53.54, -2.12], [53.55, -2.63], [53.46, -2.35]]],
+            merseyside: ['Merseyside', [[53.41, -2.98], [53.45, -2.74], [53.65, -3.00], [53.39, -3.02], [53.39, -2.60]]],
+            norfolk: ['Norfolk', [[52.63, 1.30], [52.75, 0.40], [52.61, 1.73]]],
+            northamptonshire: ['Northamptonshire', [[52.24, -0.90], [52.40, -0.73], [52.49, -0.69]]],
+            nottingham: ['Nottingham', [[52.95, -1.15], [53.14, -1.20], [53.32, -0.94]]],
+            oxford: ['Oxford', [[51.75, -1.26], [52.06, -1.34], [51.61, -1.24], [51.90, -1.15]]],
+            shropshire: ['Shropshire', [[52.71, -2.75], [52.68, -2.45], [52.53, -2.42]]],
+            somerset: ['Somerset', [[51.02, -3.10], [50.94, -2.63], [51.38, -2.36], [51.21, -2.64]]],
+            south_yorkshire: ['South Yorkshire', [[53.38, -1.47], [53.52, -1.13], [53.43, -1.36], [53.55, -1.48]]],
+            stoke_and_staffordshire: ['Stoke and Staffordshire', [[53.00, -2.18], [52.81, -2.12], [52.68, -1.83], [52.80, -1.64]]],
+            suffolk: ['Suffolk', [[52.06, 1.16], [52.25, 0.71], [52.48, 1.75]]],
+            surrey: ['Surrey', [[51.24, -0.57], [51.32, -0.56], [51.24, -0.17], [51.32, -0.30], [51.39, -0.50]]],
+            sussex: ['Sussex', [[50.82, -0.14], [50.84, -0.78], [50.86, 0.57], [51.11, -0.19], [50.77, 0.28], [50.82, -0.37]]],
+            tees: ['Tees', [[54.57, -1.23], [54.52, -1.55], [54.69, -1.21]]],
+            tyne_and_wear: ['Tyne and Wear', [[54.98, -1.61], [54.91, -1.38], [54.78, -1.57], [55.17, -1.69]]],
+            wiltshire: ['Wiltshire', [[51.56, -1.78], [51.07, -1.79], [51.46, -2.12], [51.35, -1.99]]],
+            york_and_north_yorkshire: ['York and North Yorkshire', [[53.96, -1.08], [53.99, -1.54], [54.28, -0.40], [54.34, -1.43]]],
+            scotland: ['Scotland', [[55.95, -3.19], [55.86, -4.25], [57.15, -2.10], [57.48, -4.22], [56.46, -2.97], [56.12, -3.94], [55.07, -3.61], [58.97, -2.96], [60.15, -1.15]]],
+            wales: ['Wales', [[51.48, -3.18], [51.62, -3.94], [53.23, -4.13], [52.41, -4.08], [53.05, -3.00], [51.80, -4.97], [52.24, -3.38]]],
+            northern_ireland: ['Northern Ireland', [[54.60, -5.93], [55.00, -7.30], [54.35, -6.65], [54.34, -7.64]]]
+        };
+        const newsState = { cache: {} };
+
+        function nearestNewsArea(lat, lon) {
+            lat = Number(lat); lon = Number(lon);
+            if (!isFinite(lat) || !isFinite(lon)) return '';
+            let best = '', bestD = Infinity;
+            const k = Math.cos(lat * Math.PI / 180);
+            Object.entries(NEWS_AREAS).forEach(([key, [, pts]]) => pts.forEach(([a, b]) => {
+                const d = (a - lat) ** 2 + ((b - lon) * k) ** 2;
+                if (d < bestD) { bestD = d; best = key; }
+            }));
+            return Math.sqrt(bestD) * 111 < 120 ? best : ''; // over ~120 km from every town listed: not in the UK
+        }
+        function newsLocalArea() {
+            const pick = data.settings.newsArea;
+            return pick && NEWS_AREAS[pick] ? pick : nearestNewsArea(data.settings.lat, data.settings.lon);
+        }
+
+        async function fetchNews(force) {
+            if (!Object.keys(homePanels).length) return;
+            const L = homeLayout();
+            const areas = [];
+            if (!L.hidden.includes('newsUk')) areas.push('uk');
+            const local = newsLocalArea();
+            if (local && !L.hidden.includes('newsLocal')) areas.push(local);
+            renderNews();
+            await Promise.all(areas.map(async area => {
+                const c = newsState.cache[area];
+                if (c && (c.loading || (!force && Date.now() - c.at < 15 * 60000))) return;
+                newsState.cache[area] = { ...(c || { items: [] }), loading: true };
+                try {
+                    const r = await fetch(`${NEWS_PROXY_URL}?area=${encodeURIComponent(area)}`);
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const j = await r.json();
+                    newsState.cache[area] = { at: Date.now(), items: Array.isArray(j.items) ? j.items : [], error: false };
+                } catch (e) {
+                    // Keep any headlines already showing, and try again in about 3 minutes
+                    newsState.cache[area] = { at: Date.now() - 12 * 60000, items: (c && c.items) || [], error: true };
+                }
+                renderNews();
+            }));
+        }
+
+        function newsAgo(s) {
+            const t = new Date(s);
+            if (isNaN(t)) return '';
+            const mins = Math.round((Date.now() - t) / 60000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return `${mins} min ago`;
+            const hrs = Math.round(mins / 60);
+            if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+            return t.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        function newsLink(u) { return /^https:\/\/(www\.)?bbc\.(co\.uk|com)\//.test(u || '') ? u : 'https://www.bbc.co.uk/news'; }
+
+        function renderNewsList(elId, area) {
+            const el = $(elId);
+            const c = newsState.cache[area];
+            if (c && c.items && c.items.length) {
+                el.innerHTML = c.items.slice(0, 20).map(it => `<li class="news-item"><a href="${esc(newsLink(it.link))}" target="_blank" rel="noopener">${esc(it.title)}</a>${it.date ? `<span class="news-time">${esc(newsAgo(it.date))}</span>` : ''}</li>`).join('');
+            } else if (!c || c.loading) {
+                el.innerHTML = '<li class="empty">Loading headlines...</li>';
+            } else {
+                el.innerHTML = c.error
+                    ? '<li class="empty">Headlines couldn\'t load. They\'ll try again in a few minutes.</li>'
+                    : '<li class="empty">No headlines right now.</li>';
+            }
+        }
+        function renderNews() {
+            const local = newsLocalArea();
+            $('news-local-src').textContent = local ? 'BBC ' + NEWS_AREAS[local][0] : '';
+            renderNewsList('news-uk', 'uk');
+            if (local) renderNewsList('news-local', local);
+            else $('news-local').innerHTML = '<li class="empty">Set a UK town or postcode in <a href="#" onclick="switchTab(\'settings\'); showFitPage(\'settings\', 1); return false;">Settings</a> to see news for your area.</li>';
+        }
+
+        function renderNewsSettings() {
+            const sel = $('news-area');
+            if (!sel) return;
+            const auto = nearestNewsArea(data.settings.lat, data.settings.lon);
+            sel.innerHTML = [`<option value="auto">Match my location${auto ? ` (${esc(NEWS_AREAS[auto][0])})` : ''}</option>`]
+                .concat(Object.entries(NEWS_AREAS).sort((a, b) => a[1][0].localeCompare(b[1][0])).map(([k, [n]]) => `<option value="${k}">${esc(n)}</option>`))
+                .join('');
+            sel.value = data.settings.newsArea && NEWS_AREAS[data.settings.newsArea] ? data.settings.newsArea : 'auto';
+        }
+        function setNewsArea(v) {
+            data.settings.newsArea = v === 'auto' ? '' : v;
+            saveData();
+            flash('news-settings-status', 'Saved. The Home Page shows ' + (NEWS_AREAS[newsLocalArea()] || ['no local'])[0] + ' news.');
+        }
+
+        // =====================================================================
         // TABS & TOGGLES
         // =====================================================================
         function switchTab(tab) {
             if (!TABS.includes(tab)) tab = 'today';
             TABS.forEach(t => {
-                $('view-' + t).style.display = t === tab ? 'block' : 'none';
+                $('view-' + t).style.display = t === tab ? '' : 'none';
             });
             document.body.classList.toggle('on-today', tab === 'today');
             document.querySelectorAll('.tab-btn').forEach(b => {
@@ -2002,12 +2750,13 @@
                 b.classList.toggle('active', on);
                 b.setAttribute('aria-selected', on);
             });
-            $('right-column-sidebar').style.display = tab === 'today' ? 'block' : 'none';
+            if (tab !== 'today' && homeState.arranging) { homeState.arranging = false; renderHomeLayout(); }
             data.settings.lastTab = tab;
+            renderTabTools();
             saveData(true);
             const renderers = { today: renderToday, budget: renderBudget, food: renderFood, tasks: renderTasks, deadlines: renderDeadlines, timetable: renderTimetable, projects: renderProjects, grades: renderGrades, travel: renderTravel, settings: renderSettings };
             renderers[tab]();
-            if (tab === 'today') fetchTrains();
+            if (tab === 'today') { fetchTrains(); fetchNews(); }
         }
 
         function toggleSection(contentId, btnId) {
@@ -2051,14 +2800,15 @@
                 const sunrise = w.daily.sunrise[0].split('T')[1];
                 const sunset = w.daily.sunset[0].split('T')[1];
 
-                let condition = '<span class="weather-emoji">☁️</span>';
-                if (code === 0) condition = '<span class="weather-emoji">☀️</span> Clear';
-                else if (code >= 1 && code <= 3) condition = '<span class="weather-emoji">⛅</span> Cloudy';
-                else if (code >= 45 && code <= 48) condition = '<span class="weather-emoji">🌫️</span> Fog';
-                else if (code >= 51 && code <= 67) condition = '<span class="weather-emoji">🌧️</span> Rain';
-                else if (code >= 71 && code <= 77) condition = '<span class="weather-emoji">❄️</span> Snow';
-                else if (code >= 80 && code <= 82) condition = '<span class="weather-emoji">🌦️</span> Showers';
-                else if (code >= 95) condition = '<span class="weather-emoji">⛈️</span> Storm';
+                const wx = (icon, label) => dotIcon(icon, 'weather-icon') + (label ? ' ' + label : '');
+                let condition = wx('cloud', 'Cloudy');
+                if (code === 0) condition = wx('sun', 'Clear');
+                else if (code >= 1 && code <= 3) condition = wx('partly', 'Cloudy');
+                else if (code >= 45 && code <= 48) condition = wx('fog', 'Fog');
+                else if (code >= 51 && code <= 67) condition = wx('rain', 'Rain');
+                else if ((code >= 71 && code <= 77) || code === 85 || code === 86) condition = wx('snow', 'Snow');
+                else if (code >= 80 && code <= 82) condition = wx('showers', 'Showers');
+                else if (code >= 95) condition = wx('storm', 'Storm');
 
                 widget.innerHTML = `${condition}, ${temp}°C &nbsp;|&nbsp; 
                     <img src="Assets/sunrise.webp" alt="Sunrise" class="custom-icon"> ${sunrise} &nbsp;|&nbsp; 
@@ -2295,14 +3045,14 @@
             $('spend-breakdown').innerHTML = cats.length ? cats.map(([cat, amt]) => `
                 <div style="margin-bottom: 8px;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 3px;"><span><strong>${esc(cat)}</strong></span><span>${money(amt)}</span></div>
-                    <div class="progress"><div style="width: ${Math.round(amt / monthTotal * 100)}%; background: #ffb000;"></div></div>
+                    <div class="progress"><div style="width: ${Math.round(amt / monthTotal * 100)}%; background: var(--fg);"></div></div>
                 </div>`).join('') + `<div style="text-align: right; font-weight: bold; margin-top: 6px;">Total ${money(monthTotal)}</div>`
                 : '<p class="empty" style="margin: 0;">No spending logged this month.</p>';
 
             // Income
             const income = [...b.income].sort((x, y) => x.date.localeCompare(y.date));
             $('income-table').innerHTML = income.length ? income.map(x => `
-                <tr style="${x.date < today ? 'color: #a07a1c;' : ''}">
+                <tr style="${x.date < today ? 'color: var(--fg-muted);' : ''}">
                     <td>${fmtDate(x.date, true)}</td>
                     <td>${esc(x.source)}${x.date === (s.next && s.next.date) && x.id === s.next.id ? '<span class="badge green">Next</span>' : ''}</td>
                     <td style="text-align: right;" class="${x.date < today ? '' : 'money-in'}">${money(x.amount)}</td>
@@ -2316,7 +3066,7 @@
             const billRow = x => {
                 const late = !x.paid && x.due < today;
                 return `
-                <tr style="${x.paid ? 'color: #a07a1c;' : ''}">
+                <tr style="${x.paid ? 'color: var(--fg-muted);' : ''}">
                     <td>${fmtDate(x.due)}${late ? '<span class="badge red">Late</span>' : ''}</td>
                     <td>${esc(x.name)}${x.repeat ? '<span class="badge">Monthly</span>' : ''}</td>
                     <td style="text-align: right;">${money(x.amount)}</td>
@@ -2481,7 +3231,7 @@
                     <input type="checkbox" class="task-checkbox" ${d.done ? 'checked' : ''} onchange="toggleDeadline('${d.id}')" aria-label="Submitted">
                     <span class="task-text ${d.done ? 'completed' : ''}">
                         <strong>${esc(d.title)}</strong>${d.module ? `<span class="badge blue">${esc(d.module)}</span>` : ''}${tag}<br>
-                        <span style="color: #d99a14; font-size: 0.95em;">${fmtDate(d.date, true)}${d.time ? ', ' + esc(d.time) : ''}${d.weight ? `, worth ${esc(d.weight)}%` : ''}</span>
+                        <span style="color: var(--fg-soft); font-size: 0.95em;">${fmtDate(d.date, true)}${d.time ? ', ' + esc(d.time) : ''}${d.weight ? `, worth ${esc(d.weight)}%` : ''}</span>
                     </span>
                     <button class="btn-task-del" onclick="deleteDeadline('${d.id}')" title="Delete deadline">×</button>
                 </li>`;
@@ -2558,7 +3308,7 @@
 
         function renderTimetable() {
             const wrap = $('timetable-week');
-            if (!data.timetable.length) { wrap.innerHTML = '<p class="empty">No classes yet. Add your lectures and seminars above and they\'ll show on Today.</p>'; renderModuleList(); return; }
+            if (!data.timetable.length) { wrap.innerHTML = '<p class="empty">No classes yet. Add your lectures and seminars above and they\'ll show on the Home Page.</p>'; renderModuleList(); return; }
             const todayN = isoWeekday(new Date());
             let html = '';
             for (let d = 1; d <= 7; d++) {
@@ -2614,12 +3364,12 @@
             const items = [];
             data.deadlines.filter(d => !d.done && d.date <= in14).forEach(d => items.push({ date: d.date, html: (() => {
                 const c = countdown(d.date);
-                return `<li class="task-item"><span class="task-text"><strong>${esc(d.title)}</strong>${d.module ? `<span class="badge blue">${esc(d.module)}</span>` : ''}<span class="badge ${c.cls}">${c.text}</span><br><span style="color: #d99a14; font-size: 0.95em;">Deadline, ${fmtDate(d.date)}${d.time ? ' ' + esc(d.time) : ''}</span></span></li>`;
+                return `<li class="task-item"><span class="task-text"><strong>${esc(d.title)}</strong>${d.module ? `<span class="badge blue">${esc(d.module)}</span>` : ''}<span class="badge ${c.cls}">${c.text}</span><br><span style="color: var(--fg-soft); font-size: 0.95em;">Deadline, ${fmtDate(d.date)}${d.time ? ' ' + esc(d.time) : ''}</span></span></li>`;
             })() }));
             data.tasks.filter(t => !t.done && t.due && t.due <= in3).forEach(t => items.push({ date: t.due, html: taskRow(t) }));
             data.budget.bills.filter(b => !b.paid && b.due <= in3).forEach(b => items.push({ date: b.due, html: (() => {
                 const c = countdown(b.due);
-                return `<li class="task-item"><span class="task-text">${esc(b.name)} <span class="badge">${money(b.amount)}</span><span class="badge ${c.cls}">${c.text}</span><br><span style="color: #d99a14; font-size: 0.95em;">Bill</span></span></li>`;
+                return `<li class="task-item"><span class="task-text">${esc(b.name)} <span class="badge">${money(b.amount)}</span><span class="badge ${c.cls}">${c.text}</span><br><span style="color: var(--fg-soft); font-size: 0.95em;">Bill</span></span></li>`;
             })() }));
             items.sort((a, b) => a.date.localeCompare(b.date));
             $('today-due').innerHTML = items.length ? items.map(i => i.html).join('') : '<li class="empty">Nothing due in the next two weeks.</li>';
@@ -2686,19 +3436,19 @@
                     const badge = t.deadline ? `<span class="badge ${t.completed ? '' : countdown(t.deadline).cls}">Due: ${fmtDate(t.deadline)}</span>` : '';
                     return `<div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #2e2e2e;">
                         <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleProjectTask('${id}', ${i})">
-                        <span style="flex: 1; ${t.completed ? 'text-decoration: line-through; color: #a07a1c;' : ''}">${esc(t.text)} ${badge}</span>
+                        <span style="flex: 1; ${t.completed ? 'text-decoration: line-through; color: var(--fg-muted);' : ''}">${esc(t.text)} ${badge}</span>
                         <button class="btn-task-del" onclick="deleteProjectTask('${id}', ${i})" title="Delete milestone">×</button>
                     </div>`;
                 }).join('');
                 const notesHtml = proj.notes.map((n, i) => `
-                    <div style="background: #1f1f1f; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #ffb000; display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div><span style="font-size: 0.8rem; color: #d99a14; font-weight: bold; display: block; margin-bottom: 2px;">${esc(n.date)}</span>
-                        <span style="font-size: 1rem; color: #ffb000; white-space: pre-wrap;">${esc(n.text)}</span></div>
+                    <div style="background: #1f1f1f; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid var(--fg); display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div><span style="font-size: 0.8rem; color: var(--fg-soft); font-weight: bold; display: block; margin-bottom: 2px;">${esc(n.date)}</span>
+                        <span style="font-size: 1rem; color: var(--fg); white-space: pre-wrap;">${esc(n.text)}</span></div>
                         <button class="btn-task-del" onclick="deleteProjectNote('${id}', ${i})" title="Delete note">×</button>
                     </div>`).join('');
                 const urlsHtml = proj.urls.map((u, i) => `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #2a2110; border-radius: 6px; margin-bottom: 6px;">
-                        <a href="${esc(u.url)}" target="_blank" rel="noopener" style="color: #ffcf5c; font-weight: bold; text-decoration: none; word-break: break-all; font-size: 0.95rem;">${esc(u.title)}</a>
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--tint); border-radius: 6px; margin-bottom: 6px;">
+                        <a href="${esc(u.url)}" target="_blank" rel="noopener" style="color: var(--link); font-weight: bold; text-decoration: none; word-break: break-all; font-size: 0.95rem;">${esc(u.title)}</a>
                         <button class="btn-task-del" onclick="deleteProjectUrl('${id}', ${i})" title="Delete link">×</button>
                     </div>`).join('');
                 return `
@@ -2712,7 +3462,7 @@
                     </div>
                     <div style="display: ${proj.collapsed ? 'none' : 'block'};">
                         <div style="margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #d99a14; margin-bottom: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--fg-soft); margin-bottom: 4px;">
                                 <span style="font-weight: bold;">Progress</span><span>${done}/${total} milestones (${pct}%)</span>
                             </div>
                             <div class="progress"><div style="width: ${pct}%;"></div></div>
@@ -3175,7 +3925,7 @@
                     const d = allDay ? parseISO(start) : new Date(start);
                     const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' });
                     const timeStr = allDay ? 'All Day' : d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                    return `<li class="task-item"><span class="task-text"><strong style="color: #ffcf5c;">${dateStr}</strong> <span style="color: #d99a14; font-size: 0.95em;">${timeStr}</span><br>${esc(ev.summary || 'Busy')}</span></li>`;
+                    return `<li class="task-item"><span class="task-text"><strong style="color: var(--link);">${dateStr}</strong> <span style="color: var(--fg-soft); font-size: 0.95em;">${timeStr}</span><br>${esc(ev.summary || 'Busy')}</span></li>`;
                 }).join('');
             } catch (e) {
                 if (e.message !== 'auth') list.innerHTML = '<li class="status-err" style="padding: 10px 0;">Couldn\'t load your calendar. Try Refresh or reconnect in Settings.</li>';
@@ -3272,7 +4022,21 @@
         // =====================================================================
         // SETTINGS + RENDER ALL + INIT
         // =====================================================================
+        function applyTheme() {
+            const t = data.settings.theme === 'green' ? 'green' : 'amber';
+            document.documentElement.dataset.theme = t;
+            ['amber', 'green'].forEach(k => { const b = $('theme-' + k); if (b) b.setAttribute('aria-pressed', k === t); });
+            const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = '#171717';
+        }
+        function setTheme(t) {
+            data.settings.theme = t === 'green' ? 'green' : 'amber';
+            saveData(true);
+            applyTheme();
+        }
+
         function renderSettings() {
+            applyTheme();
+            renderNewsSettings();
             $('set-place-current').textContent = data.settings.place;
             renderPlaceMap();
             $('travel-stations').value = data.settings.travel.stations.join(', ');
@@ -3353,7 +4117,8 @@
         // Pad the page so nothing ends up stuck underneath the dock
         const dockObserver = window.ResizeObserver ? new ResizeObserver(() => {
             const dock = $('music-dock');
-            document.body.style.paddingBottom = (dock.classList.contains('open') && !data.music.pos) ? (dock.offsetHeight + 30) + 'px' : '';
+            // In the static layout the dock floats over the page (drag it anywhere) instead of pushing everything up
+            document.body.style.paddingBottom = (!isFitMode() && dock.classList.contains('open') && !data.music.pos) ? (dock.offsetHeight + 30) + 'px' : '';
             if (data.music.pos) placeDock(data.music.pos.x, data.music.pos.y, false);
         }) : null;
 
@@ -3784,12 +4549,12 @@
             $('food-known').innerHTML = [...new Set([...Object.values(f.known).map(k => k.name), ...Object.keys(FOOD_AISLE)])].sort().map(n => `<option value="${esc(n)}">`).join('');
             $('food-staples').innerHTML = FOOD_STAPLES.map((n, idx) => {
                 const k = f.known[foodKey(n)];
-                return `<button class="chip" onclick="quickAddFood(${idx})" title="Add ${esc(n)}">+ ${esc(n)}${k && k.price ? ` <span style="font-weight: normal; color: #d99a14;">${money(k.price)}</span>` : ''}</button>`;
+                return `<button class="chip" onclick="quickAddFood(${idx})" title="Add ${esc(n)}">+ ${esc(n)}${k && k.price ? ` <span style="font-weight: normal; color: var(--fg-soft);">${money(k.price)}</span>` : ''}</button>`;
             }).join('');
 
             const list = $('food-list');
             if (!f.items.length) {
-                list.innerHTML = '<p class="empty">Your list is empty. Add items above, use Quick add, or pick a meal idea below.</p>';
+                list.innerHTML = '<p class="empty">Your list is empty. Add items here, or use the Quick add and meal ideas page.</p>';
             } else {
                 list.innerHTML = FOOD_SECTIONS.map(sec => {
                     const items = f.items.filter(i => (i.section || 'Other') === sec).sort((a, b) => (a.done - b.done) || a.name.localeCompare(b.name));
@@ -3860,6 +4625,7 @@
             pushFood(name, 1, k ? Number(k.price) || 0 : 0, (k && k.section) || FOOD_AISLE[name] || 'Other');
             saveData();
             renderFood();
+            flash('food-quick-status', `${name} added to your list`);
         }
 
         function addMeal(idx) {
@@ -3873,7 +4639,7 @@
             });
             saveData();
             renderFood();
-            flash('food-status', added ? `Added ${added} ingredient${added === 1 ? '' : 's'} for ${meal.name.toLowerCase()}` : `Everything for ${meal.name.toLowerCase()} is already on your list`);
+            flash(isFitMode() ? 'food-quick-status' : 'food-status', added ? `Added ${added} ingredient${added === 1 ? '' : 's'} for ${meal.name.toLowerCase()}` : `Everything for ${meal.name.toLowerCase()} is already on your list`);
         }
 
         function toggleFood(id) { const i = data.food.items.find(x => x.id === id); if (i) { i.done = !i.done; saveData(); renderFood(); } }
@@ -4321,7 +5087,7 @@
             },
             {
                 id: 'travel', tab: 'settings', title: 'Check your train stations',
-                text: () => 'Live trains for the next hour show on Today. MCO is Manchester Oxford Road and MAN is Piccadilly. Change them to the stations you use, then press Save and test.',
+                text: () => 'Live trains for the next hour show on the Home Page. MCO is Manchester Oxford Road and MAN is Piccadilly. Change them to the stations you use, then press Save and test.',
                 targets: () => ['#travel-stations', '#btn-travel-save'],
                 done: () => !!(data.setup.done && data.setup.done.travel)
             },
@@ -4407,6 +5173,7 @@
             $('setup-arrows').innerHTML = '';
             if (step) {
                 if (step.tab && data.settings.lastTab !== step.tab) switchTab(step.tab);
+                revealFitTarget(document.querySelector(step.targets()[0]));
                 buildArrows(step);
                 setTimeout(() => scrollToTargets(step), 120);
             }
@@ -4417,6 +5184,7 @@
         function scrollToTargets(step) {
             const els = step.targets().map(sel => document.querySelector(sel)).filter(el => el && el.offsetParent !== null);
             if (!els.length) return;
+            if (isFitMode()) { els[0].scrollIntoView({ block: 'nearest' }); positionArrows(); return; }
             if (els[0].closest('.header')) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
             const rects = els.map(el => el.getBoundingClientRect());
             const top = Math.min(...rects.map(r => r.top)) - 70;        // room for the arrows above
@@ -4678,6 +5446,7 @@
             renderToday(); renderBudget(); renderTasks(); renderDeadlines();
             renderTimetable(); renderProjects(); renderGrades(); renderSettings(); renderTimer();
             renderMusicLibrary(); renderNowPlaying(); renderFood(); renderSetupPill();
+            renderHomeLayout(); renderNews();
         }
 
         function startApp() {
@@ -4686,7 +5455,12 @@
             const today = todayISO();
             ['spend-date', 'inc-date', 'bill-due', 'dl-date'].forEach(id => { $(id).value = today; });
             timer.remaining = focusMins() * 60;
+            initFitPages();
+            initHome();
+            renderDotIcons();
+            setTimeout(playLogos, 50); // the header logo was hidden behind sign-in until now
             renderAll();
+            applyTheme();
             switchTab(data.settings.lastTab || 'today');
             $('app-version').textContent = 'v' + APP_VERSION;
             if (!data.settings.seenGuide) openGuide();
@@ -4705,6 +5479,7 @@
             }, 60000);
             setInterval(() => { if ($('view-travel').style.display !== 'none') tickRailClocks(); }, 1000);
             setInterval(() => { if ($('view-today').style.display !== 'none') renderToday(); }, 60000);
+            setInterval(() => { if (document.visibilityState === 'visible' && $('view-today').style.display !== 'none') fetchNews(); }, 5 * 60000);
             setInterval(checkReminder, 15000);
             document.addEventListener('visibilitychange', checkReminder);
             offerPendingShare();
