@@ -622,6 +622,10 @@
         .auth-card label { display: block; font-weight: bold; margin-bottom: 6px; }
         .auth-card input[type="email"] { width: 100%; padding: 14px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
         .auth-card button { width: 100%; }
+        .auth-card input.auth-code { width: 100%; padding: 14px; font-size: 1.8rem; letter-spacing: 0.4em; text-align: center; font-variant-numeric: tabular-nums;
+            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
+        .auth-code-actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .auth-code-actions .auth-link:disabled { color: #888; background: none; cursor: default; text-decoration: none; }
         .auth-msg { margin: 14px 0 0; padding: 12px 14px; border-radius: 6px; font-size: 1rem; line-height: 1.5; display: none; }
         .auth-msg.show { display: block; }
         .auth-msg.error { background: #fdecea; border: 1px solid #f5c2c0; color: #842029; }
@@ -670,29 +674,35 @@
         <main class="auth-main">
             <div class="auth-card" id="auth-step-email">
                 <h2>Sign in</h2>
-                <p>Type your email address and we'll send you a sign-in link. Press the link in the email and you're in. There's no password to remember.</p>
+                <p>Type your email address and we'll email you a sign-in code. Type the code in on the next screen and you're in. There's no password to remember.</p>
                 <label for="auth-email">Email address</label>
                 <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter') sendMagicLink()">
-                <button id="auth-send" onclick="sendMagicLink()">Email me a sign-in link</button>
-                <p style="margin: 14px 0 0; font-size: 0.95rem; color: #666;">First time here? The same link sets up your account.</p>
+                <button id="auth-send" onclick="sendMagicLink()">Email me a sign-in code</button>
+                <p style="margin: 14px 0 0; font-size: 0.95rem; color: #666;">First time here? The same code sets up your account.</p>
                 <div class="auth-msg" id="auth-msg" role="alert"></div>
             </div>
 
             <div class="auth-card" id="auth-step-sent" style="display: none;">
-                <h2>Check your email</h2>
-                <p>We've sent a sign-in link to <strong id="auth-sent-to"></strong>. Open the email on this device and press the link to get into the app.</p>
-                <button id="auth-resend" onclick="sendMagicLink(true)">Send the link again</button>
+                <h2>Enter your code</h2>
+                <p>We've emailed a sign-in code to <strong id="auth-sent-to"></strong>. Type it in below. Keep this page open while you check your email.</p>
+                <label for="auth-code">Sign-in code</label>
+                <input type="text" id="auth-code" class="auth-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"
+                    oninput="onCodeInput(this)" onpaste="this._pasted = true" onkeydown="if(event.key==='Enter') verifyCode()">
+                <button id="auth-verify" onclick="verifyCode()">Sign in</button>
                 <div class="auth-msg" id="auth-msg-sent" role="alert"></div>
-                <button class="auth-link" onclick="showAuthStep('email')">Use a different email address</button>
+                <div class="auth-code-actions">
+                    <button class="auth-link" id="auth-resend" onclick="sendMagicLink(true)">Send a new code</button>
+                    <button class="auth-link" onclick="changeEmail()">Use a different email address</button>
+                </div>
             </div>
 
             <details class="auth-help">
-                <summary>Didn't get the email?</summary>
+                <summary>Didn't get the email, or the code won't work?</summary>
                 <ul>
                     <li>Wait a minute, then check your junk or spam folder.</li>
                     <li>Make sure the email address is spelled correctly.</li>
-                    <li>Each link works once and runs out after about an hour. If it's run out, send a new one.</li>
-                    <li>Open the link on the phone or computer you want to use the app on.</li>
+                    <li>Each code works once and runs out after about an hour. If you've asked for more than one, use the newest email.</li>
+                    <li>If the email has a sign-in button instead, pressing it works too. Open it on the phone or computer you want to use the app on.</li>
                     <li>Still stuck? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Sign-in%20help%20for%20Life%20-%20Student%20Edition">Email support</a>.</li>
                 </ul>
             </details>
@@ -716,7 +726,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v1.8</span>
+            <span class="version-tag" id="app-version">v1.9</span>
             <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
         </div>
     </div>
@@ -1624,7 +1634,7 @@
                     <summary>Does anything leave my device?</summary>
                     <p>Only what's needed to fetch live information, and only when you use that feature:</p>
                     <ul>
-                        <li><strong>Signing in:</strong> your email address goes to Supabase, the service that sends your sign-in links and remembers that you're signed in.</li>
+                        <li><strong>Signing in:</strong> your email address goes to Supabase, the service that sends your sign-in codes and remembers that you're signed in.</li>
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked.</li>
                         <li><strong>Music:</strong> YouTube videos play from YouTube, which has its own privacy rules.</li>
@@ -1633,7 +1643,7 @@
                 </details>
                 <details class="help-details">
                     <summary>How do I sign in and out?</summary>
-                    <p>Type your email address on the sign-in screen and press the link we email you. You stay signed in on that device until you press <strong>Sign out</strong> in Settings. To sign in on another phone or computer, send yourself a new link from that device.</p>
+                    <p>Type your email address on the sign-in screen, then type in the code we email you. You stay signed in on that device until you press <strong>Sign out</strong> in Settings. To sign in on another phone or computer, ask for a new code on that device.</p>
                     <p>To close your account, <a class="support-mail" href="mailto:david@dpaul.studio?subject=Close%20my%20account%20for%20Life%20-%20Student%20Edition">email support</a> from the address you sign in with.</p>
                 </details>
                 <details class="help-details">
@@ -1671,6 +1681,8 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v1.9  Sign-in by emailed code: after sending, the page waits on a code box (stays there after a reload),
+        //       paste or autofill signs in straight away, the email's button still works too
         // v1.8  Share my list: send your music list as a link (nothing stored), add a list a friend shared with you
         // v1.7  Welcome screen on first visit (beta note, data stays on your device), Send feedback in Settings
         // v1.6  Sign-in with an emailed magic link (Supabase) gates the whole app, account and sign out in Settings,
@@ -1687,7 +1699,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '1.8';
+        const APP_VERSION = '1.9';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -4694,11 +4706,11 @@
             const btn = $('auth-resend');
             clearInterval(authState.cooldownTimer);
             btn.disabled = true;
-            btn.textContent = `Send the link again (${left}s)`;
+            btn.textContent = `Send a new code (${left}s)`;
             authState.cooldownTimer = setInterval(() => {
                 left--;
-                if (left <= 0) { clearInterval(authState.cooldownTimer); btn.disabled = false; btn.textContent = 'Send the link again'; }
-                else btn.textContent = `Send the link again (${left}s)`;
+                if (left <= 0) { clearInterval(authState.cooldownTimer); btn.disabled = false; btn.textContent = 'Send a new code'; }
+                else btn.textContent = `Send a new code (${left}s)`;
             }, 1000);
         }
 
@@ -4707,7 +4719,7 @@
             if (m.includes('rate') || m.includes('seconds') || (err && err.status === 429)) return 'Too many links sent for now. Wait a minute, then try again.';
             if (m.includes('invalid') && m.includes('email')) return 'That email address doesn\'t look right. Check it and try again.';
             if (m.includes('fetch') || m.includes('network')) return 'Couldn\'t reach the sign-in service. Check your internet connection and try again.';
-            return 'The sign-in link couldn\'t be sent. Try again in a minute, or email support if it keeps happening.';
+            return 'The sign-in code couldn\'t be sent. Try again in a minute, or email support if it keeps happening.';
         }
 
         async function sendMagicLink(resend) {
@@ -4725,14 +4737,61 @@
             btn.textContent = label; btn.disabled = false;
             if (error) { authMsg(friendlyAuthError(error)); return; }
             authState.email = email;
-            try { localStorage.setItem('dpaul_student_last_email', email); } catch (e) {}
-            $('auth-sent-to').textContent = email;
-            showAuthStep('sent');
-            if (resend) authMsg('A new link is on its way. Use the newest email.', 'info');
+            try {
+                localStorage.setItem('dpaul_student_last_email', email);
+                localStorage.setItem(CODE_PENDING_KEY, JSON.stringify({ email, at: Date.now() }));
+            } catch (e) {}
+            showCodeStep(email);
+            if (resend) authMsg('A new code is on its way. Use the newest email, older codes stop working.', 'info');
             startResendCooldown();
         }
 
+        // ---- Code step (v1.9): the email carries a code; stays on this screen even if the page reloads ----
+        const CODE_PENDING_KEY = 'dpaul_student_code_pending';
+        function showCodeStep(email) {
+            $('auth-sent-to').textContent = email;
+            $('auth-code').value = ''; $('auth-code')._last = 0;
+            showAuthStep('sent');
+            setTimeout(() => $('auth-code').focus(), 60);
+        }
+        function changeEmail() {
+            try { localStorage.removeItem(CODE_PENDING_KEY); } catch (e) {}
+            clearInterval(authState.cooldownTimer);
+            showAuthStep('email');
+        }
+        function onCodeInput(el) {
+            const before = el._last || 0;
+            el.value = el.value.replace(/\D/g, '').slice(0, 10);
+            authMsg('');
+            // A pasted or autofilled code (several digits arriving at once) signs in straight away
+            if (el.value.length >= 6 && (el._pasted || el.value.length - before > 1)) verifyCode();
+            el._pasted = false;
+            el._last = el.value.length;
+        }
+        async function verifyCode() {
+            const token = $('auth-code').value.replace(/\D/g, '');
+            if (token.length < 6) { authMsg('Type the full code from the email. It\'s at least 6 numbers.'); $('auth-code').focus(); return; }
+            if (!authState.client) { authMsg('Sign-in couldn\'t load. Check your internet connection and refresh the page.'); return; }
+            const btn = $('auth-verify');
+            if (btn.disabled) return;
+            btn.disabled = true; btn.textContent = 'Checking...';
+            authMsg('');
+            const { data: res, error } = await authState.client.auth.verifyOtp({ email: authState.email, token, type: 'email' });
+            btn.disabled = false; btn.textContent = 'Sign in';
+            if (error) {
+                const m = (error.message || '').toLowerCase();
+                authMsg(m.includes('rate') || error.status === 429
+                    ? 'Too many tries for now. Wait a minute, then try again.'
+                    : 'That code isn\'t right or has run out. Check it against the newest email, or send a new code.');
+                $('auth-code').select();
+                return;
+            }
+            try { localStorage.removeItem(CODE_PENDING_KEY); } catch (e) {}
+            if (res && res.session && !authState.started) unlockApp(res.session);
+        }
+
         function unlockApp(session) {
+            try { localStorage.removeItem(CODE_PENDING_KEY); } catch (e) {}
             authState.email = (session.user && session.user.email) || '';
             $('set-account-email').textContent = authState.email;
             clearInterval(authState.cooldownTimer);
@@ -4757,8 +4816,8 @@
             const params = new URLSearchParams(location.hash.slice(1) + '&' + location.search.slice(1));
             const code = params.get('error_code') || params.get('error');
             if (!code) return '';
-            if (code.includes('expired') || code === 'access_denied') return 'That sign-in link has run out or was already used. Send yourself a new one below.';
-            return 'That sign-in link didn\'t work. Send yourself a new one below.';
+            if (code.includes('expired') || code === 'access_denied') return 'That sign-in link has run out or was already used. Ask for a new code below.';
+            return 'That sign-in link didn\'t work. Ask for a new code below.';
         }
 
         function tidyAddressBar() {
@@ -4812,6 +4871,14 @@
             if (session) { unlockApp(session); return; }
 
             lockApp();
+            let pending = null;
+            try { pending = JSON.parse(localStorage.getItem(CODE_PENDING_KEY) || 'null'); } catch (e) {}
+            if (pending && pending.email && Date.now() - pending.at < 3600000) {
+                authState.email = pending.email;
+                showCodeStep(pending.email);
+            } else {
+                try { localStorage.removeItem(CODE_PENDING_KEY); } catch (e) {}
+            }
             if (linkError) authMsg(linkError);
         });
 
