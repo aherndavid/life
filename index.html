@@ -953,7 +953,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v2.6</span>
+            <span class="version-tag" id="app-version">v2.7</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1988,6 +1988,8 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v2.7  News: updated BBC area names (Derbyshire, Hull and East Yorkshire, North Yorkshire); shows
+        //       'BBC England' when the news function falls back because an area has no recent feed
         // v2.6  Title banner image Assets/life-student-edition.webp replaces the typed title (header and sign-in)
         // v2.5  Animated logo: Assets/dpaul-logo-yello-fade.webm plays on open and every 30 seconds (still logo as fallback)
         // v2.4  Dot-matrix font everywhere: Doto loads before any text shows, and arrows, music buttons and
@@ -2017,7 +2019,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '2.6';
+        const APP_VERSION = '2.7';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2610,14 +2612,14 @@
             cornwall: ['Cornwall', [[50.26, -5.05], [50.12, -5.54], [50.47, -4.72], [50.15, -5.07]]],
             coventry_and_warwickshire: ['Coventry and Warwickshire', [[52.41, -1.51], [52.28, -1.58], [52.37, -1.26], [52.19, -1.71]]],
             cumbria: ['Cumbria', [[54.89, -2.93], [54.33, -2.75], [54.60, -3.14], [54.12, -3.23]]],
-            derby: ['Derby', [[52.92, -1.48], [53.23, -1.42], [53.26, -1.91], [53.14, -1.55]]],
+            derby: ['Derbyshire', [[52.92, -1.48], [53.23, -1.42], [53.26, -1.91], [53.14, -1.55]]],
             devon: ['Devon', [[50.72, -3.53], [50.38, -4.14], [51.08, -4.06], [50.46, -3.53]]],
             dorset: ['Dorset', [[50.72, -1.88], [50.71, -2.44], [50.61, -2.45], [50.95, -2.52]]],
             essex: ['Essex', [[51.74, 0.47], [51.89, 0.90], [51.54, 0.71], [51.57, 0.46]]],
             gloucestershire: ['Gloucestershire', [[51.86, -2.24], [51.90, -2.08], [51.75, -2.22]]],
             hampshire: ['Hampshire', [[50.91, -1.40], [50.80, -1.09], [51.06, -1.31], [51.27, -1.09], [51.25, -0.76]]],
             hereford_and_worcester: ['Hereford and Worcester', [[52.06, -2.72], [52.19, -2.22], [52.39, -2.25]]],
-            humberside: ['Humberside', [[53.74, -0.33], [53.57, -0.08], [53.59, -0.65]]],
+            humberside: ['Hull and East Yorkshire', [[53.74, -0.33], [53.57, -0.08], [53.59, -0.65]]],
             kent: ['Kent', [[51.27, 0.52], [51.28, 1.08], [51.13, 1.31], [51.44, 0.37], [51.13, 0.26]]],
             lancashire: ['Lancashire', [[53.76, -2.70], [53.82, -3.05], [53.75, -2.48], [54.05, -2.80], [53.79, -2.25]]],
             leeds_and_west_yorkshire: ['Leeds and West Yorkshire', [[53.80, -1.55], [53.80, -1.75], [53.65, -1.78], [53.68, -1.50], [53.72, -1.86]]],
@@ -2640,7 +2642,7 @@
             tees: ['Tees', [[54.57, -1.23], [54.52, -1.55], [54.69, -1.21]]],
             tyne_and_wear: ['Tyne and Wear', [[54.98, -1.61], [54.91, -1.38], [54.78, -1.57], [55.17, -1.69]]],
             wiltshire: ['Wiltshire', [[51.56, -1.78], [51.07, -1.79], [51.46, -2.12], [51.35, -1.99]]],
-            york_and_north_yorkshire: ['York and North Yorkshire', [[53.96, -1.08], [53.99, -1.54], [54.28, -0.40], [54.34, -1.43]]],
+            york_and_north_yorkshire: ['North Yorkshire', [[53.96, -1.08], [53.99, -1.54], [54.28, -0.40], [54.34, -1.43]]],
             scotland: ['Scotland', [[55.95, -3.19], [55.86, -4.25], [57.15, -2.10], [57.48, -4.22], [56.46, -2.97], [56.12, -3.94], [55.07, -3.61], [58.97, -2.96], [60.15, -1.15]]],
             wales: ['Wales', [[51.48, -3.18], [51.62, -3.94], [53.23, -4.13], [52.41, -4.08], [53.05, -3.00], [51.80, -4.97], [52.24, -3.38]]],
             northern_ireland: ['Northern Ireland', [[54.60, -5.93], [55.00, -7.30], [54.35, -6.65], [54.34, -7.64]]]
@@ -2679,7 +2681,7 @@
                     const r = await fetch(`${NEWS_PROXY_URL}?area=${encodeURIComponent(area)}`);
                     if (!r.ok) throw new Error('HTTP ' + r.status);
                     const j = await r.json();
-                    newsState.cache[area] = { at: Date.now(), items: Array.isArray(j.items) ? j.items : [], error: false };
+                    newsState.cache[area] = { at: Date.now(), items: Array.isArray(j.items) ? j.items : [], error: false, fallback: !!j.fallback };
                 } catch (e) {
                     // Keep any headlines already showing, and try again in about 3 minutes
                     newsState.cache[area] = { at: Date.now() - 12 * 60000, items: (c && c.items) || [], error: true };
@@ -2715,7 +2717,9 @@
         }
         function renderNews() {
             const local = newsLocalArea();
-            $('news-local-src').textContent = local ? 'BBC ' + NEWS_AREAS[local][0] : '';
+            const lc = local && newsState.cache[local];
+            $('news-local-src').textContent = !local ? '' : (lc && lc.fallback ? 'BBC England' : 'BBC ' + NEWS_AREAS[local][0]);
+            $('news-local-src').title = lc && lc.fallback ? `No recent ${NEWS_AREAS[local][0]} headlines from the BBC, so this shows England news` : '';
             renderNewsList('news-uk', 'uk');
             if (local) renderNewsList('news-local', local);
             else $('news-local').innerHTML = '<li class="empty">Set a UK town or postcode in <a href="#" onclick="switchTab(\'settings\'); showFitPage(\'settings\', 1); return false;">Settings</a> to see news for your area.</li>';
