@@ -411,13 +411,14 @@
         .help-details ol, .help-details ul { margin: 12px 16px 14px 36px; padding: 0; line-height: 1.6; color: #444; }
         .help-details li { margin-bottom: 8px; }
         .help-details p { margin: 12px 16px; color: #444; line-height: 1.55; }
-        .help-details code, .guide-owner code { background: #f1f3f5; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; font-size: 0.92em; word-break: break-all; }
-        .help-details .row-gap { margin: 0 16px 14px; }
-        .guide-owner { margin-top: 28px; padding-top: 22px; border-top: 2px solid #eee; }
-        .guide-owner h3 { margin: 0 0 6px; font-size: 1.25rem; color: #333; }
-        .guide-owner > p { margin: 0 0 6px; color: #555; line-height: 1.55; }
-        .guide-owner .help-details { margin-top: 10px; }
-        .guide-owner .help-details summary { color: #333; }
+        .help-details code { background: #f1f3f5; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; font-size: 0.92em; word-break: break-all; }
+        .guide-section-title { margin: 30px 0 12px; padding-top: 20px; border-top: 2px solid #eee; font-size: 1.3rem; color: #333; }
+        .guide-body > .help-details { margin-top: 10px; }
+        .guide-body > .help-details summary { color: #333; }
+        .guide-support { margin-top: 26px; background: #fff8e1; border: 1px solid #ffe08a; border-radius: 6px; padding: 16px 20px; }
+        .guide-support h3 { margin: 0 0 6px; font-size: 1.15rem; }
+        .guide-support p { margin: 0; line-height: 1.55; }
+        .support-mail { font-weight: bold; }
         .guide-card { background: white; border: 1px solid #ddd; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; }
         .guide-card h3 { margin: 0 0 8px; font-size: 1.2rem; color: #007bff; }
         .guide-card p { margin: 0 0 10px; line-height: 1.55; font-size: 1rem; color: #444; }
@@ -1066,7 +1067,7 @@
                             <li>If asked, tick the box to let the app <strong>see your calendar events</strong>, then press <strong>Continue</strong>. Without that tick, your agenda stays empty.</li>
                             <li>Your next 7 days of events appear under Agenda on the Today tab.</li>
                         </ol>
-                        <p><strong>"Access blocked"</strong> or <strong>"has not completed the Google verification process"</strong> means your email isn't on this app's tester list yet. Send your Gmail address to whoever shared the link with you and ask them to add it, then try again.</p>
+                        <p><strong>"Access blocked"</strong> or <strong>"has not completed the Google verification process"</strong> means your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
                         <p>Google signs you out after about an hour. When the agenda says your session expired, press <strong>Reconnect</strong>. To remove access completely, press Disconnect, or go to your Google Account under Security, then Third-party connections.</p>
                     </details>
                 </div>
@@ -1095,7 +1096,7 @@
                             <li><strong>Trains:</strong> Today lists every train leaving your stations in the next hour, in every direction, in departure order. Each shows its platform, how many minutes until it leaves, and its status: <span class="dep-state ok">On time</span>, <span class="dep-state late">Exp 14:32</span> (running late, with the new time), <span class="dep-state late">Delayed</span> or <span class="dep-state off">Cancelled</span>. It refreshes every minute. Disruption notices from National Rail show in yellow at the top.</li>
                             <li><strong>Station codes:</strong> every station has a 3-letter code. Manchester Oxford Road is MCO, Piccadilly is MAN, Deansgate is DGT and Victoria is MCV. For any other station, search for it on nationalrail.co.uk and the code shows next to its name. Enter up to three, separated by commas, and press Save and test.</li>
                             <li><strong>Live buses:</strong> the yellow button next to Refresh opens TfGM's live departures. To make it open straight to your stop, go to tfgm.com, choose Live departures, search for your stop and open it. Copy the address from your browser's address bar, paste it into Bus times page above and press Save and test.</li>
-                            <li><strong>"Live trains aren't switched on"</strong> means the train feed hasn't been connected on this copy of the app. Live buses still works. Whoever runs this copy can switch trains on using <a href="#" onclick="openGuide('owner-trains'); return false;">these steps</a>.</li>
+                            <li><strong>"Live trains aren't available"</strong> means live trains haven't been turned on for this copy of the app yet. Live buses still works. Questions? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Trains%20in%20Life%20-%20Student%20Edition">Email support</a>.</li>
                         </ul>
                     </details>
                 </div>
@@ -1118,7 +1119,7 @@
 
                 <div class="container">
                     <h2 style="margin-top: 0;">Your data</h2>
-                    <p class="note">Everything saves in this browser automatically as you go. <span id="settings-backup-line"></span></p>
+                    <p class="note">Everything saves in this browser automatically as you go. Nothing is sent to us. <span id="settings-backup-line"></span> <a href="#" onclick="openGuide('guide-privacy'); return false;">Your data and privacy questions</a></p>
                     <div class="row-gap">
                         <button class="btn-help" id="btn-save" onclick="saveButtonClick()" data-dot="amber" style="padding: 12px 24px; font-size: 1.1rem;">Back up</button>
                         <button class="btn-teal" onclick="document.getElementById('import-file').click()">Restore from a File</button>
@@ -1286,84 +1287,6 @@
         </div>
     </div>
 
-    <!-- Cloudflare Worker for live trains: copied or downloaded from How to use, Running your own copy -->
-    <script type="text/plain" id="worker-source">
-// =====================================================================
-// Life - Student Edition: live trains proxy (Cloudflare Worker)
-// =====================================================================
-// Why this exists: National Rail's data needs a private key, and the browser
-// can't call it directly. This Worker holds the key, asks National Rail for
-// the next hour of departures, and hands the result back to the web page.
-//
-// Set up once in the Cloudflare dashboard (Workers & Pages):
-//   1. Create a Worker, choose "Start with Hello World", then Edit code.
-//      Replace everything with this file and press Deploy.
-//   2. Settings > Variables and Secrets:
-//        RDM_KEY          (Secret)  your Rail Data Marketplace consumer key
-//        ALLOWED_ORIGINS  (Text)    e.g. https://dpaul.studio
-//                                   comma-separate several sites; leave unset to allow any
-//   3. Copy the Worker's address (https://something.workers.dev) into
-//      TRAINS_PROXY_URL near the top of index.html.
-//
-// Request:  GET /departures/MCO   ->   National Rail departure board JSON, next 60 minutes
-// =====================================================================
-
-const RDM_BOARD = 'https://api1.raildata.org.uk/1010-live-departure-board-dep/LDBWS/api/20220120/GetDepartureBoard/';
-const CACHE_SECONDS = 30;          // everyone viewing the same station shares one lookup
-const memo = new Map();            // crs -> { at, status, body }
-
-export default {
-  async fetch(request, env) {
-    const origin = request.headers.get('Origin') || '';
-    const allowed = (env.ALLOWED_ORIGINS || '*').split(',').map(s => s.trim()).filter(Boolean);
-    const allowOrigin = allowed.includes('*') ? '*' : (allowed.includes(origin) ? origin : '');
-    const cors = {
-      'Access-Control-Allow-Origin': allowOrigin || 'null',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Vary': 'Origin'
-    };
-
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
-    if (request.method !== 'GET') return reply({ error: 'Only GET is supported.' }, 405, cors);
-    if (!allowOrigin) return reply({ error: 'This site is not allowed to use the trains proxy.' }, 403, cors);
-    if (!env.RDM_KEY) return reply({ error: 'RDM_KEY is not set on the Worker.' }, 500, cors);
-
-    const match = new URL(request.url).pathname.match(/^\/departures\/([A-Za-z]{3})\/?$/);
-    if (!match) return reply({ error: 'Use /departures/ followed by a 3-letter station code.' }, 404, cors);
-    const crs = match[1].toUpperCase();
-
-    const hit = memo.get(crs);
-    if (hit && Date.now() - hit.at < CACHE_SECONDS * 1000) {
-      return new Response(hit.body, { status: hit.status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
-    }
-
-    let upstream;
-    try {
-      upstream = await fetch(`${RDM_BOARD}${crs}?numRows=60&timeOffset=0&timeWindow=60`, {
-        headers: { 'x-apikey': env.RDM_KEY, 'Accept': 'application/json' }
-      });
-    } catch (e) {
-      return reply({ error: 'Could not reach National Rail.' }, 502, cors);
-    }
-
-    const body = await upstream.text();
-    const status = upstream.ok ? 200 : (upstream.status === 400 || upstream.status === 404 ? 404 : 502);
-    if (upstream.ok) {
-      memo.set(crs, { at: Date.now(), status, body });
-      if (memo.size > 200) memo.delete(memo.keys().next().value);
-    }
-    return new Response(upstream.ok ? body : JSON.stringify({ error: `National Rail returned ${upstream.status}.` }), {
-      status,
-      headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
-    });
-  }
-};
-
-function reply(obj, status, headers) {
-  return new Response(JSON.stringify(obj), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
-}
-    </script>
-
     <!-- HOW TO USE GUIDE -->
     <div class="guide-overlay" id="guide-overlay" onclick="if(event.target === this) closeGuide()">
         <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">
@@ -1376,186 +1299,152 @@ function reply(obj, status, headers) {
             </div>
             <div class="guide-body">
                 <div class="guide-start">
-                    <h3>Getting set up takes about five minutes</h3>
+                    <h3>Get started in five minutes</h3>
                     <ol>
-                        <li>Set your town in <strong>Settings</strong> for weather, sunrise and sunset.</li>
-                        <li>Enter your balance and next payment date in <strong>Budget</strong>.</li>
-                        <li>Add your classes to <strong>Timetable</strong>.</li>
-                        <li>Add assignment and exam dates to <strong>Deadlines</strong>.</li>
-                        <li>Optionally connect Google and check your train stations in <strong>Settings</strong>. The help under Connect Google explains what you'll see.</li>
+                        <li>Go to <strong>Settings</strong> and type your town or postcode, so you get the right weather.</li>
+                        <li>Go to <strong>Budget</strong> and enter how much is in your bank account and when your next payment arrives.</li>
+                        <li>Add your classes in <strong>Timetable</strong>.</li>
+                        <li>Add your assignment and exam dates in <strong>Deadlines</strong>.</li>
+                        <li>If you like, connect your Google Calendar and pick your train stations in <strong>Settings</strong>.</li>
                     </ol>
-                    <p style="margin: 14px 0 0; font-size: 1.05rem;">Want a hand? Guided set up points you to each step with arrows.</p>
+                    <p style="margin: 14px 0 0; font-size: 1.05rem;">Prefer to be shown? Guided set up points to each step with red arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
-                    <p style="margin: 14px 0 0; font-size: 0.95rem; color: #555;">Hosting this app for other people? See <a href="#" onclick="openGuide('owner'); return false;">Running your own copy</a> at the bottom of this guide.</p>
                 </div>
+
+                <h3 class="guide-section-title">What each tab does</h3>
                 <div class="guide-grid">
                     <div class="guide-card">
                         <h3>Today</h3>
-                        <p>Your home screen. It shows how much you can safely spend, today's classes with the one happening now highlighted, and anything due in the next two weeks.</p>
-                        <p>Live trains, your Google agenda and the focus timer sit down the right-hand side.</p>
+                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar and a focus timer, all on one screen.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
                     </div>
                     <div class="guide-card">
                         <h3>Budget</h3>
-                        <p>Enter what's in your current account whenever you check your banking app. The app takes off any unpaid bills due before your next payment and spreads what's left across the days until it lands. That's your safe daily and weekly spend.</p>
-                        <p>Add loan instalments and wages under Money in, rent and subscriptions under Bills, and log spending to see where your money goes each month. Tick a monthly bill as paid and next month's copy is added for you.</p>
+                        <p>Type in your bank balance whenever you check it. The app takes off bills that are still to pay and tells you how much you can spend each day until your next payment.</p>
+                        <p>Add your loan and wages under Money in, rent and subscriptions under Bills, and log what you spend.</p>
                         <button class="btn-small" onclick="guideGo('budget')">Go to Budget</button>
                     </div>
                     <div class="guide-card">
+                        <h3>Food Shop</h3>
+                        <p>Make a shopping list, add cheap meal ingredients in one tap, and see an estimated total before you go. Tick things off in the shop, then enter your receipt total and it's added to your Budget.</p>
+                        <button class="btn-small" onclick="guideGo('food')">Go to Food Shop</button>
+                    </div>
+                    <div class="guide-card">
                         <h3>Tasks</h3>
-                        <p>A simple to-do list. Add a module tag and a due date if you want them. Tasks due soon get a red or amber badge and appear on Today.</p>
-                        <p>Use Clear completed to tidy up finished tasks.</p>
+                        <p>A simple to-do list. Add a due date and it shows on Today when it's coming up.</p>
                         <button class="btn-small" onclick="guideGo('tasks')">Go to Tasks</button>
                     </div>
                     <div class="guide-card">
                         <h3>Deadlines</h3>
-                        <p>Add assignments and exams with the date, time and how much of the module they're worth. Each one counts down in days, turning amber a week out and red three days out.</p>
-                        <p>Tick a deadline once it's submitted. Add to my calendar downloads a file your phone or Outlook can import, with a reminder two days before each deadline.</p>
+                        <p>Add assignments and exams. Each one counts down and turns amber a week before and red three days before. Add to my calendar puts them on your phone with a reminder.</p>
                         <button class="btn-small" onclick="guideGo('deadlines')">Go to Deadlines</button>
                     </div>
                     <div class="guide-card">
                         <h3>Timetable</h3>
-                        <p>Add each lecture, seminar and lab once with its day, time and room. Your week is laid out day by day.</p>
-                        <p>Today's classes show on the Today tab, marked Now while they're on and Next for the one coming up.</p>
+                        <p>Add each class once with its day, time and room. Today then shows which class is on now and which is next.</p>
                         <button class="btn-small" onclick="guideGo('timetable')">Go to Timetable</button>
                     </div>
                     <div class="guide-card">
                         <h3>Projects</h3>
-                        <p>For bigger pieces of work like a dissertation or group project. Break it into milestones with dates, keep notes of what you've done, and save useful links.</p>
-                        <p>The progress bar fills as you tick milestones off.</p>
+                        <p>For big pieces of work like a dissertation. Break it into steps with dates, keep notes and save links. The bar fills up as you tick steps off.</p>
                         <button class="btn-small" onclick="guideGo('projects')">Go to Projects</button>
                     </div>
                     <div class="guide-card">
                         <h3>Grades</h3>
-                        <p>Add each module with its credits, then its assessments and their weightings. Enter marks as you get them back to see your module and overall average with its degree classification.</p>
-                        <p>Choose what you're aiming for at the top and each module tells you the average you need on the rest to get there.</p>
+                        <p>Add your modules and marks to see your average and degree classification. Pick the grade you're aiming for and it tells you what you need on the rest.</p>
                         <button class="btn-small" onclick="guideGo('grades')">Go to Grades</button>
                     </div>
                     <div class="guide-card">
-                        <h3>Trains and buses</h3>
-                        <p>Today lists every train leaving your stations in the next hour, with platforms, delays and cancellations. It refreshes every minute.</p>
-                        <p>Live buses opens TfGM's departure board. In Settings you can paste the link to your own stop so it opens straight to it. If the panel says live trains aren't switched on, the train feed hasn't been connected on this copy yet.</p>
-                        <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
-                    </div>
-                    <div class="guide-card">
-                        <h3>Google Calendar</h3>
-                        <p>In Settings, choose Connect Google and sign in. If Google warns it hasn't verified the app, press Continue, then tick the box to let it see your calendar. Your next 7 or 30 days of events appear on Today.</p>
-                        <p>"Access blocked" means your email isn't on the tester list yet: ask whoever shared the link to add it. Access is read-only, and Google signs you out after an hour, so press Reconnect when prompted.</p>
-                        <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
-                    </div>
-                    <div class="guide-card">
                         <h3>Focus timer</h3>
-                        <p>Pick 25 or 50 minutes, press Start and work until the chime. You then get a short break, with a longer one after every four sessions.</p>
-                        <p>The timer shows in the browser tab so you can see it while you work in another window.</p>
+                        <p>Press Start and work until the chime, then take a short break. After four sessions you get a longer break.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
                     </div>
                     <div class="guide-card">
-                        <h3>Background music</h3>
-                        <p>Press Music at the top of the page and paste a YouTube link. Videos and playlists both work, and the music keeps playing while you move between tabs.</p>
-                        <p>Drag the player by its top bar to move it anywhere, or press Minimise to shrink it to just the video. Double-click the bar to put it back in the corner. Your links are saved so you can switch between them. Some video owners don't allow their videos to play on other sites, so if one won't play, try another.</p>
+                        <h3>Music and break reminders</h3>
+                        <p>Press Music at the top and paste a YouTube link to play music while you work. A reminder pops up every 15 minutes to get you moving. You can change or turn it off in Settings.</p>
                         <button class="btn-small" onclick="closeGuide(); openMusic();">Open Music</button>
                     </div>
-                    <div class="guide-card">
-                        <h3>Food Shop</h3>
-                        <p>Build your shopping list by aisle, use the quick-add buttons for basics, or add all the ingredients for a cheap meal in one tap. Prices you enter are remembered, so you see an estimated total before you go.</p>
-                        <p>Set a weekly food budget, tick items off in the shop, then enter your receipt total. It's logged to your Budget automatically.</p>
-                        <button class="btn-small" onclick="guideGo('food')">Go to Food Shop</button>
-                    </div>
-                    <div class="guide-card">
-                        <h3>Break reminders</h3>
-                        <p>Every 15 minutes a reminder pops up to get you out of your chair for a stretch, with a fun fact about chickens, ants or a myth that isn't true.</p>
-                        <p>Start a 10 minute break from the reminder and the focus timer counts it down for you. Change how often reminders appear, or turn them off, in Settings.</p>
-                        <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
-                    </div>
-                    <div class="guide-card">
-                        <h3>Your data</h3>
-                        <p>Everything saves in this browser automatically as you go. Nothing is uploaded, and no account is needed.</p>
-                        <p>To keep it safe, press Back up in Settings under Your data. In Chrome or Edge on a computer you can pick a spreadsheet file once and every change is saved to it automatically. Anywhere else, download a spreadsheet copy now and then.</p>
-                        <button class="btn-small" onclick="guideGo('settings')">Go to Settings</button>
-                    </div>
                 </div>
-                <div class="guide-owner" id="guide-owner">
-                    <h3>Running your own copy</h3>
-                    <p>Only needed by whoever puts the app online. If someone shared a link with you, you can skip this section.</p>
 
-                    <details class="help-details" id="owner-hosting">
-                        <summary>1. Put the app online with GitHub Pages</summary>
-                        <ol>
-                            <li>Create a repository on GitHub and upload <code>index.html</code> and the <code>assets</code> folder to the top level.</li>
-                            <li>File names must match exactly, capitals included. The logo must be <code>assets/dpaul-logo.webp</code>. A Mac ignores capitals in file names, but GitHub Pages doesn't.</li>
-                            <li>Add an empty file called <code>.nojekyll</code> to the top level, using Add file, then Create new file.</li>
-                            <li>In the repository, go to <strong>Settings</strong>, then <strong>Pages</strong>. Under Source, choose <strong>GitHub Actions</strong>, press <strong>Configure</strong> on <strong>Static HTML</strong>, then Commit changes.</li>
-                            <li>Open the <strong>Actions</strong> tab and wait for the green tick. The app is then live at <code>https://your-username.github.io/your-repository/</code>.</li>
-                        </ol>
-                        <p>Don't upload a Python <code>venv</code> folder or other tool folders: they make the publish fail within seconds. A private repository needs GitHub Pro to publish, and the website is public either way. Nothing secret is stored in <code>index.html</code>.</p>
-                    </details>
+                <h3 class="guide-section-title" id="guide-help">Step-by-step help</h3>
 
-                    <details class="help-details" id="owner-google">
-                        <summary>2. Switch on Google Calendar</summary>
-                        <p>You do this once. Everyone who uses your copy then signs in with their own Google account. Access is read-only.</p>
-                        <ol>
-                            <li>Go to <strong>console.cloud.google.com</strong> and create a project. In APIs &amp; Services, then Library, find <strong>Google Calendar API</strong> and press Enable.</li>
-                            <li>Open <strong>Google Auth Platform</strong>:
-                                <ul>
-                                    <li><strong>Branding</strong>: enter the app name and your email.</li>
-                                    <li><strong>Audience</strong>: choose <strong>External</strong>, and add each person's Gmail address under Test users.</li>
-                                    <li><strong>Data access</strong>: add the scope <code>.../auth/calendar.readonly</code>.</li>
-                                </ul>
-                            </li>
-                            <li>Go to <strong>Clients</strong>, then Create client, and choose <strong>Web application</strong>. Under Authorised JavaScript origins, add your site's address with no path and no slash at the end. For this copy that's <code class="owner-origin">https://your-username.github.io</code>. Create it and copy the Client ID.</li>
-                            <li>Open <code>index.html</code>, find <code>const GOOGLE_CLIENT_ID = '';</code> near the top of the script, paste the Client ID between the quotes, then commit and push.</li>
-                        </ol>
-                        <p>While the app is in Testing, only people listed under Test users can connect, up to 100. Everyone else sees "Access blocked", so add their email. To let anyone connect, press <strong>Publish app</strong> and complete Google's free verification. That needs a privacy policy page, a homepage on your own domain and a short demo video.</p>
-                        <p>If Google shows <strong>origin_mismatch</strong>, the origin in step 3 doesn't exactly match your site's address.</p>
-                    </details>
+                <details class="help-details" id="help-google">
+                    <summary>Connect your Google Calendar</summary>
+                    <ol>
+                        <li>Go to <strong>Settings</strong> and press <strong>Connect Google</strong>.</li>
+                        <li>Choose the Google account your calendar is on.</li>
+                        <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This is normal while the app is new.</li>
+                        <li>Tick the box that lets the app <strong>see your calendar</strong>, then press <strong>Continue</strong>.</li>
+                        <li>Your events now show under Agenda on Today.</li>
+                    </ol>
+                    <p><strong>Seeing "Access blocked"?</strong> Your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
+                    <p><strong>Nothing happened when you pressed the button?</strong> Your browser blocked the pop-up window. Allow pop-ups for this site and try again.</p>
+                    <p>Google signs you out after about an hour. Just press <strong>Reconnect</strong> when asked.</p>
+                </details>
 
-                    <details class="help-details" id="owner-trains">
-                        <summary>3. Switch on live trains</summary>
-                        <p>National Rail's data needs a private key, so the app talks to a small free Cloudflare Worker that keeps the key hidden. It also shares each station's times between everyone for 30 seconds.</p>
-                        <ol>
-                            <li>Sign up at <strong>raildata.org.uk</strong>, subscribe to <strong>Live Departure Board</strong>, and copy the <strong>consumer key</strong>.</li>
-                            <li>In <strong>Cloudflare</strong>, go to Workers &amp; Pages and press Create. Choose <strong>Start with Hello World</strong> and Deploy, then press <strong>Edit code</strong>. Replace everything with the Worker code below and press Deploy.</li>
-                            <li>In the Worker's <strong>Settings</strong>, then <strong>Variables and Secrets</strong>, add:
-                                <ul>
-                                    <li><code>RDM_KEY</code> as a <strong>Secret</strong>: your consumer key.</li>
-                                    <li><code>ALLOWED_ORIGINS</code> as <strong>Text</strong>: <code class="owner-origin">https://your-username.github.io</code>. Separate several sites with commas.</li>
-                                </ul>
-                            </li>
-                            <li>Test it by opening <code>https://your-worker.workers.dev/departures/MCO</code> in a browser. You should see departure data, not an error.</li>
-                            <li>Open <code>index.html</code>, find <code>const TRAINS_PROXY_URL = '';</code>, paste the Worker's address between the quotes, then commit and push.</li>
-                        </ol>
-                        <div class="row-gap">
-                            <button class="btn-small" onclick="copyWorkerCode()">Copy Worker code</button>
-                            <button class="btn-small btn-teal" onclick="downloadWorkerCode()">Download trains-worker.js</button>
-                            <span id="worker-copy-status"></span>
-                        </div>
-                    </details>
+                <details class="help-details" id="help-travel">
+                    <summary>Set up trains and buses</summary>
+                    <ol>
+                        <li>Go to <strong>Settings</strong> and find <strong>Trains and buses</strong>.</li>
+                        <li>Type your station codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the 3-letter code is shown next to its name.</li>
+                        <li>Press <strong>Save and test</strong>. Trains leaving in the next hour now show on Today.</li>
+                    </ol>
+                    <p><strong>For buses</strong>, the yellow Live buses button opens TfGM's live times. To go straight to your stop, open tfgm.com, choose Live departures and find your stop. Copy the web address from the top of your browser, paste it into <strong>Bus times page</strong> in Settings, and press Save and test.</p>
+                </details>
 
-                    <details class="help-details" id="owner-updating">
-                        <summary>4. Updating your copy</summary>
-                        <ol>
-                            <li>Make your changes to <code>index.html</code>. Change <code>APP_VERSION</code> and add a line to the version notes at the top of the script.</li>
-                            <li>Commit and push to the <code>main</code> branch. In Terminal: <code>git add -A</code>, then <code>git commit -m "What changed"</code>, then <code>git push</code>.</li>
-                            <li>If the push is rejected because GitHub has changes you don't have, run <code>git pull --rebase --autostash origin main</code>, then push again.</li>
-                            <li>Wait for the green tick in the Actions tab, then refresh the site with Cmd+Shift+R on a Mac or Ctrl+Shift+R on Windows so the browser doesn't show the old version.</li>
-                        </ol>
-                    </details>
+                <details class="help-details" id="help-backup">
+                    <summary>Back up your data or move to a new device</summary>
+                    <p>Everything is saved in this browser only. If you clear your browser data, change browser or get a new laptop, it won't come with you unless you've backed it up.</p>
+                    <ol>
+                        <li>Go to <strong>Settings</strong>, find <strong>Your data</strong> and press <strong>Back up</strong>.</li>
+                        <li>On a computer with Chrome or Edge, choose <strong>Choose Where to Auto-save</strong> and pick a folder, like OneDrive or Google Drive. Every change is then saved there automatically.</li>
+                        <li>On anything else, press <strong>Download Spreadsheet</strong> to save a copy. Do this every few days.</li>
+                        <li>To move to a new device, open the app there, press Back up, then <strong>Open a Saved Spreadsheet</strong> and pick your file.</li>
+                    </ol>
+                </details>
 
-                    <details class="help-details" id="owner-trouble">
-                        <summary>Troubleshooting</summary>
-                        <ul>
-                            <li><strong>The site shows "404 Site not found".</strong> Check the Actions tab. A red cross usually means a <code>venv</code> or tool folder was uploaded, or <code>.nojekyll</code> is missing.</li>
-                            <li><strong>The logo is missing.</strong> The file must be exactly <code>assets/dpaul-logo.webp</code>, lowercase. In Terminal, <code>git ls-files | grep -i logo</code> shows the name GitHub actually has.</li>
-                            <li><strong>Settings says Google is "Not switched on yet".</strong> <code>GOOGLE_CLIENT_ID</code> is still empty, or the change hasn't been pushed and deployed.</li>
-                            <li><strong>Someone sees "Access blocked".</strong> Add their Gmail address under Test users in Google Auth Platform, then Audience.</li>
-                            <li><strong>Trains show an error.</strong> Open the Worker test link from step 3. If that fails, check <code>RDM_KEY</code>. If the test works but the app doesn't, check that <code>ALLOWED_ORIGINS</code> matches your site's address exactly.</li>
-                            <li><strong>Changes don't appear.</strong> Wait for the green tick in Actions, then hard refresh with Cmd+Shift+R.</li>
-                        </ul>
-                    </details>
+                <h3 class="guide-section-title" id="guide-privacy">Your data and privacy</h3>
+
+                <details class="help-details">
+                    <summary>Where is my information kept?</summary>
+                    <p>On this device, in this browser only. There's no account, and your budget, tasks, deadlines, timetable, projects and grades are never uploaded to us. If you choose to back up, the file goes wherever you save it, such as your own OneDrive or Google Drive.</p>
+                </details>
+                <details class="help-details">
+                    <summary>Can dPaul Studio see my data?</summary>
+                    <p>No. We don't run a database, we don't have accounts, and there's no tracking or advertising in the app. We can't see your money, grades, plans or calendar.</p>
+                </details>
+                <details class="help-details">
+                    <summary>What does Google Calendar access allow?</summary>
+                    <p>Read-only access to your events, so they can show on Today. The app can't add, change or delete anything. Your calendar goes straight from Google to your browser and never passes through us. Access lasts about an hour and is forgotten when you close the tab.</p>
+                    <p>To remove it completely, press <strong>Disconnect</strong> in Settings, or go to your Google Account, then Security, then Third-party connections.</p>
+                </details>
+                <details class="help-details">
+                    <summary>Does anything leave my device?</summary>
+                    <p>Only what's needed to fetch live information, and only when you use that feature:</p>
+                    <ul>
+                        <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
+                        <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked.</li>
+                        <li><strong>Music:</strong> YouTube videos play from YouTube, which has its own privacy rules.</li>
+                    </ul>
+                    <p>Like any website, these services see a normal web request, which includes your internet address.</p>
+                </details>
+                <details class="help-details">
+                    <summary>How do I delete my data?</summary>
+                    <p>Go to <strong>Settings</strong>, find <strong>Your data</strong> and press <strong>Delete all my data</strong>. Clearing your browser's data for this site also deletes it. Any backup files you saved are yours to keep or delete.</p>
+                </details>
+                <details class="help-details">
+                    <summary>Is it safe on a shared or university computer?</summary>
+                    <p>Anyone using the same browser on that computer could open the app and see your information. Use your own device or your own browser profile, or press Delete all my data before you leave.</p>
+                </details>
+                <p class="muted" style="margin: 14px 0 0;">A full privacy notice is coming soon. If you have any questions about your data in the meantime, <a class="support-mail" href="mailto:david@dpaul.studio?subject=Privacy%20question%20about%20Life%20-%20Student%20Edition">email support</a>.</p>
+
+                <div class="guide-support" id="guide-support">
+                    <h3>Still stuck?</h3>
+                    <p>Email <a class="support-mail" href="mailto:david@dpaul.studio?subject=Life%20-%20Student%20Edition%20help">david@dpaul.studio</a>. Say what you were trying to do and what you saw on screen. A screenshot really helps.</p>
                 </div>
             </div>
             <div class="guide-foot">
-                <span class="muted">Open this again any time with How to use at the top of the page.</span>
+                <span class="muted">Need help? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Life%20-%20Student%20Edition%20help">Email support</a></span>
                 <button onclick="closeGuide()">Got it</button>
             </div>
         </div>
@@ -1575,7 +1464,8 @@ function reply(obj, status, headers) {
         //       larger title and top section on Today, Live buses button moved into the trains header,
         //       first-time Google connection help in Settings and the guide, clearer Google error messages,
         //       trains and buses help in Settings, "Running your own copy" set-up guide with built-in Worker code,
-        //       top section identical on every tab
+        //       top section identical on every tab, How to use rewritten for users with step-by-step help,
+        //       data and privacy Q&A and support email (david@dpaul.studio); owner set-up moved to README only
         // v1.4  Guided set-up mode with floating red arrows (location, Google, bus, next payment, backup)
         // v1.3  Auto-save to a spreadsheet file (Chrome/Edge desktop), spreadsheet backup and restore, backup reminder pop-up, close warning
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
@@ -2721,7 +2611,7 @@ function reply(obj, status, headers) {
             const cfg = data.settings.travel;
             $('btn-live-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
             if (!TRAINS_PROXY_URL) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t switched on for this copy of the app yet. Live buses still works from the button above. <a href="#" onclick="openGuide(\'owner-trains\'); return false;">How to switch trains on</a></p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet. Live buses still works from the button above.</p>';
                 $('btn-train-refresh').title = '';
                 return;
             }
@@ -2866,7 +2756,7 @@ function reply(obj, status, headers) {
             const status = $('google-status');
             $('btn-google-connect').textContent = connected ? 'Reconnect' : 'Connect Google';
             $('btn-google-disconnect').style.display = connected ? '' : 'none';
-            if (!GOOGLE_CLIENT_ID) status.innerHTML = 'Not switched on yet on this copy of the app. <a href="#" onclick="openGuide(\'owner-google\'); return false;">How to switch it on</a>';
+            if (!GOOGLE_CLIENT_ID) status.innerHTML = 'Google Calendar isn\'t available on this copy of the app yet. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Google%20Calendar%20in%20Life%20-%20Student%20Edition">Contact support</a>';
             else status.textContent = message || (connected ? 'Connected' : 'Not connected');
             const prompt = msg => `<li class="empty">${msg}</li>`;
             if (!connected) {
@@ -4361,35 +4251,16 @@ function reply(obj, status, headers) {
             guideReturnFocus = document.activeElement;
             $('guide-overlay').classList.add('open');
             document.body.classList.add('guide-open');
-            // Show this copy's real address in the set-up steps
-            if (/^https?:$/.test(location.protocol)) document.querySelectorAll('.owner-origin').forEach(el => { el.textContent = location.origin; });
             const body = $('guide-overlay').querySelector('.guide-body');
             body.scrollTop = 0;
             $('guide-close').focus();
-            const target = typeof section === 'string' ? (section === 'owner' ? $('guide-owner') : $(section)) : null;
+            const target = typeof section === 'string' ? $(section) : null;
             if (target) {
                 if (target.tagName === 'DETAILS') target.open = true;
                 setTimeout(() => target.scrollIntoView({ block: 'start' }), 30);
             }
         }
 
-        function workerCode() { return $('worker-source').textContent.trim() + '\n'; }
-        async function copyWorkerCode() {
-            try {
-                await navigator.clipboard.writeText(workerCode());
-                flash('worker-copy-status', 'Copied. Paste it into the Cloudflare editor.');
-            } catch (e) {
-                downloadWorkerCode();
-                flash('worker-copy-status', 'Copying isn\'t allowed here, so it downloaded as a file instead.');
-            }
-        }
-        function downloadWorkerCode() {
-            const url = URL.createObjectURL(new Blob([workerCode()], { type: 'text/javascript' }));
-            const a = document.createElement('a');
-            a.href = url; a.download = 'trains-worker.js';
-            document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        }
         function closeGuide() {
             $('guide-overlay').classList.remove('open');
             if (!anyOverlayOpen()) document.body.classList.remove('guide-open');
