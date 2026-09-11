@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maidenhead departures</title>
+</head>
+<body style="background:#2a2c30;padding:40px 12px;margin:0">
+<!-- ===== COPY FROM HERE ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;800&display=swap" rel="stylesheet">
+<style>
+.rail-board{
+  --amber:#ffb000; --amber-dim:#6b4a00; --glass:#000;
+  --frame:#1d1f22; --bolt:#3a3d42;
+  font-family:"Doto",monospace; font-weight:800; color:var(--amber);
+  background:var(--glass); border:10px solid var(--frame); border-radius:6px;
+  box-shadow:inset 0 0 0 2px var(--bolt), 0 12px 30px rgba(0,0,0,.45);
+  padding:18px 20px 12px; max-width:760px; margin:0 auto;
+  text-shadow:0 0 6px rgba(255,176,0,.55);
+  background-image:radial-gradient(rgba(255,176,0,.05) 1px,transparent 1.2px);
+  background-size:4px 4px;
+}
+.rail-board *{box-sizing:border-box;margin:0}
+.rb-head{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:1.05rem;padding-bottom:10px;margin-bottom:8px;border-bottom:2px dotted var(--amber-dim)}
+.rb-station{font-size:1.5rem;letter-spacing:.02em}
+.rb-rows{list-style:none;padding:0;min-height:10em}
+.rb-row{display:grid;grid-template-columns:4.2em 1fr 3.2em 6.4em;gap:.6em;
+  font-size:1.15rem;line-height:1.55;align-items:baseline}
+.rb-dest{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rb-plat{text-align:center}
+.rb-exp{text-align:right;white-space:nowrap}
+.rb-note{grid-column:2 / -1;font-size:.9rem;font-weight:600;color:var(--amber);opacity:.8;
+  line-height:1.3;margin:-.1em 0 .35em}
+.rb-cancel .rb-exp{animation:rb-blink 1.4s steps(1) infinite}
+.rb-empty{font-size:1.15rem;padding:1em 0}
+.rb-ticker{overflow:hidden;white-space:nowrap;border-top:2px dotted var(--amber-dim);
+  margin-top:10px;padding-top:8px;font-size:1.05rem}
+.rb-ticker span{display:inline-block;padding-left:100%;animation:rb-scroll 28s linear infinite}
+@keyframes rb-scroll{to{transform:translateX(-100%)}}
+@keyframes rb-blink{50%{opacity:.15}}
+@media (max-width:560px){
+  .rail-board{border-width:6px;padding:12px}
+  .rb-row{grid-template-columns:3.4em 1fr auto;font-size:.95rem}
+  .rb-plat{display:none}
+  .rb-station{font-size:1.2rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .rb-ticker span{animation:none;padding-left:0;white-space:normal}
+  .rb-cancel .rb-exp{animation:none}
+}
+</style>
+
+<div class="rail-board" data-crs="MAI"
+     data-endpoint="https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/trains">
+  <div class="rb-head"><span class="rb-station">Departures</span><span class="rb-clock"></span></div>
+  <ul class="rb-rows" aria-live="polite"><li class="rb-empty">Loading departures</li></ul>
+  <div class="rb-ticker" hidden><span></span></div>
+</div>
+
+<script>
+(() => {
+  document.querySelectorAll(".rail-board").forEach(board => {
+    const url = `${board.dataset.endpoint}?crs=${board.dataset.crs || "MAI"}`;
+    const $ = s => board.querySelector(s);
+    const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const strip = s => String(s ?? "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+
+    const clock = () => $(".rb-clock").textContent =
+      new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London" });
+    clock(); setInterval(clock, 1000);
+
+    async function load() {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        $(".rb-station").textContent = d.locationName || "Departures";
+
+        const services = (d.trainServices || []).slice(0, 8);
+        $(".rb-rows").innerHTML = services.length ? services.map(s => {
+          const dest = s.destination?.[0]?.locationName || "";
+          const via = s.destination?.[0]?.via ? ` ${s.destination[0].via}` : "";
+          const cut = s.currentDestinations?.[0]?.locationName;
+          const exp = s.isCancelled ? "Cancelled" : s.etd === "On time" ? "On time" : s.etd === "Delayed" ? "Delayed" : `Exp ${s.etd}`;
+          let note = "";
+          if (s.isCancelled && s.cancelReason) note = s.cancelReason;
+          else if (cut && cut !== dest) note = `Terminates at ${cut}`;
+          else if (s.delayReason) note = s.delayReason;
+          return `<li class="rb-row${s.isCancelled ? " rb-cancel" : ""}">
+            <span>${esc(s.std)}</span>
+            <span class="rb-dest">${esc(dest + via)}</span>
+            <span class="rb-plat">${esc(s.platform || "")}</span>
+            <span class="rb-exp">${esc(exp)}</span>
+            ${note ? `<span class="rb-note">${esc(note)}</span>` : ""}
+          </li>`;
+        }).join("") : `<li class="rb-empty">No departures in the next two hours</li>`;
+
+        const msgs = (d.nrccMessages || []).map(m => strip(m.Value)).filter(Boolean);
+        const t = $(".rb-ticker");
+        t.hidden = !msgs.length;
+        t.querySelector("span").textContent = msgs.join("   ");
+      } catch (e) {
+        $(".rb-rows").innerHTML = `<li class="rb-empty">Live times unavailable. Retrying in a minute.</li>`;
+      }
+    }
+    load(); setInterval(load, 60000);
+  });
+})();
+</script>
+<!-- ===== COPY TO HERE ===== -->
+</body>
+</html>

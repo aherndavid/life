@@ -6,6 +6,9 @@
     <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and live trains in one place.">
     <meta name="theme-color" content="#007bff">
     <title>Life - Student Edition | dPaul Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -199,6 +202,39 @@
         .dep-state.off { color: #dc3545; }
         .btn-bus { background: #ffc20e; color: #1f2d3d; font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; white-space: nowrap; }
         .btn-bus:hover { background: #f0b400; }
+        /* ---- Travel tab: station-style departure boards (v2.0) ---- */
+        .travel-boards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+        .travel-boards > .rail-board { min-width: 0; overflow: hidden; }
+        .rail-board { --amber: #ffb000; --amber-dim: #6b4a00; font-family: "Doto", monospace; font-weight: 800; color: var(--amber);
+            background: #000 radial-gradient(rgba(255,176,0,.05) 1px, transparent 1.2px) 0 0 / 4px 4px;
+            border: 10px solid #1d1f22; border-radius: 6px; box-shadow: inset 0 0 0 2px #3a3d42, 0 10px 24px rgba(0,0,0,.25);
+            padding: 16px 20px 12px; text-shadow: 0 0 6px rgba(255,176,0,.55); }
+        .rail-board * { box-sizing: border-box; margin: 0; }
+        .rb-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 1.05rem;
+            padding-bottom: 10px; margin-bottom: 8px; border-bottom: 2px dotted var(--amber-dim); }
+        .rb-station { font-size: 1.5rem; }
+        .rb-rows { list-style: none; padding: 0; }
+        .rb-row { display: grid; grid-template-columns: 4.2em 1fr 3.2em auto; gap: .6em; font-size: 1.15rem; line-height: 1.55; align-items: baseline; }
+        .rb-dest { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rb-plat { text-align: center; }
+        .rb-exp { text-align: right; white-space: nowrap; }
+        .rb-note { grid-column: 2 / -1; font-size: .9rem; font-weight: 600; opacity: .8; line-height: 1.3; margin: -.1em 0 .35em; }
+        .rb-cancel .rb-exp { animation: rb-blink 1.4s steps(1) infinite; }
+        .rb-empty { font-size: 1.15rem; padding: .8em 0; }
+        .rb-ticker { overflow: hidden; white-space: nowrap; border-top: 2px dotted var(--amber-dim); margin-top: 10px; padding-top: 8px; font-size: 1.05rem; }
+        .rb-ticker span { display: inline-block; padding-left: 100%; animation: rb-scroll 30s linear infinite; }
+        @keyframes rb-scroll { to { transform: translateX(-100%); } }
+        @keyframes rb-blink { 50% { opacity: .15; } }
+        @media (max-width: 560px) {
+            .rail-board { border-width: 6px; padding: 12px; }
+            .rb-row { grid-template-columns: 3.4em 1fr auto; font-size: .95rem; }
+            .rb-plat { display: none; }
+            .rb-station { font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .rb-ticker span { animation: none; padding-left: 0; white-space: normal; }
+            .rb-cancel .rb-exp { animation: none; }
+        }
         .dep-msg { background: #fff8e1; border-left: 4px solid #ffc20e; padding: 8px 10px; font-size: 0.88rem; margin: 0 0 10px; border-radius: 4px; }
 
         .timer-display { font-size: 3.4rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 10px 0 4px; font-variant-numeric: tabular-nums; }
@@ -726,7 +762,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v1.9</span>
+            <span class="version-tag" id="app-version">v2.0</span>
             <img src="Assets/dpaul-logo.webp" alt="dpaul.studio logo">
         </div>
     </div>
@@ -741,6 +777,7 @@
         <button class="tab-btn" data-tab="timetable" onclick="switchTab('timetable')">Timetable</button>
         <button class="tab-btn" data-tab="projects" onclick="switchTab('projects')">Projects</button>
         <button class="tab-btn" data-tab="grades" onclick="switchTab('grades')">Grades</button>
+        <button class="tab-btn" data-tab="travel" onclick="switchTab('travel')">Travel</button>
         <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">Settings</button>
     </div>
 
@@ -1165,6 +1202,21 @@
                 <div id="modules-container"></div>
             </div>
 
+            <!-- TRAVEL VIEW -->
+            <div id="view-travel" class="view" style="display: none;">
+                <div class="container">
+                    <div class="controls-row" style="margin-bottom: 18px;">
+                        <h2 style="margin: 0;">Travel</h2>
+                        <div class="row-gap">
+                            <a class="btn-bus" id="btn-travel-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
+                            <button class="btn-cal-filter" onclick="renderTravel()">Refresh</button>
+                            <button class="btn-toggle" style="padding: 6px 12px; font-size: 0.9rem;" onclick="switchTab('settings')">Change stations</button>
+                        </div>
+                    </div>
+                    <div id="travel-boards" class="travel-boards" aria-live="polite"></div>
+                </div>
+            </div>
+
             <!-- SETTINGS VIEW -->
             <div id="view-settings" class="view" style="display: none;">
                 <div class="container">
@@ -1217,7 +1269,7 @@
 
                 <div class="container">
                     <h2 style="margin-top: 0;">Trains and buses</h2>
-                    <p class="note">Live trains leaving in the next hour, in every direction, show on Today. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
+                    <p class="note">Live trains leaving in the next hour, in every direction, show on Today, and each station gets its own departure board on Travel. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
                     <div class="form-row form-group">
                         <div>
                             <label for="travel-stations">Stations</label>
@@ -1567,6 +1619,11 @@
                         <button class="btn-small" onclick="guideGo('grades')">Go to Grades</button>
                     </div>
                     <div class="guide-card">
+                        <h3>Travel</h3>
+                        <p>A live departure board for each of your stations, like the ones at the station: times, platforms, delays and cancellations with the reason. It refreshes every minute.</p>
+                        <button class="btn-small" onclick="guideGo('travel')">Go to Travel</button>
+                    </div>
+                    <div class="guide-card">
                         <h3>Focus timer</h3>
                         <p>Press Start and work until the chime, then take a short break. After four sessions you get a longer break.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Today</button>
@@ -1681,6 +1738,8 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v2.0  Travel tab with station-style live departure boards (one per saved station), live trains switched on
+        //       via the Supabase Edge Function "trains", cancel and delay reasons, trains that terminate early
         // v1.9  Sign-in by emailed code: after sending, the page waits on a code box (stays there after a reload),
         //       paste or autofill signs in straight away, the email's button still works too
         // v1.8  Share my list: send your music list as a link (nothing stored), add a list a friend shared with you
@@ -1699,7 +1758,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '1.9';
+        const APP_VERSION = '2.0';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -1713,9 +1772,9 @@
         // Supabase > Authentication > URL Configuration > Redirect URLs must include this app's address.
         const SUPABASE_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_G7AGWKuW0baRuY3_6-LcMg_j7kEBTv6';
-        // Live trains: the web address of your Cloudflare Worker (see trains-worker.js).
-        // It holds the Rail Data Marketplace key so the key never appears in this page.
-        const TRAINS_PROXY_URL = '';
+        // Live trains: the Supabase Edge Function "trains". It holds the Rail Data Marketplace key
+        // (secret RDM_KEY) so the key never appears in this page. Called as ?crs=MAI&rows=30
+        const TRAINS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/trains';
         const TFGM_DEPARTURES_URL = 'https://tfgm.com/travel-updates/live-departures';
         const GOOGLE_SCOPES = [
             'https://www.googleapis.com/auth/calendar.readonly'
@@ -1724,7 +1783,7 @@
         const STORE_KEY = 'dpaul_student_life_v1';
         const DEFAULT_TRACK = { id: 'default-house', videoId: 'gZ_i4ixAMAc', listId: null, title: '', author: '' };
         const TOKEN_KEY = 'dpaul_student_google_token';
-        const TABS = ['today', 'budget', 'food', 'tasks', 'deadlines', 'timetable', 'projects', 'grades', 'settings'];
+        const TABS = ['today', 'budget', 'food', 'tasks', 'deadlines', 'timetable', 'projects', 'grades', 'travel', 'settings'];
         const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
         // =====================================================================
@@ -1917,7 +1976,7 @@
             $('right-column-sidebar').style.display = tab === 'today' ? 'block' : 'none';
             data.settings.lastTab = tab;
             saveData(true);
-            const renderers = { today: renderToday, budget: renderBudget, food: renderFood, tasks: renderTasks, deadlines: renderDeadlines, timetable: renderTimetable, projects: renderProjects, grades: renderGrades, settings: renderSettings };
+            const renderers = { today: renderToday, budget: renderBudget, food: renderFood, tasks: renderTasks, deadlines: renderDeadlines, timetable: renderTimetable, projects: renderProjects, grades: renderGrades, travel: renderTravel, settings: renderSettings };
             renderers[tab]();
             if (tab === 'today') fetchTrains();
         }
@@ -2801,7 +2860,7 @@
         }
 
         async function fetchBoard(crs) {
-            const r = await fetch(`${TRAINS_PROXY_URL.replace(/\/$/, '')}/departures/${crs}`);
+            const r = await fetch(`${TRAINS_PROXY_URL}?crs=${encodeURIComponent(crs)}&rows=30`);
             if (!r.ok) throw new Error(r.status === 404 || r.status === 400 ? `${crs} isn't a station code National Rail recognises.` : `Train times returned an error (${r.status}).`);
             const j = await r.json();
             const station = j.locationName || crs;
@@ -2815,6 +2874,7 @@
                 const expected = boardTime(etd) || sched;
                 const cancelled = !!sv.isCancelled || /cancel/i.test(etd);
                 const dests = (sv.destination || []).map(d => d.locationName + (d.via ? ` ${d.via}` : '')).join(' & ');
+                const nowTo = (sv.currentDestinations || []).map(d => d.locationName).join(' & ');
                 return {
                     station, crs, sched, expected, cancelled,
                     delayed: /delayed/i.test(etd),
@@ -2822,6 +2882,9 @@
                     std: sv.std, etd, platform: sv.platform || '',
                     destination: dests || 'Unknown destination',
                     operator: sv.operator || '',
+                    cancelReason: sv.cancelReason || '',
+                    delayReason: sv.delayReason || '',
+                    terminatesAt: nowTo && !dests.startsWith(nowTo) ? nowTo : '',
                     isBus: sv.isBus
                 };
             }).filter(d => d.sched);
@@ -2921,6 +2984,64 @@
             } catch (e) {
                 flash('travel-settings-status', `Saved, but the test failed: ${e.message}`, true);
             }
+        }
+
+        // =====================================================================
+        // TRAVEL TAB: one station-style board per saved station
+        // =====================================================================
+        function railBoardHTML(b) {
+            const now = Date.now();
+            const deps = b.deps
+                .filter(d => d.expected.getTime() > now - 60000)
+                .sort((a, c) => a.sched - c.sched || a.expected - c.expected)
+                .slice(0, 10);
+            const rows = deps.map(d => {
+                const exp = d.cancelled ? 'Cancelled' : d.delayed ? 'Delayed' : d.late ? `Exp ${d.etd}` : 'On time';
+                const note = d.cancelled ? d.cancelReason
+                    : d.terminatesAt ? `Terminates at ${d.terminatesAt}`
+                    : d.isBus ? 'Replacement bus'
+                    : d.delayReason;
+                return `<li class="rb-row${d.cancelled ? ' rb-cancel' : ''}">
+                    <span>${esc(d.std)}</span>
+                    <span class="rb-dest" title="${esc(d.destination)}">${esc(d.destination)}</span>
+                    <span class="rb-plat">${esc(d.platform)}</span>
+                    <span class="rb-exp">${esc(exp)}</span>
+                    ${note ? `<span class="rb-note">${esc(note)}</span>` : ''}
+                </li>`;
+            }).join('');
+            const ticker = b.messages.length ? `<div class="rb-ticker"><span>${esc(b.messages.join('     '))}</span></div>` : '';
+            return `<section class="rail-board" aria-label="Departures from ${esc(b.station)}">
+                <div class="rb-head"><span class="rb-station">${esc(b.station)}</span><span class="rb-clock"></span></div>
+                <ul class="rb-rows">${rows || '<li class="rb-empty">No departures in the next two hours</li>'}</ul>
+                ${ticker}
+            </section>`;
+        }
+
+        function tickRailClocks() {
+            const t = new Date().toLocaleTimeString('en-GB', { timeZone: 'Europe/London' });
+            document.querySelectorAll('.rb-clock').forEach(el => { el.textContent = t; });
+        }
+
+        async function renderTravel() {
+            const box = $('travel-boards');
+            const cfg = data.settings.travel;
+            $('btn-travel-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
+            if (!TRAINS_PROXY_URL) {
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet. Live buses still works from the button above.</p>';
+                return;
+            }
+            const stations = cfg.stations.filter(c => CRS_RE.test(c)).slice(0, 3);
+            if (!stations.length) {
+                box.innerHTML = '<p class="empty" style="margin: 0;">Add a station in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live departure boards.</p>';
+                return;
+            }
+            if (!box.querySelector('.rail-board')) box.innerHTML = '<p class="empty" style="margin: 0;">Loading departures</p>';
+            const results = await Promise.allSettled(stations.map(fetchBoard));
+            box.innerHTML = results.map((r, i) => r.status === 'fulfilled' ? railBoardHTML(r.value)
+                : `<section class="rail-board"><div class="rb-head"><span class="rb-station">${esc(stations[i])}</span><span class="rb-clock"></span></div>
+                   <p class="rb-empty">${esc((r.reason && r.reason.message) || 'Couldn\'t load train times.')} Press Refresh to try again.</p></section>`
+            ).join('');
+            tickRailClocks();
         }
 
         // =====================================================================
@@ -4549,8 +4670,11 @@
 
             // Live bits: trains every 60s while Today is on screen; Today re-renders each minute for Now / Next
             trainTimer = setInterval(() => {
-                if (document.visibilityState === 'visible' && $('view-today').style.display !== 'none') fetchTrains();
+                if (document.visibilityState !== 'visible') return;
+                if ($('view-today').style.display !== 'none') fetchTrains();
+                if ($('view-travel').style.display !== 'none') renderTravel();
             }, 60000);
+            setInterval(() => { if ($('view-travel').style.display !== 'none') tickRailClocks(); }, 1000);
             setInterval(() => { if ($('view-today').style.display !== 'none') renderToday(); }, 60000);
             setInterval(checkReminder, 15000);
             document.addEventListener('visibilitychange', checkReminder);
