@@ -78,6 +78,13 @@
         .header-left { flex: 1 1 auto; min-width: 0; }
         .header-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
         .header-meta .clock, .header-meta .weather-widget { margin: 0 !important; }
+        /* Greeting and signed-in chip (v2.9): on every page, because the header is shared */
+        .header-meta .greeting { font-weight: bold; color: var(--fg); white-space: nowrap; }
+        .header-meta .greeting:empty { display: none; }
+        .account-chip { display: inline-flex; align-items: center; max-width: 15em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .auth-card input[type="text"].auth-name { width: 100%; padding: 14px; font-size: 1.1rem; border: 1px solid #3a3a3a; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
+        .name-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+        .name-row input { max-width: 220px; }
 
         .main-layout { display: flex; gap: 30px; align-items: flex-start; }
         .left-column { flex: 1.5; min-width: 0; width: 100%; }
@@ -158,7 +165,26 @@
         .task-list { list-style: none; padding: 0; margin: 0; }
         .task-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #3a3a3a; }
         .task-item:last-child { border-bottom: none; }
-        .task-checkbox { transform: scale(1.4); cursor: pointer; margin: 0; }
+        /* Drawn rather than scaled. transform: scale(1.4) left the layout box at the browser's
+           native ~13px while painting ~18px, so the edges spilled out of the row and were clipped
+           by scrolling panels. Safari also ignores width/height on a native checkbox, so the box
+           is drawn here instead: exact size everywhere, and it matches the amber theme. */
+        .task-checkbox {
+            appearance: none; -webkit-appearance: none;
+            width: 18px; height: 18px; flex: none; margin: 0; padding: 0;
+            box-sizing: border-box; border: 2px solid var(--fg-dim); border-radius: 4px;
+            background: transparent; cursor: pointer;
+            display: inline-grid; place-content: center; vertical-align: -3px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .task-checkbox:hover { border-color: var(--fg-soft); }
+        .task-checkbox:checked { border-color: var(--fg); background: var(--fg); }
+        .task-checkbox:checked::before {
+            content: ''; width: 11px; height: 11px; background: #171717;
+            clip-path: polygon(14% 46%, 0 62%, 40% 100%, 100% 20%, 85% 6%, 38% 71%);
+        }
+        .task-checkbox:focus-visible { outline: 2px solid var(--fg-hi); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { .task-checkbox { transition: none; } }
         .task-text { flex: 1; font-size: 1.1rem; transition: all 0.2s; min-width: 0; overflow-wrap: anywhere; }
         .task-text.completed { text-decoration: line-through; color: var(--fg-muted); }
         .btn-task-del { background: transparent; color: #ff5b4d; border: none; padding: 0 5px; font-size: 1.3rem; }
@@ -212,8 +238,6 @@
         .dep-state.ok { color: #9be15d; }
         .dep-state.late { color: var(--warn); }
         .dep-state.off { color: #ff5b4d; }
-        .btn-bus { background: var(--fg); color: var(--fg); font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; white-space: nowrap; }
-        .btn-bus:hover { background: var(--fg-hi); }
         /* ---- Travel tab: station-style departure boards (v2.0) ---- */
         .travel-boards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
         .travel-boards > .rail-board { min-width: 0; overflow: hidden; }
@@ -248,7 +272,6 @@
             .rb-cancel .rb-exp { animation: none; }
         }
         .dep-msg { background: var(--tint); border-left: 4px solid var(--fg); padding: 8px 10px; font-size: 0.88rem; margin: 0 0 10px; border-radius: 4px; }
-
         .timer-display { font-size: 3.4rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 10px 0 4px; font-variant-numeric: tabular-nums; }
         .timer-mode { text-align: center; color: var(--fg-soft); font-weight: bold; margin-bottom: 14px; }
         .timer-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
@@ -551,6 +574,38 @@
         }
         .place-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
         .place-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fg-muted); font-size: 0.9rem; text-align: center; padding: 8px; box-sizing: border-box; }
+        /* ---- Around you (v3.3): map of what's nearby, on the Travel tab ---- */
+        .around { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, 1fr); gap: 18px; margin-bottom: 22px; align-items: stretch; }
+        .around-map { min-height: 320px; border: 1px solid #3a3a3a; border-radius: 6px; overflow: hidden; background: #2a2a2a; position: relative; z-index: 0; }
+        .around-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
+        .around-side { display: flex; flex-direction: column; min-width: 0; }
+        .around-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 10px; }
+        .around-legend label { font-size: 0.95rem; }
+        .around-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; min-height: 0; }
+        .around-row { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-bottom: 1px solid #3a3a3a; cursor: pointer; }
+        .around-row:last-child { border-bottom: none; }
+        .around-row:hover .around-name { color: var(--fg-hi); text-decoration: underline; }
+        .around-badge { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--fg);
+            color: var(--fg); background: #171717; font-size: 0.8rem; font-weight: bold;
+            display: inline-flex; align-items: center; justify-content: center; }
+        .around-badge.is-you { background: var(--fg); color: #171717; }
+        .around-main { flex: 1; min-width: 0; line-height: 1.3; }
+        .around-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .around-sub { color: var(--fg-muted); font-size: 0.82rem; }
+        .around-dist { white-space: nowrap; color: var(--fg-soft); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+        .around-note { color: var(--fg-muted); font-size: 0.9rem; margin: 0 0 10px; }
+        .map-pin { position: relative; }
+        .map-pin span { display: flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 50%; box-sizing: border-box;
+            background: #171717; border: 2px solid var(--fg); color: var(--fg);
+            font-family: "Doto", monospace; font-weight: 800; font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.45); }
+        .map-pin.station span { background: var(--fg); color: #171717; }
+        @media (max-width: 900px) {
+            .around { grid-template-columns: minmax(0, 1fr); }
+            .around-map { min-height: 260px; }
+            .around-list { max-height: 260px; }
+        }
         .place-pin { position: relative; }
         .place-pin-dot { display: block; width: 12px; height: 12px; margin: 1px; border-radius: 50%; background: var(--fg); border: 3px solid #171717; box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3); }
         .place-pin.pulse::after {
@@ -676,7 +731,6 @@
         input[type="checkbox"], input[type="radio"], input[type="range"], progress { accent-color: var(--amber); }
         a { color: var(--link); }
         ::selection { background: var(--amber); color: #171717; }
-        .btn-bus, .btn-bus:hover { color: #171717; }
         .dep-row.cancelled .dep-time { color: var(--amber-soft); }
         .auth-gate, #welcome { background: var(--bg); }
         .tab-bar { gap: 8px; }
@@ -901,11 +955,13 @@
         <main class="auth-main">
             <div class="auth-card" id="auth-step-email">
                 <h2>Sign in</h2>
-                <p>Type your email address and we'll email you a sign-in code. Type the code in on the next screen and you're in. There's no password to remember.</p>
+                <p>Tell us your first name and email address, and we'll email you a sign-in code. Type the code in on the next screen and you're in. There's no password to remember.</p>
+                <label for="auth-name">First name</label>
+                <input type="text" id="auth-name" class="auth-name" autocomplete="given-name" maxlength="24" placeholder="John" onkeydown="if(event.key==='Enter') $('auth-email').focus()">
                 <label for="auth-email">Email address</label>
                 <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter') sendMagicLink()">
                 <button id="auth-send" onclick="sendMagicLink()">Email me a sign-in code</button>
-                <p style="margin: 14px 0 0; font-size: 0.95rem; color: var(--fg-soft);">First time here? The same code sets up your account.</p>
+                <p style="margin: 14px 0 0; font-size: 0.95rem; color: var(--fg-soft);">First time here? The same code sets up your account. Your name is only used to say hello.</p>
                 <div class="auth-msg" id="auth-msg" role="alert"></div>
             </div>
 
@@ -945,15 +1001,17 @@
         <div class="header-left">
             <h1 class="title-banner-h1"><img class="title-banner" src="Assets/life-student-edition.webp" alt="Life - Student Edition" onerror="var h=this.parentNode;h.classList.remove('title-banner-h1');h.textContent='Life - Student Edition';"></h1>
             <div class="header-meta">
+                <div class="greeting" id="header-greeting"></div>
                 <div class="clock" id="live-clock">Loading time...</div>
                 <div class="weather-widget" id="weather-widget">Loading weather data...</div>
             </div>
         </div>
         <div class="header-right">
+            <button class="btn-help account-chip" id="btn-account" data-dot="green" onclick="switchTab('settings')" title="Your account"><span id="account-name">Signed in</span></button>
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v2.7</span>
+            <span class="version-tag" id="app-version">v3.3</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1030,7 +1088,6 @@
                     <div class="controls-row">
                         <h2>Trains in the next hour</h2>
                         <div class="row-gap panel-actions">
-                            <a class="btn-bus" id="btn-live-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
                             <button class="btn-cal-filter" id="btn-train-refresh" onclick="fetchTrains()">Refresh</button>
                             <button class="btn-toggle panel-hide" onclick="homeHide('trains')">Hide</button>
                         </div>
@@ -1083,7 +1140,7 @@
 
                 <div class="container home-panel grow" data-panel="newsUk" data-name="UK news">
                     <div class="controls-row">
-                        <h2>UK news <span class="news-src">BBC News</span></h2>
+                        <h2>UK news <span class="news-src" id="news-uk-src"></span></h2>
                         <button class="btn-toggle panel-hide" onclick="homeHide('newsUk')">Hide</button>
                     </div>
                     <ul class="news-list panel-scroll" id="news-uk"></ul>
@@ -1480,12 +1537,25 @@
                     <div class="controls-row" style="margin-bottom: 18px;">
                         <h2 style="margin: 0;">Travel</h2>
                         <div class="row-gap">
-                            <a class="btn-bus" id="btn-travel-buses" href="https://tfgm.com/travel-updates/live-departures" target="_blank" rel="noopener">Live buses</a>
                             <button class="btn-cal-filter" onclick="renderTravel()">Refresh</button>
                             <button class="btn-toggle" style="padding: 6px 12px; font-size: 0.9rem;" onclick="switchTab('settings')">Change stations</button>
                         </div>
                     </div>
-                    <div id="travel-boards" class="travel-boards" aria-live="polite"></div>
+                    <div class="around" id="around">
+                        <div class="around-map" id="around-map" role="img" aria-label="Map of what's near you"></div>
+                        <div class="around-side">
+                            <div class="around-legend" role="group" aria-label="What to show on the map">
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-station" checked onchange="renderAround()"> Stations</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-bus" checked onchange="renderAround()"> Bus stops</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-shop" checked onchange="renderAround()"> Supermarkets</label>
+                            </div>
+                            <p class="around-note" id="around-note"></p>
+                            <ul class="around-list" id="around-list"></ul>
+                        </div>
+                    </div>
+                    <div id="travel-boards" class="travel-boards" aria-live="polite">
+                        <div id="travel-rail-boards" class="travel-boards"></div>
+                    </div>
                 </div>
             </div>
 
@@ -1516,7 +1586,7 @@
                 <div class="container place-grid">
                     <div class="place-text">
                         <h2 style="margin-top: 0;">Location</h2>
-                        <p class="note">Used for weather, sunrise and sunset. Currently: <strong id="set-place-current"></strong></p>
+                        <p class="note">Set this once. It gives you the right weather, sunrise and sunset, and your nearest train stations. Currently: <strong id="set-place-current"></strong></p>
                     </div>
                     <div class="place-controls">
                         <div class="task-input-row">
@@ -1552,37 +1622,36 @@
                 </div>
 
                 <div class="container">
-                    <h2 style="margin-top: 0;">Trains and buses</h2>
-                    <p class="note">Live trains leaving in the next hour, in every direction, show on the Home Page, and each station gets its own departure board on Travel. Enter up to three stations as 3-letter codes: MCO is Manchester Oxford Road and MAN is Manchester Piccadilly. Look up any other station's code on nationalrail.co.uk.</p>
+                    <h2 style="margin-top: 0;">Trains</h2>
+                    <p class="note">Your stations follow the location you set above, so you only say where you are once. Right now that's <strong id="travel-place-current"></strong>. Change your location and your stations move with it.</p>
                     <div class="form-row form-group">
-                        <div>
-                            <label for="travel-stations">Stations</label>
-                            <input type="text" id="travel-stations" placeholder="e.g., MCO, MAN" autocomplete="off" style="text-transform: uppercase;">
-                        </div>
                         <div class="grow2">
-                            <label for="travel-bus-link">Bus times page</label>
-                            <input type="url" id="travel-bus-link" placeholder="Leave blank for TfGM live departures" autocomplete="off">
+                            <label for="travel-stations">Stations</label>
+                            <input type="text" id="travel-stations" placeholder="Nearest to you" autocomplete="off" style="text-transform: uppercase;">
+                        </div>
+                        <div class="fit">
+                            <label for="btn-stations-auto">&nbsp;</label>
+                            <button class="btn-toggle" style="padding: 12px 16px; font-size: 1rem;" id="btn-stations-auto" onclick="useNearestStations()">Use nearest to me</button>
                         </div>
                     </div>
-                    <p class="note">For the Live buses button: open TfGM's live departures page, search for your stop, then copy the address from your browser's address bar and paste it here. The button will then open straight to your stop.</p>
+                    <p class="note" id="travel-stations-note"></p>
                     <div class="row-gap">
                         <button id="btn-travel-save" onclick="saveTravelSettings()">Save and test</button>
                         <span id="travel-settings-status"></span>
                     </div>
                     <details class="help-details">
-                        <summary>How trains and buses work</summary>
+                        <summary>How trains work</summary>
                         <ul>
                             <li><strong>Trains:</strong> the Home Page lists every train leaving your stations in the next hour, in every direction, in departure order. Each shows its platform, how many minutes until it leaves, and its status: <span class="dep-state ok">On time</span>, <span class="dep-state late">Exp 14:32</span> (running late, with the new time), <span class="dep-state late">Delayed</span> or <span class="dep-state off">Cancelled</span>. It refreshes every minute. Disruption notices from National Rail show in yellow at the top.</li>
-                            <li><strong>Station codes:</strong> every station has a 3-letter code. Manchester Oxford Road is MCO, Piccadilly is MAN, Deansgate is DGT and Victoria is MCV. For any other station, search for it on nationalrail.co.uk and the code shows next to its name. Enter up to three, separated by commas, and press Save and test.</li>
-                            <li><strong>Live buses:</strong> the yellow button next to Refresh opens TfGM's live departures. To make it open straight to your stop, go to tfgm.com, choose Live departures, search for your stop and open it. Copy the address from your browser's address bar, paste it into Bus times page above and press Save and test.</li>
-                            <li><strong>"Live trains aren't available"</strong> means live trains haven't been turned on for this copy of the app yet. Live buses still works. Questions? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Trains%20in%20Life%20-%20Student%20Edition">Email support</a>.</li>
+                            <li><strong>Station codes:</strong> the app picks the stations nearest your location on its own. If you'd rather choose, every station has a 3-letter code you can look up on nationalrail.co.uk: Manchester Oxford Road is MCO, Piccadilly is MAN, Deansgate is DGT and Victoria is MCV. Type up to three, separated by commas, and press Save and test. To go back to automatic, empty the box and press Use nearest to me.</li>
+                            <li><strong>"Live trains aren't available"</strong> means live trains haven't been turned on for this copy of the app yet. Questions? <a class="support-mail" href="mailto:david@dpaul.studio?subject=Trains%20in%20Life%20-%20Student%20Edition">Email support</a>.</li>
                         </ul>
                     </details>
                 </div>
 
                 <div class="container">
                     <h2 style="margin-top: 0;">News</h2>
-                    <p class="note">Headlines from BBC News on the Home Page: one list for your area and one for the whole UK. Press a headline to read the story on the BBC website.</p>
+                    <p class="note">Headlines on the Home Page: one list for your area and one for the whole UK. They come from BBC News where it's available, and other UK news sites when it isn't, so the panel keeps working if a feed goes down. Whoever published each story is shown under the headline, and pressing it opens their website.</p>
                     <label for="news-area">Local news area</label>
                     <select id="news-area" onchange="setNewsArea(this.value)" style="max-width: 420px;"></select>
                     <span id="news-settings-status" class="status-ok"></span>
@@ -1609,6 +1678,12 @@
                         <div>
                             <h2 style="margin: 0 0 6px;">Your account</h2>
                             <p class="note" style="margin: 0;">Signed in as <strong id="set-account-email"></strong>. Sign out when you finish on a shared computer.</p>
+                            <div class="name-row">
+                                <label for="set-first-name" style="margin: 0; font-size: 1rem;">First name</label>
+                                <input type="text" id="set-first-name" maxlength="24" placeholder="John" autocomplete="given-name" onkeydown="if(event.key==='Enter') saveFirstName()">
+                                <button class="btn-toggle" style="padding: 10px 16px; font-size: 1rem;" onclick="saveFirstName()">Save</button>
+                                <span id="set-name-status"></span>
+                            </div>
                         </div>
                         <button class="btn-help" onclick="signOut()" style="padding: 12px 24px; font-size: 1.1rem;">Sign out</button>
                     </div>
@@ -1812,11 +1887,12 @@
                 <div class="guide-start">
                     <h3>Get started in five minutes</h3>
                     <ol>
+                        <li>Sign in with your first name and email address. The app says hello by name at the top of every page.</li>
                         <li>Go to <strong>Settings</strong> and type your town or postcode, so you get the right weather.</li>
                         <li>Go to <strong>Budget</strong> and enter how much is in your bank account and when your next payment arrives.</li>
                         <li>Add your classes in <strong>Timetable</strong>.</li>
                         <li>Add your assignment and exam dates in <strong>Deadlines</strong>.</li>
-                        <li>If you like, connect your Google Calendar and pick your train stations in <strong>Settings</strong>.</li>
+                        <li>If you like, connect your Google Calendar in <strong>Settings</strong>. Your trains are already sorted by the location you set in step one.</li>
                     </ol>
                     <p style="margin: 14px 0 0; font-size: 1.05rem;">Prefer to be shown? Guided set up points to each step with red arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
@@ -1901,13 +1977,11 @@
                 </details>
 
                 <details class="help-details" id="help-travel">
-                    <summary>Set up trains and buses</summary>
-                    <ol>
-                        <li>Go to <strong>Settings</strong> and find <strong>Trains and buses</strong>.</li>
-                        <li>Type your station codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the 3-letter code is shown next to its name.</li>
-                        <li>Press <strong>Save and test</strong>. Trains leaving in the next hour now show on the Home Page.</li>
-                    </ol>
-                    <p><strong>For buses</strong>, the yellow Live buses button opens TfGM's live times. To go straight to your stop, open tfgm.com, choose Live departures and find your stop. Copy the web address from the top of your browser, paste it into <strong>Bus times page</strong> in Settings, and press Save and test.</p>
+                    <summary>Set up trains</summary>
+                    <p>There's nothing to set up. Once your location is saved in <strong>Settings</strong>, the app picks your nearest stations on its own and shows their departures on the Home Page and on the Travel tab.</p>
+                    <p>The <strong>Travel</strong> tab also has a map of what's around you: where you are, your nearest stations, the bus stops nearby and the nearest supermarkets, each with how far it is and roughly how long it takes to walk. Press anything in the list to find it on the map, and use the tick boxes to show or hide each kind.</p>
+                    <p><strong>To use different stations</strong>, go to <strong>Settings</strong>, find <strong>Trains</strong> and type the 3-letter codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the code is shown next to its name. Press <strong>Save and test</strong>.</p>
+                    <p>To hand it back to the app, empty the Stations box and press <strong>Use nearest to me</strong>.</p>
                 </details>
 
                 <details class="help-details" id="help-backup">
@@ -1929,7 +2003,7 @@
                 </details>
                 <details class="help-details">
                     <summary>Can dPaul Studio see my data?</summary>
-                    <p>No. We can see the email address you sign in with and when you last signed in, and nothing else. There's no tracking or advertising in the app. We can't see your money, grades, plans or calendar.</p>
+                    <p>No. We can see the first name and email address you sign in with and when you last signed in, and nothing else. Your first name is only used to greet you, and you can change it any time under Your account in Settings. There's no tracking or advertising in the app. We can't see your money, grades, plans or calendar.</p>
                 </details>
                 <details class="help-details">
                     <summary>What does Google Calendar access allow?</summary>
@@ -1940,10 +2014,11 @@
                     <summary>Does anything leave my device?</summary>
                     <p>Only what's needed to fetch live information, and only when you use that feature:</p>
                     <ul>
-                        <li><strong>Signing in:</strong> your email address goes to Supabase, the service that sends your sign-in codes and remembers that you're signed in.</li>
+                        <li><strong>Signing in:</strong> your email address and first name go to Supabase, the service that sends your sign-in codes and remembers that you're signed in. Keeping your name there is what lets it greet you on a new phone or laptop.</li>
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
-                        <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked.</li>
-                        <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to BBC News, never your exact location. It doesn't record who asked. Opening a headline takes you to the BBC website.</li>
+                        <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked. Working out which stations are nearest happens inside the app, so your location isn't sent anywhere for that.</li>
+                        <li><strong>The map on Travel:</strong> to find the bus stops and shops near you, your location rounded to about 100 metres goes to OpenStreetMap's public map service. Your exact position is never sent, and the answer is kept in this browser for a month so it's only asked once.</li>
+                        <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to the news sites it reads, never your exact location. It doesn't record who asked. Opening a headline takes you to whichever site published it, shown under each one.</li>
                         <li><strong>Music:</strong> YouTube videos play from YouTube, which has its own privacy rules.</li>
                     </ul>
                     <p>Like any website, these services see a normal web request, which includes your internet address.</p>
@@ -1988,6 +2063,22 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v3.3  "Around you" map on Travel: you are here, nearest stations, bus stops and
+        //       supermarkets, with distances and walking times. Stations come from the
+        //       built-in table; stops and shops from OpenStreetMap, cached for a month.
+        // v3.2  Tick boxes are drawn rather than scaled, so their edges no longer get clipped
+        //       by scrolling panels, and they pick up the amber or green display colour
+        // v3.1  Buses removed: no free UK source gives next-bus-at-a-stop times. Nearest stations
+        //       now come from a built-in table of every National Rail station, worked out in the
+        //       browser, so trains follow your location with no API, no key and nothing sent out.
+        // v3.0  News no longer depends on one feed: the "news" Edge Function tries BBC, then Sky,
+        //       the Guardian or a Google News search for your area, then BBC England, and reports
+        //       which one answered. Each headline shows its publisher.
+        // v2.9  Sign-in asks your first name alongside your email. The header greets you by name and
+        //       shows you're signed in, on every page. Change it under Your account in Settings.
+        // v2.8  Trains and buses now follow your saved location: nearest stations filled in for you,
+        //       live bus departures from your nearest stops (Home Page and Travel) via the Supabase
+        //       Edge Function "buses", which holds the TransportAPI key. Pasted bus link removed.
         // v2.7  News: updated BBC area names (Derbyshire, Hull and East Yorkshire, North Yorkshire); shows
         //       'BBC England' when the news function falls back because an area has no recent feed
         // v2.6  Title banner image Assets/life-student-edition.webp replaces the typed title (header and sign-in)
@@ -2019,7 +2110,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '2.7';
+        const APP_VERSION = '3.3';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2036,7 +2127,6 @@
         // Live trains: the Supabase Edge Function "trains". It holds the Rail Data Marketplace key
         // (secret RDM_KEY) so the key never appears in this page. Called as ?crs=MAI&rows=30
         const TRAINS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/trains';
-        const TFGM_DEPARTURES_URL = 'https://tfgm.com/travel-updates/live-departures';
         const GOOGLE_SCOPES = [
             'https://www.googleapis.com/auth/calendar.readonly'
         ].join(' ');
@@ -2053,6 +2143,9 @@
         const $ = id => document.getElementById(id);
         const pad = n => String(n).padStart(2, '0');
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+        // A first name, tidied: single spaces, no silly lengths
+        function cleanName(v) { return String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 24); }
 
         function esc(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2131,7 +2224,8 @@
                 },
                 settings: {
                     place: 'Maidenhead', lat: 51.5227, lon: -0.7153,
-                    travel: { stations: ['MCO', 'MAN'], busLink: '' },
+                    travel: { stations: [], autoStations: true },
+                    firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, theme: 'amber',
                     home: null, pages: {}, newsArea: ''
                 },
@@ -2150,7 +2244,15 @@
             out.budget = { ...base.budget, ...(raw.budget || {}) };
             out.settings = { ...base.settings, ...(raw.settings || {}) };
             out.settings.travel = { ...base.settings.travel, ...((raw.settings || {}).travel || {}) };
-            if (!Array.isArray(out.settings.travel.stations)) out.settings.travel.stations = [...base.settings.travel.stations];
+            if (!Array.isArray(out.settings.travel.stations)) out.settings.travel.stations = [];
+            // v2.8: stations follow your location unless you picked your own. Anyone still on the old
+            // MCO/MAN defaults is switched to automatic; anyone who chose stations keeps them.
+            if (typeof ((raw.settings || {}).travel || {}).autoStations !== 'boolean') {
+                const st = out.settings.travel.stations.join(',');
+                out.settings.travel.autoStations = !st || st === 'MCO,MAN';
+                if (out.settings.travel.autoStations) out.settings.travel.stations = [];
+            }
+            delete out.settings.travel.busLink; // v2.8: buses come from your location now
             delete out.settings.bus; // replaced by travel in v1.5
             out.focus = { ...base.focus, ...(raw.focus || {}) };
             out.music = { ...base.music, ...(raw.music || {}) };
@@ -2185,6 +2287,57 @@
         }
 
         let data = loadData();
+
+        // =====================================================================
+        // WHO'S SIGNED IN (v2.9): kept here, above the clock, so the header can
+        // show a greeting on every page before the sign-in code has run.
+        // The name lives in three places: this browser (so it survives a reload),
+        // your app data (so it comes with your backup) and your Supabase account
+        // (so it follows you to another device).
+        // =====================================================================
+        const NAME_KEY = 'dpaul_student_first_name';
+        let signedInName = cleanName(data.settings.firstName);
+        let signedInEmail = '';
+
+        function storedName() {
+            try { return cleanName(localStorage.getItem(NAME_KEY) || ''); } catch (e) { return ''; }
+        }
+        function greetingWord() {
+            const h = new Date().getHours();
+            return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+        }
+        function greetingLine() {
+            return signedInName ? `${greetingWord()}, ${signedInName}` : '';
+        }
+        function renderAccount() {
+            const g = $('header-greeting');
+            if (g && g.textContent !== greetingLine()) g.textContent = greetingLine();
+            const chip = $('account-name');
+            if (chip) chip.textContent = signedInName || 'Signed in';
+            const btn = $('btn-account');
+            if (btn) btn.title = signedInEmail ? `Signed in as ${signedInEmail}. Opens your account settings.` : 'Your account';
+            const field = $('set-first-name');
+            if (field && document.activeElement !== field) field.value = signedInName;
+        }
+        // One place to change the name, wherever it came from
+        function setFirstName(name, opts) {
+            const clean = cleanName(name);
+            if (!clean) return;
+            signedInName = clean;
+            try { localStorage.setItem(NAME_KEY, clean); } catch (e) {}
+            if (data && data.settings && data.settings.firstName !== clean) {
+                data.settings.firstName = clean;
+                if (!opts || opts.save !== false) saveData(true);
+            }
+            renderAccount();
+        }
+        function saveFirstName() {
+            const clean = cleanName($('set-first-name').value);
+            if (!clean) { flash('set-name-status', 'Type the name you\'d like to be called.', true); return; }
+            setFirstName(clean);
+            pushNameToAccount(clean);
+            flash('set-name-status', `Saved. Hello ${clean}.`);
+        }
 
         function exportData() {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2598,8 +2751,11 @@
         }
 
         // =====================================================================
-        // NEWS (v2.3): BBC News headlines through the Supabase Edge Function "news"
-        // (browsers can't read BBC feeds directly). Called as ?area=berkshire or ?area=uk
+        // NEWS (v3.0): headlines through the Supabase Edge Function "news" (browsers can't
+        // read news feeds directly). The function tries several sources per area in turn --
+        // BBC, then Sky or a Google News search for the area, then BBC England -- so one dead
+        // feed no longer empties the panel. Called as ?area=berkshire&q=Berkshire, or ?area=uk.
+        // It reports back which source actually answered, and that's what gets shown.
         // =====================================================================
         const NEWS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/news';
         // BBC local news areas, with a few towns in each so the nearest one can be picked from your location
@@ -2678,13 +2834,23 @@
                 if (c && (c.loading || (!force && Date.now() - c.at < 15 * 60000))) return;
                 newsState.cache[area] = { ...(c || { items: [] }), loading: true };
                 try {
-                    const r = await fetch(`${NEWS_PROXY_URL}?area=${encodeURIComponent(area)}`);
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    const j = await r.json();
-                    newsState.cache[area] = { at: Date.now(), items: Array.isArray(j.items) ? j.items : [], error: false, fallback: !!j.fallback };
+                    const label = area === 'uk' ? '' : (NEWS_AREAS[area] || [''])[0];
+                    const r = await fetch(`${NEWS_PROXY_URL}?area=${encodeURIComponent(area)}${label ? `&q=${encodeURIComponent(label)}` : ''}`);
+                    const j = await r.json().catch(() => ({}));
+                    if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
+                    const items = Array.isArray(j.items) ? j.items : [];
+                    if (!items.length) throw new Error('No source had any headlines.');
+                    newsState.cache[area] = {
+                        at: Date.now(), items, error: false,
+                        source: j.source || '', fallback: !!j.fallback, stale: !!j.stale
+                    };
                 } catch (e) {
                     // Keep any headlines already showing, and try again in about 3 minutes
-                    newsState.cache[area] = { at: Date.now() - 12 * 60000, items: (c && c.items) || [], error: true };
+                    newsState.cache[area] = {
+                        at: Date.now() - 12 * 60000,
+                        items: (c && c.items) || [], source: (c && c.source) || '',
+                        error: true, why: e.message || ''
+                    };
                 }
                 renderNews();
             }));
@@ -2700,26 +2866,40 @@
             if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
             return t.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
         }
-        function newsLink(u) { return /^https:\/\/(www\.)?bbc\.(co\.uk|com)\//.test(u || '') ? u : 'https://www.bbc.co.uk/news'; }
+        // Headlines now come from several publishers, so any ordinary https link is allowed.
+        // Anything odd (javascript:, data:, a bare word) falls back to BBC News.
+        function newsLink(u) {
+            try {
+                const url = new URL(String(u || ''));
+                return url.protocol === 'https:' ? url.href : 'https://www.bbc.co.uk/news';
+            } catch (e) { return 'https://www.bbc.co.uk/news'; }
+        }
 
         function renderNewsList(elId, area) {
             const el = $(elId);
             const c = newsState.cache[area];
             if (c && c.items && c.items.length) {
-                el.innerHTML = c.items.slice(0, 20).map(it => `<li class="news-item"><a href="${esc(newsLink(it.link))}" target="_blank" rel="noopener">${esc(it.title)}</a>${it.date ? `<span class="news-time">${esc(newsAgo(it.date))}</span>` : ''}</li>`).join('');
+                el.innerHTML = c.items.slice(0, 20).map(it => {
+                    const meta = [it.date ? newsAgo(it.date) : '', it.source && it.source !== c.source ? it.source : ''].filter(Boolean).join(' \u00b7 ');
+                    return `<li class="news-item"><a href="${esc(newsLink(it.link))}" target="_blank" rel="noopener">${esc(it.title)}</a>${meta ? `<span class="news-time">${esc(meta)}</span>` : ''}</li>`;
+                }).join('');
             } else if (!c || c.loading) {
                 el.innerHTML = '<li class="empty">Loading headlines...</li>';
             } else {
                 el.innerHTML = c.error
-                    ? '<li class="empty">Headlines couldn\'t load. They\'ll try again in a few minutes.</li>'
+                    ? `<li class="empty">Headlines couldn't load${c.why ? ` (${esc(c.why)})` : ''}. Every source was tried; they'll try again in a few minutes.</li>`
                     : '<li class="empty">No headlines right now.</li>';
             }
         }
         function renderNews() {
             const local = newsLocalArea();
             const lc = local && newsState.cache[local];
-            $('news-local-src').textContent = !local ? '' : (lc && lc.fallback ? 'BBC England' : 'BBC ' + NEWS_AREAS[local][0]);
-            $('news-local-src').title = lc && lc.fallback ? `No recent ${NEWS_AREAS[local][0]} headlines from the BBC, so this shows England news` : '';
+            const uc = newsState.cache.uk;
+            $('news-uk-src').textContent = (uc && uc.source) || '';
+            $('news-local-src').textContent = !local ? '' : ((lc && lc.source) || '');
+            $('news-local-src').title = lc && lc.fallback
+                ? `The usual ${NEWS_AREAS[local][0]} feed didn't answer, so these came from ${lc.source}`
+                : '';
             renderNewsList('news-uk', 'uk');
             if (local) renderNewsList('news-local', local);
             else $('news-local').innerHTML = '<li class="empty">Set a UK town or postcode in <a href="#" onclick="switchTab(\'settings\'); showFitPage(\'settings\', 1); return false;">Settings</a> to see news for your area.</li>';
@@ -2787,6 +2967,8 @@
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
             $('live-clock').innerText = now.toLocaleDateString('en-GB', options);
+            const g = $('header-greeting');
+            if (g && g.textContent !== greetingLine()) g.textContent = greetingLine();
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -2876,6 +3058,7 @@
                 fetchWeather();
                 flash('set-place-status', 'Location saved');
                 markSetupDone('location');
+                onLocationChanged();
             } catch (e) {
                 flash('set-place-status', 'Location search failed. Check your connection and try again.', true);
             }
@@ -2892,6 +3075,7 @@
                 fetchWeather();
                 flash('set-place-status', 'Location saved');
                 markSetupDone('location');
+                onLocationChanged();
             }, () => flash('set-place-status', 'Location permission was denied. Search for your town instead.', true));
         }
 
@@ -3688,15 +3872,16 @@
         async function fetchTrains() {
             const box = $('train-content');
             const cfg = data.settings.travel;
-            $('btn-live-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
             if (!TRAINS_PROXY_URL) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet. Live buses still works from the button above.</p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet.</p>';
                 $('btn-train-refresh').title = '';
                 return;
             }
-            const stations = cfg.stations.filter(c => CRS_RE.test(c)).slice(0, 3);
+            const stations = activeStations();
             if (!stations.length) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Add a station in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live trains.</p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">' + (hasPlace()
+                    ? 'No station found near your location. Add one in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a>.'
+                    : 'Set your location in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live trains.') + '</p>';
                 return;
             }
             const results = await Promise.allSettled(stations.map(fetchBoard));
@@ -3747,26 +3932,321 @@
         }
 
         async function saveTravelSettings() {
-            const stations = parseStations($('travel-stations').value);
-            const bad = stations.filter(c => !CRS_RE.test(c));
+            const typed = parseStations($('travel-stations').value);
+            const bad = typed.filter(c => !CRS_RE.test(c));
             if (bad.length) { flash('travel-settings-status', `Station codes are 3 letters. Check: ${bad.join(', ')}`, true); return; }
-            if (stations.length > 3) { flash('travel-settings-status', 'Up to three stations, please.', true); return; }
-            let link = $('travel-bus-link').value.trim();
-            if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
-            data.settings.travel = { stations, busLink: link };
+            if (typed.length > 3) { flash('travel-settings-status', 'Up to three stations, please.', true); return; }
+            // An empty box hands the stations back to your location
+            data.settings.travel.autoStations = !typed.length;
+            data.settings.travel.stations = typed;
             saveData();
             renderSettings();
             markSetupDone('travel');
-            $('btn-live-buses').href = link || TFGM_DEPARTURES_URL;
-            if (!stations.length) { flash('travel-settings-status', 'Saved. Add a station to see live trains.'); return; }
+            if (!typed.length) {
+                const found = activeStations();
+                flash('travel-settings-status', found.length
+                    ? `Saved. Using the stations nearest your location: ${found.join(', ')}.`
+                    : 'Saved. Set your location above to get your nearest stations.');
+                fetchTrains();
+                return;
+            }
             if (!TRAINS_PROXY_URL) { flash('travel-settings-status', 'Saved. Live trains aren\'t switched on for this copy yet.'); return; }
             try {
-                const boards = await Promise.all(stations.map(fetchBoard));
+                const boards = await Promise.all(typed.map(fetchBoard));
                 flash('travel-settings-status', `Saved. Found ${boards.map(b => b.station).join(' and ')}.`);
                 fetchTrains();
             } catch (e) {
                 flash('travel-settings-status', `Saved, but the test failed: ${e.message}`, true);
             }
+        }
+
+        // =====================================================================
+        // NEAREST STATIONS (v3.1): worked out in the browser from a built-in table of
+        // every National Rail station, so there's no API, no key and no request to make.
+        // Packed as fixed 17-character records to keep it small: 3-letter code, then
+        // latitude to 3 decimal places, then signed longitude to 3 decimal places.
+        // Source: github.com/davwheat/uk-railway-stations (Open Government Licence).
+        // =====================================================================
+        const STATION_REC = 17;
+        const STATION_DATA = 'AAP51.598-000.120AAT57.610-004.914ABA51.715-003.443ABC58.388-003.705ABD57.143-002.097ABE51.575-003.231ABH52.899-004.374ABW51.491+000.120ABY53.472-002.195ACB53.266-002.603ACC51.509-000.264ACG52.449-001.819ACH57.483-005.333ACK55.307-001.652ACL52.635+001.544ACN57.579-005.072ACR53.753-002.370ACT51.406-000.676ACY51.643-003.330ADC53.320-002.134ADD52.484-001.854ADK53.471-002.214ADL53.613-002.603ADM51.241+001.199ADN55.639-004.812ADR55.864-003.983ADS55.641-004.823ADV51.212-001.493ADW55.843-003.607AFK51.143+000.875AFS51.436-000.469AFV53.742-002.993AGL53.295-003.581AGS55.856-004.245AGT50.837-000.182AGV51.817-003.010AHD51.318-000.308AHN53.491-002.093AHS51.129+000.152AHT51.246-000.761AHV51.273-000.721AIG53.365-002.927AIN53.474-002.957AIR55.783-003.994ALB52.638-002.269ALD53.304-002.237ALF53.100-001.370ALK52.951-000.899ALM55.392-001.637ALN51.648+000.754ALO56.118-003.787ALP53.585-000.733ALR51.854+000.997ALT53.387-002.347ALV52.347-001.968ALW54.524-001.363ALX55.985-004.578AMB53.061-001.481AMF51.796-003.997AML51.517-000.268AMR51.674-000.606AMT51.402-001.137AMY50.897-000.542ANC52.988-000.536AND55.860-004.272ANF50.889-001.525ANG50.817-000.490ANL55.890-004.322ANN54.984-003.263ANS53.602-003.043ANZ51.412-000.064AON51.152-000.968APB53.579-002.719APD51.033+000.817APF51.640-001.242APG52.021-000.632APP54.580-002.487APS51.733-000.464APY53.841-001.703ARB56.560-002.589ARD57.881-004.363ARG56.913-005.839ARL52.026-000.266ARM55.886-003.685ARN54.202-002.828ARR53.885-000.427ART56.204-004.723ARU50.848-000.547ASB55.640-004.800ASC51.997-002.109ASD51.479-002.577ASF55.889-004.243ASG53.093-002.299ASH51.249-000.712ASK54.189-003.205ASL55.182-001.573ASN51.372-000.486ASP54.759-003.332ASS57.694-004.250AST52.505-001.872ASY53.356-002.341ATB52.906-001.231ATH52.579-001.553ATL52.514+001.023ATN53.529-002.479ATT57.395-005.457AUD52.004+000.207AUG53.554-002.895AUI56.302-004.722AUK55.470-004.295AUR56.055-003.301AUW51.867-001.564AVF51.340-002.281AVM57.189-003.828AVN51.500-002.699AVP51.833-000.862AVY52.544-004.057AWK53.573-001.181AWM52.031-000.109AWT54.810-002.772AXM50.779-003.006AXP55.864-004.211AYH51.227+001.210AYL51.301+000.466AYP51.436+000.126AYR55.458-004.627AYS51.814-000.815AYW52.414-004.082BAA50.831-000.640BAB51.056-000.138BAC53.209-002.892BAD51.330-000.214BAG51.365-000.689BAH53.437-002.988BAI55.867-004.042BAJ51.615-003.811BAK51.477-000.148BAL51.443-000.152BAM53.339-001.689BAN52.061-001.328BAR54.074-002.835BAS50.486-004.200BAT50.913+000.495BAU53.689-000.443BAV53.697-000.391BAW51.332-000.777BAY51.759-000.096BBG55.904-004.225BBK52.624-002.186BBL51.290+000.194BBN53.747-002.479BBS52.472-001.878BBW53.622-001.797BCB53.605-002.842BCC52.458+001.570BCE51.413-000.752BCF51.611-000.644BCG51.522-003.204BCH51.378+001.301BCJ53.598-002.840BCK53.163-003.056BCN55.941-004.804BCS51.903-001.151BCU50.817-001.574BCV51.593-000.070BCY51.465-000.038BCZ51.569-000.227BDA52.620+001.439BDB53.441-002.017BDG55.850-004.227BDH50.854-000.997BDI53.791-001.750BDK51.993-000.188BDL53.634-003.015BDM52.136-000.479BDN50.679-001.138BDQ53.796-001.753BDS51.514-000.150BDT54.085-000.201BDW51.380-001.599BDY53.423-002.110BEA56.157-003.956BEB53.358-003.004BEC51.425-000.016BEE52.921-001.207BEF51.544+000.561BEG51.205+000.404BEH52.479-001.467BEJ55.140-001.569BEL57.478-004.470BEM54.128-000.180BEN54.116-002.511BEP52.503-001.473BER52.244-001.750BES53.624-002.915BET51.524-000.060BEU50.854-001.506BEV53.842-000.424BEX50.841+000.476BEY53.926-001.797BFD51.488-000.309BFE50.451-004.182BFF52.996-003.944BFN51.350-000.481BFR51.511-000.104BGA52.623+001.419BGD51.692-003.230BGE53.407-002.893BGG53.549-000.486BGH53.699-001.782BGI55.852-004.072BGL50.400-004.792BGM51.434-000.020BGN51.506-003.576BGS55.937-004.714BGV51.519+000.115BHC56.003-004.584BHD51.710-003.229BHG55.899-003.644BHI52.451-001.725BHK51.642-000.069BHM52.478-001.898BHO51.586-000.041BHR52.169-003.427BHS53.597-001.770BIA54.657-001.678BIC51.629+000.419BID53.409-003.079BIF54.119-003.226BIG51.015-000.450BIK51.404-000.056BIL54.606-001.279BIN52.955-000.952BIO55.845-004.115BIP50.780+000.082BIS51.867+000.166BIT51.893-001.148BIW52.085-000.260BIY53.848-001.837BKA51.288-000.385BKC53.388-003.021BKD52.406-002.176BKG51.540+000.081BKH51.466+000.008BKJ51.411-000.027BKL51.400+000.044BKM51.764-000.562BKN53.405-003.057BKO51.303-000.636BKP53.397-003.039BKQ53.395-003.014BKR55.884-003.750BKS51.261+001.136BKT52.605-001.845BKW52.396-001.643BLA56.766-003.850BLB51.625+000.566BLD53.850-001.754BLE53.804-001.631BLG55.857-004.225BLH55.817-004.025BLI55.125-001.557BLK53.592-002.570BLL54.975-002.350BLM51.344-000.199BLN53.488-003.040BLO54.966-001.713BLP53.025-001.483BLT55.798-004.086BLV53.462-002.181BLW53.000-001.196BLX52.619-002.012BLY51.995-000.736BMB53.727-002.661BMC53.614-002.410BMD51.655-000.031BME52.423-002.885BMF53.740-000.673BMG51.285+000.479BMH50.727-001.864BML53.360-002.162BMN51.409+000.017BMO52.479-001.892BMP54.933-002.704BMR53.330-002.990BMS51.400+000.018BMT51.440-002.594BMV52.323-002.048BMY51.330-001.061BNA53.421-002.216BNC53.794-002.245BND52.454+000.624BNE51.577-000.711BNF51.638-003.819BNG53.223-004.136BNH51.465+000.161BNI51.472-000.252BNL55.878-004.223BNM51.524-000.647BNP51.074-004.064BNR54.959-001.463BNS51.467-000.241BNT53.432-002.134BNV56.843-005.095BNW53.453-002.995BNY53.554-001.478BOA51.345-002.253BOC54.290-003.395BOD50.446-004.663BOE50.917-001.259BOG50.787-000.676BOH50.843-000.847BOM53.322-002.987BON53.574-002.426BOP51.607-000.120BOR53.204-004.418BOT53.447-002.996BOW52.440-004.030BPA51.757+000.519BPB53.788-003.054BPK51.721-000.205BPN53.823-003.050BPS53.799-003.049BPT55.902-004.502BPW51.514-002.535BRA58.013-003.853BRC55.827-003.668BRE51.613+000.301BRF53.825-002.237BRG51.293+000.306BRH52.491-004.050BRI51.449-002.581BRK50.841+000.165BRL55.097-004.782BRM52.723-004.057BRN55.917-004.333BRO56.516-004.763BRP52.395+001.544BRR55.805-004.396BRS51.398-000.282BRT52.943-002.168BRU51.112-002.447BRV52.427-001.926BRW53.382-002.976BRX51.463-000.114BRY51.397-003.285BSB53.042-000.942BSC52.563-001.991BSD51.276+000.578BSE52.254+000.713BSH51.645-000.385BSI56.476-002.838BSJ52.129-000.467BSK51.268-001.087BSL56.900-005.764BSM50.728-001.919BSN52.979-000.031BSO51.569+000.457BSP51.541-000.210BSR51.361+001.433BSS55.561-004.651BSU55.941-003.101BSV53.673-002.664BSW52.484-001.900BSY51.546-000.203BTB53.574-000.410BTD53.519-001.312BTE50.918-001.378BTF52.945-000.796BTG52.361-001.994BTH51.378-002.356BTL53.709-001.623BTN50.830-000.141BTO51.248-000.268BTP51.869+000.568BTR51.875+000.558BTS56.057-003.233BTT54.458-001.093BTY51.181-000.868BUB53.791-002.258BUC52.598+001.470BUD54.355-002.766BUE51.971+000.769BUG50.954-000.128BUH53.726-000.578BUI55.817-004.204BUJ52.984-001.041BUK52.358-002.949BUL52.592-001.838BUO50.883-001.305BUS55.780-004.263BUT52.806-001.642BUU51.634+000.813BUW53.908-001.753BUX53.261-001.913BUY53.809-001.576BVD51.492+000.152BWB52.003-000.696BWD53.412-002.528BWG55.931-004.494BWK55.775-002.011BWN52.626-002.019BWO51.705-000.359BWS52.750-001.150BWT51.128-002.990BXB51.746-000.011BXD50.990+000.132BXH51.463+000.133BXW51.253-000.329BXY51.441+000.148BYA52.590+001.630BYB52.968-002.067BYC53.092-003.801BYD51.402-003.261BYE51.673-004.098BYF56.467-002.873BYI51.392-003.273BYK53.543-001.149BYL56.493-002.745BYM53.785-002.249BYN53.500-002.647BYS54.440-003.543CAA52.447-001.495CAC55.888-003.890CAD51.412-003.248CAG57.280-003.830CAK54.178-002.973CAM51.336-000.745CAN56.501-002.707CAO52.687-002.022CAR54.891-002.934CAS53.592-002.178CAT51.283-000.079CAU50.406-004.467CAY55.854-004.179CBB50.197-005.464CBC55.863-004.032CBD57.562-004.440CBE51.275+001.075CBG52.195+000.138CBH51.532-000.058CBK50.750-003.421CBL55.819-004.174CBN50.210-005.298CBP51.523-000.332CBR50.904-000.010CBS55.867-004.028CBW51.284+001.075CBX56.190-003.047CBY51.873-001.490CCC52.918-004.237CCH50.832-000.783CCT55.818-004.262CDB51.466-003.166CDD56.141-003.262CDF51.475-003.178CDI50.783-003.647CDN51.322-000.134CDO55.853-004.340CDQ51.482-003.171CDR55.960-004.653CDS51.315-000.137CDT51.585-002.761CDU51.717-002.366CDY55.942-004.732CEA55.804-003.910CED51.858-000.662CEF53.312-001.919CEH52.516-001.708CEL53.271-002.280CES51.852+000.580CET51.887+000.904CEY53.917-002.011CFB51.445-000.027CFD53.724-001.356CFF55.818-004.230CFH51.503+000.291CFL53.859-001.845CFN51.464-002.612CFO51.668-000.561CFR50.983-001.385CFT51.455-000.037CGD55.995-004.711CGM53.782-000.406CGN51.445-003.190CGW53.108-003.033CHC55.865-004.271CHD53.238-001.420CHE51.356-000.215CHF53.828-001.227CHG51.209+000.790CHH51.051-000.364CHI51.634+000.010CHK51.481-000.268CHL51.216-000.524CHM51.737+000.469CHN51.703-000.023CHO51.570-001.158CHP51.309-000.169CHR50.738-001.785CHT55.536-001.707CHU53.376-002.188CHW51.539+000.671CHX51.508-000.124CHY51.387-000.510CIL51.245+000.976CIM52.151-003.457CIR51.543-000.115CIT51.406+000.057CKH55.836-004.323CKL54.542-003.582CKN50.873-002.779CKS55.790-004.276CKT55.844-004.360CKY51.621-003.126CLA51.264-000.504CLC51.100-002.523CLD51.356+000.108CLE53.563-000.030CLG51.361-000.348CLH53.873-002.394CLI53.523-002.315CLJ51.464-000.170CLK51.408-000.042CLL50.839+000.457CLM53.144-000.749CLN53.464-001.467CLP51.465-000.133CLR51.852-004.882CLS54.855-001.578CLT51.794+001.154CLU55.730-003.849CLV52.276-001.697CLW51.654-000.518CLY53.340-001.944CMB52.223+000.158CMD51.542-000.140CME51.832-001.393CMF53.113-001.549CMH51.702-003.414CML55.834-004.162CMN51.853-004.306CMO56.007-003.817CMR52.931+001.293CMS52.174+000.131CMY55.834-004.285CNE53.855-002.181CNF54.130-002.771CNG53.158-002.193CNL52.399-001.547CNM51.896-002.100CNN51.549-000.092CNO50.866-002.574CNP53.394-003.023CNR56.390-004.618CNS53.489-001.234CNW53.280-003.830CNY52.579+001.513COA55.865-004.005COB50.833+000.427COE50.445-004.482COH51.046+000.188COI55.833-004.258COL51.900+000.894COM54.481-000.975CON56.452-005.385COO51.557-000.722COP50.814-003.752COR52.489-000.688COS52.645-002.301COT53.767-001.589COV52.401-001.513COW56.112-003.344COY51.521-003.231CPA56.843-005.122CPH51.572-003.218CPK51.628-000.386CPM51.462-002.115CPN51.016-004.024CPT51.562-000.057CPU53.260-002.943CPW51.640-002.672CPY54.105-002.410CRA52.469-002.090CRB54.966-002.017CRD52.536-001.833CRE53.090-002.433CRF55.807-003.956CRG53.805-001.452CRH51.571-000.117CRI51.559-000.214CRK52.933-003.067CRL53.652-002.627CRM55.089-001.599CRN51.366-000.819CRO55.956-004.036CRR56.760-004.691CRS55.691-003.669CRT51.257+001.018CRV52.442-002.837CRW51.112-000.187CRY51.448+000.179CSA50.842-001.068CSB51.357-000.170CSD51.318-000.390CSG53.359-002.912CSH51.368-000.167CSK50.497-004.209CSL52.627-002.201CSM54.467-000.948CSN51.364-000.301CSO53.668-002.778CSR53.446-002.368CSS51.356-000.308CST51.511-000.091CSW51.360+001.068CSY52.546-002.086CTE55.765-004.005CTF51.445-000.026CTH51.568+000.128CTK51.514-000.103CTL53.998-001.320CTM51.381+000.521CTN51.487+000.031CTO52.965-001.078CTR53.197-002.880CTT52.537-002.803CTW53.750-002.391CUA57.920-004.406CUB55.941-003.982CUD53.240-002.599CUF51.709-000.110CUH55.902-003.318CUM51.654-001.236CUP56.317-003.009CUS51.510+000.026CUW51.840-004.732CUX51.374+000.463CWB53.296-003.725CWC51.925+000.759CWD53.264-001.216CWE53.590-000.817CWH51.684-000.106CWL52.080-002.357CWM51.657-003.016CWN51.155+000.111CWS52.516-003.434CWU50.889+000.501CWX51.506-000.016CYB53.099-003.032CYK55.901-004.404CYN52.052-003.747CYP51.418-000.073CYS51.489-003.178CYT53.733-002.518DAG56.044-003.355DAK55.839-004.216DAL56.400-004.983DAM55.986-003.382DAN53.381-001.411DAR54.520-001.547DAS52.576-002.020DAT51.483-000.580DBC55.947-004.567DBD53.573-001.663DBE55.942-004.554DBG51.034-001.547DBL56.186-003.967DBR52.050+001.182DBY52.916-001.463DCG57.337-005.637DCH50.709-002.438DCT51.505-003.233DCW50.711-002.443DDG52.372-001.753DDK51.526+000.145DDP52.525-002.049DEA51.223+001.399DEE56.457-002.971DEN51.043-001.635DEP51.479-000.027DEW53.692-001.633DFD51.448+000.218DFE56.068-003.452DFI52.988-001.486DFL56.081-003.422DFR55.941-004.775DGC51.581-000.518DGL51.440-003.180DGT53.474-002.250DGY53.295-003.833DHM54.779-001.582DHN53.669-001.752DID51.611-001.243DIG50.716-003.475DIN57.594-004.423DIS52.373+001.123DKD56.557-003.578DKG51.242-000.324DKT51.236-000.340DLG53.186-003.823DLH50.919+000.611DLJ51.546-000.075DLK51.548-000.075DLM53.229-002.667DLR55.947-004.578DLS54.846-002.989DLT54.154-003.179DLW56.934-004.246DLY55.705-004.712DMC55.905-004.364DMF55.072-003.605DMG51.617-003.437DMH51.249-002.208DMK51.468-000.089DMP51.346+001.426DMR55.912-004.427DMS51.156-000.005DMY55.904-004.387DND54.515-001.467DNG51.296+000.172DNL55.712-004.532DNM51.578-000.498DNO57.986-003.947DNS51.432-003.218DNT54.283-002.364DNY54.466-000.911DOC50.383-004.176DOD53.545-001.531DOL52.295-003.264DON53.521-001.140DOR53.328-001.515DOT54.952-001.649DOW52.605+000.366DPD51.239-000.324DPT50.378-004.172DRF54.002-000.435DRG51.516-000.330DRI54.377-003.444DRM56.006-002.786DRN57.320-005.692DRO53.301-001.469DRT53.588-001.532DRU55.867-003.951DSL53.358-002.042DSM52.273+001.522DST55.859-004.213DSY53.539-002.516DTG53.449-001.970DTN53.457-002.132DTW52.269-002.158DUD52.488-001.872DUL52.201+000.366DUM55.841-004.309DUN55.998-002.515DUR50.817-000.411DVC51.939+001.281DVH53.300-001.891DVN53.391-002.153DVP51.126+001.304DVY52.564-003.925DWD53.052-003.884DWL50.581-003.465DWN53.698-002.465DWW50.599-003.444DYC57.205-002.192DYF52.789-004.104DYP51.552-000.105DZY52.324-001.819EAD51.442-000.188EAG54.529-001.349EAL51.515-000.301EAR51.441-000.918EBA53.670-002.675EBB51.782-003.206EBD51.443+000.321EBK51.437-003.207EBL54.947-001.421EBN50.769+000.282EBR51.209+000.060EBT51.200+000.067EBV51.757-003.196ECC53.485-002.333ECL53.431-002.781ECP51.584-003.229ECR51.376-000.093ECS52.471+000.970EDB55.952-003.188EDG53.403-002.947EDL53.365-001.817EDN51.391-000.027EDP55.928-003.308EDR51.624-000.060EDW51.461-000.081EDY53.410-002.221EFF51.292-000.420EFL51.255+000.485EGF53.792-001.364EGG50.888-003.875EGH51.429-000.546EGN53.755-000.787EGR51.126-000.018EGT54.438-000.762EGY55.941-003.320EKB55.890-003.078EKL55.765-004.182ELD51.228-000.171ELE51.398-000.049ELG57.643-003.312ELO52.952-000.855ELP53.282-002.895ELR53.499-001.429ELS51.653-000.280ELT55.986-002.658ELW51.455+000.050ELY52.391+000.266EMD52.862-001.263EML51.286+000.439EMP51.569+000.221EMS50.851-000.939ENC51.653-000.090ENF51.652-000.079ENL51.671-000.029ENT53.656-002.414EPD51.321-000.243EPH51.494-000.098EPS51.334-000.269ERA53.308-002.981ERD52.528-001.839ERH51.482+000.175ERI51.089+000.200ERL53.451-002.638ESD51.417+000.044ESH51.380-000.355ESL50.969-001.351ESM51.920+000.228EST55.860-004.107ESW52.238+000.912ETC51.010+000.442ETL51.485+000.412EUS51.528-000.135EVE52.099-001.947EWD52.367-001.862EWE51.346-000.241EWR50.822-000.355EWW51.349-000.257EXC50.726-003.533EXD50.729-003.544EXG55.861-004.283EXM50.621-003.415EXN50.668-003.443EXR51.540-000.097EXT50.717-003.539EYN51.362+000.203FAL50.151-005.056FAV51.311+000.891FAZ53.469-002.937FBY53.554-003.071FCN51.459+000.079FEA53.679-001.360FEL51.448-000.410FEN52.000-000.717FER51.686-003.394FFA51.872-003.993FFD51.342-002.301FGH52.012-004.986FGT51.096-000.263FGW52.004-004.995FIL54.210-000.293FIN51.853-001.470FIT51.509-002.562FKC51.083+001.168FKG56.003-003.786FKK55.992-003.792FKW51.085+001.154FLD55.822-003.719FLE51.291-000.831FLF53.462-002.081FLI53.444-002.384FLM54.690-003.521FLN53.250-003.133FLT52.003-000.495FLW51.434-000.350FLX51.967+001.353FML51.312-000.747FMR50.862-000.087FMT50.148-005.065FNB51.296-000.756FNC51.198-000.605FNH51.211-000.793FNN51.302-000.743FNR51.401+000.236FNT50.787-003.285FNV53.348-001.989FNW53.550-002.388FNY51.550-000.183FOC56.386-005.115FOD50.830-000.579FOG51.550+000.024FOH51.439-000.053FOK52.580-001.827FOR57.610-003.628FOX54.259-003.216FPK51.565-000.106FRB52.696-004.049FRD53.296-002.723FRE53.566-003.072FRF53.471-002.146FRI51.838+001.243FRL55.753-004.854FRM50.853-001.192FRN57.778-003.994FRO51.227-002.309FRS58.357-003.897FRT51.104+000.294FRW51.492-003.233FRY53.717-000.509FSB50.839-000.815FSG50.834-000.219FSK53.060-000.912FST51.511-000.079FTM55.959-004.795FTN50.796-001.073FTW56.821-005.107FWY52.470-001.913FXN52.120+000.057FYS51.768-004.370FZH53.821-001.769FZP51.533-000.728FZW53.633-001.375GAL55.610-002.810GAR55.855-004.129GBD53.748-000.732GBG55.837-003.046GBK53.252-002.533GBL53.386-000.769GBS50.818-000.433GCH56.079-004.827GCR51.865-002.238GCT53.576-000.129GCW53.267-003.797GDH51.663-000.094GDL53.448-002.050GDN51.218-000.051GDP51.582+000.205GEA55.002-003.065GER51.589-000.555GFD51.542-000.346GFF51.684-003.227GFN55.805-004.294GGJ58.514-003.452GGV53.978-002.105GIG54.062-002.303GIL51.034-002.272GIP51.425-000.084GIR55.247-004.849GKC55.945-004.753GKW55.948-004.769GLC55.860-004.259GLD51.237-000.580GLE56.275-003.731GLF56.873-005.449GLG55.739-004.674GLH53.709-001.342GLM51.387+000.550GLO53.445-001.949GLQ55.863-004.251GLS54.440-000.794GLT56.162-003.143GLY50.859+000.069GLZ53.428-002.461GMB53.564-000.087GMD53.575-000.076GMG51.596-003.642GMN51.703-000.709GMT54.436-000.725GMV52.109-002.318GMY51.566+000.112GNB53.400-000.770GNF53.539-002.014GNH51.451+000.280GNL53.383-003.016GNR54.245-003.246GNT52.866+001.349GNW51.478-000.014GOB52.894-003.036GOD51.186-000.619GOE53.533-001.313GOF56.498-002.720GOL57.971-003.988GOM51.219-000.442GOO53.704-000.873GOR51.521-001.133GOS54.195-002.903GOX53.677-000.338GPK51.643-000.097GPO51.556-000.151GRA52.906-000.642GRB51.852+001.065GRC52.060+000.194GRF53.796-001.382GRH55.885-004.078GRK55.963-004.818GRL55.932-003.999GRN53.306-001.626GRP51.430+000.023GRS55.888-004.365GRT51.170-001.619GRV51.441+000.367GRY51.476+000.323GSC55.897-004.282GSD54.321-002.326GSL50.516-004.219GSN51.687-000.382GST53.559-002.694GSW53.489-002.672GSY53.876-001.716GTA54.490-001.114GTH52.134-003.531GTN51.467-003.189GTO53.469-002.167GTR53.223-002.326GTW51.156-000.161GTY53.394-002.230GUI53.474-002.113GUN51.492-000.276GVE57.613-004.688GVH52.515-001.853GWE53.073-003.018GWN51.649-004.035GYM52.612+001.721GYP54.533-001.179HAB53.606-000.268HAC51.549-000.060HAD52.529+001.622HAF51.458-000.445HAG52.422-002.147HAI51.352+000.446HAL53.379-002.347HAM50.726-002.018HAN51.512-000.338HAP51.780+000.593HAS52.346+001.506HAT51.763-000.216HAV50.854-000.983HAY51.503-000.421HAZ53.377-002.122HBB52.976-000.110HBD53.738-002.009HBL53.493-002.879HBN51.265+000.627HBP53.980-001.527HBY52.335-002.222HCB51.378-000.154HCH53.199-002.351HCN51.166+000.628HCT53.772-002.346HDB54.975-002.247HDE50.928-001.297HDF53.461-001.965HDG53.369-002.237HDH51.556-000.165HDL51.603-000.357HDM51.771-000.942HDN51.537-000.258HDW51.668-000.177HDY53.818-001.593HEC52.977-000.293HED53.364-002.830HEI54.597-001.582HEL53.698-001.114HEN51.580-000.239HER51.377-000.389HES53.718-000.442HEV51.181+000.095HEW54.952-001.555HEX54.974-002.095HFD52.061-002.709HFE51.800-000.073HFN51.798-000.093HFS53.590-001.021HFX53.720-001.854HGD51.415-001.511HGF53.533-002.494HGG51.539-000.076HGM51.426+000.467HGN53.372-002.775HGR51.452-000.001HGS50.858+000.576HGT53.992-001.538HGY51.577-000.105HHB54.033-002.913HHD53.308-004.631HHE51.005-000.106HHL51.517-003.182HHY51.547-000.102HIA52.428-001.700HIB51.150+000.278HID53.598-002.414HIG51.218-002.972HIL53.622-003.025HIN53.542-002.575HIP51.609+000.000HIR54.149-002.302HIT51.953-000.262HKC51.547-000.056HKH55.843-004.399HKM53.195-000.600HKN53.038-001.196HKW51.544-000.026HLB51.214+000.226HLC56.004-004.733HLD54.011-002.228HLE55.855-004.355HLF55.920-004.320HLG52.437-001.846HLI53.581-000.160HLL51.516-003.183HLM51.180-000.322HLN51.962-000.496HLR53.497-003.050HLS50.828-001.059HLU56.013-004.732HLW55.855-004.371HLY55.813-003.974HMC51.402-000.342HMD50.796+000.279HME50.871-001.329HML51.742-000.491HMM53.996-001.283HMN51.547-000.039HMP51.416-000.372HMS58.118-003.660HMT51.068+000.855HMW51.414-000.313HMY55.762-004.220HNA50.752-001.714HNB51.364+001.119HNC55.773-004.039HND51.825-001.373HNF52.710-002.002HNG51.647-003.224HNH51.453-000.102HNK52.535-001.372HNL52.291-001.784HNT57.444-002.776HNW55.779-004.057HNX53.361-002.856HOC51.604+000.660HOH51.579-000.337HOK51.280-000.962HOL50.711-002.078HON50.797-003.186HOO53.297-002.977HOP53.346-001.730HOR51.168-000.162HOT51.534-000.900HOU51.462-000.362HOV50.836-000.171HOW53.765-000.861HOX51.532-000.077HOY53.609-001.781HOZ55.811-004.560HPA51.450-000.046HPD51.815-000.352HPE53.117-003.037HPL54.687-001.207HPN53.781-002.318HPQ51.948+001.255HPT52.392-002.913HRD52.454+000.908HRE54.764-001.307HRH51.066-000.319HRL52.861-004.109HRM51.245+000.674HRN51.586-000.112HRO51.593+000.235HRR54.614-003.566HRS53.848-001.631HRW51.592-000.334HRY51.577-000.098HSB53.276-002.771HSC53.597-002.804HSD52.531-001.928HSG53.325-001.652HSK50.923-000.146HSL51.089-000.719HST55.859-004.240HSW53.329-003.074HSY51.279-000.434HTC53.426-002.179HTE51.610-000.369HTF53.242-002.554HTH53.346-002.213HTN52.295-001.673HTO53.525-003.057HTW55.811-003.840HTY53.445-002.040HUB54.174-000.315HUD53.648-001.785HUL53.744-000.346HUN52.329-000.192HUP53.452-002.327HUR51.245+000.004HUT53.956-000.433HUY53.410-002.843HVF51.803-004.960HVN53.115+000.273HWB53.219-003.032HWC51.944+001.285HWD53.186-003.033HWH54.968-002.462HWI53.580-002.544HWM51.791+000.131HWN51.782+000.095HWV51.470-000.480HWW51.718-000.345HWY51.630-000.745HXM52.715+001.408HXX51.471-000.456HYB52.101-001.835HYC53.452-002.085HYD51.919-001.299HYH51.885+000.927HYK53.390-003.179HYL50.186-005.420HYM55.946-003.218HYN55.880-004.315HYR51.426-000.189HYS51.376+000.010HYT53.464-002.086HYW51.375-000.341IFD51.559+000.069IFI51.116-000.216IGD57.689-004.176ILK53.925-001.822ILN52.979-001.295IMW51.475-000.183INC53.539-002.612INE53.277-002.816ING56.457-003.058INH57.925-004.399INK56.035-003.396INP55.906-004.873INR57.286-002.373INS57.337-002.616INT51.667+000.385INV57.480-004.223IPS52.051+001.144IRL53.434-002.433IRV55.611-004.675ISL51.475-000.337ISP51.826-001.238IVA57.533-004.055IVR51.508-000.507IVY50.394-003.905JCH54.551-001.208JEQ52.490-001.914JHN55.835-004.504JOH51.757-004.996JOR55.882-004.326KBC58.258-003.941KBF54.232-003.187KBK54.173-002.925KBN51.537-000.192KBW51.866-000.187KBX51.841+001.214KCK51.346+000.131KDB51.463+000.028KDG53.087-002.245KDY56.113-003.167KEH57.551-002.954KEI53.868-001.901KEL51.841+000.702KEM51.676-002.023KEN54.332-002.740KET52.393-000.732KEY50.390-004.179KGE55.919-003.266KGH56.069-003.174KGL51.706-000.438KGM51.902-001.629KGN50.936-003.906KGP55.820-004.247KGS52.020-001.280KGT51.732-004.715KGX51.531-000.123KID52.384-002.239KIH52.431-001.893KIL58.171-003.870KIN57.078-004.052KIR53.487-002.902KIT51.402-001.445KIV53.341-001.266KKB53.100-001.253KKD53.441-002.981KKH55.814-004.169KKM53.787-002.882KKN55.889-003.433KKS53.563-001.075KLD54.477-001.068KLF53.826-001.620KLM55.636-004.532KLN52.754+000.403KLY51.325-000.101KMH52.092-000.505KMK55.613-004.499KML51.362+000.734KMP51.422-000.409KMS51.298+000.248KNA54.009-001.470KND51.295-000.211KNE52.278+000.490KNF53.302-002.372KNG51.412-000.302KNI52.345-003.042KNL51.531-000.224KNN52.413-001.934KNO53.707-001.259KNR51.534-000.221KNS55.813-004.325KNT51.581-000.317KNU52.360-003.097KNW52.343-001.573KPA51.498-000.210KPT55.925-004.453KRK55.388-003.999KSL53.544-002.375KSN51.149+001.272KSW54.455-002.369KTH51.413-000.046KTL53.485-000.594KTN51.550-000.140KTR57.244-002.350KTW51.547-000.147KVD55.893-004.311KVP53.337-001.240KWB51.489-000.289KWD55.856-004.048KWG51.478-000.285KWL51.734-004.317KWN55.656-004.710KYL57.281-005.713KYN51.417-002.495LAC50.827-000.323LAD51.456-000.019LAG53.233-001.209LAI51.568+000.424LAK52.447+000.534LAM51.667-004.873LAN54.049-002.808LAP50.857-003.811LAR55.793-004.868LAS51.661-003.893LAU56.836-002.466LAW52.657-002.021LAY53.836-003.030LBG51.505-000.085LBK52.294-001.086LBO52.779-001.195LBR52.821-004.110LBT56.023-003.831LBZ51.916-000.677LCC57.621-004.810LCG56.135-003.313LCK53.636-001.800LCL56.881-005.663LCN53.227-000.541LCS56.855-005.290LDN52.836-004.124LDS53.795-001.549LDY56.274-003.122LEA51.905-000.459LEB51.567-000.004LED52.045-002.426LEE51.449+000.013LEG53.427-002.724LEH52.481-001.786LEI52.631-001.125LEL50.184-005.436LEM51.569-000.007LEN51.234+000.707LEO52.225-002.731LER51.564+000.008LES51.541+000.640LET51.980-000.229LEU56.375-002.894LEV56.192-003.002LEW51.466-000.015LEY53.699-002.687LFD51.176-000.007LGB55.925-004.586LGD52.622+001.490LGE52.885-001.288LGF51.396+000.300LGG52.494-002.006LGJ51.467-000.102LGK54.593-001.028LGM53.018-001.331LGN52.990-002.137LGO52.350-003.161LGS55.821-004.278LGW54.695-002.662LHA56.402-005.040LHD51.298-000.333LHE56.855-005.192LHM54.460-000.826LHO53.805-002.448LHS51.512-000.040LHW55.787-004.617LIC52.680-001.825LID52.041-000.559LIH51.194+000.211LIN55.976-003.596LIP51.071-000.801LIS51.044-000.893LIT50.810-000.547LIV53.407-002.978LKE50.648-001.167LLA52.741-004.078LLC52.921-004.057LLD53.321-003.827LLE51.673-004.162LLF53.257-003.983LLG51.941-003.893LLH51.691-004.079LLI51.820-004.004LLJ53.284-003.809LLL51.885-003.988LLM52.114-003.555LLN51.508-003.229LLO52.243-003.380LLR51.538-003.441LLS51.534-003.182LLT52.336-003.212LLV51.995-003.803LLW52.667-004.088LLY51.634-003.454LMR53.749-001.751LMS52.285-001.537LNB51.603-003.233LND55.977-002.889LNG51.385-000.595LNK55.673-003.773LNR51.963-003.872LNW52.105-003.632LNY51.508-000.542LNZ55.921-004.154LOB52.396-001.981LOC55.123-003.353LOF51.541-000.058LOH53.724-002.687LOO50.359-004.456LOS50.407-004.665LOT53.573-002.494LOW53.007-000.998LPG53.221-004.209LPR54.017-002.255LPT53.042-002.216LPW52.341-001.725LPY53.358-002.890LRB50.837-000.137LRD51.241-000.565LRG58.002-004.401LRH55.739-003.974LSK50.447-004.468LSN55.902-003.543LST51.518-000.080LSW53.408-003.100LSY51.425-000.034LTG53.268-002.465LTH51.700-003.137LTK51.752-000.809LTL53.643-002.095LTM53.739-002.964LTN51.871-000.393LTP52.463+000.317LTS50.179-005.441LTT53.286-002.943LTV52.687-001.800LUD52.371-002.715LUT51.882-000.415LUX50.390-004.748LVC53.405-002.978LVG55.872-003.504LVJ53.405-002.992LVM53.444-002.193LVN51.080-000.308LVT51.544-003.185LWH51.458-002.564LWM51.406-003.475LWR53.144-003.803LWS50.870+000.012LWT52.474+001.749LYC50.661-003.439LYD51.715-002.531LYE52.459-002.116LYM50.649-003.431LYP50.758-001.529LYT50.761-001.538LZB54.750-002.702MAC53.259-002.121MAG53.506-002.931MAI51.519-000.722MAL51.385-000.261MAN53.477-002.229MAO51.407-000.720MAR51.385+001.372MAS54.973-001.606MAT53.138-001.559MAU53.433-002.209MAX55.837-004.290MAY55.354-004.686MBK50.911-001.434MBR54.579-001.233MBT50.704-003.521MCB50.845-000.121MCE54.958-001.663MCH52.560+000.090MCM54.070-002.869MCN52.596-003.854MCO53.474-002.243MCV53.487-002.243MDB51.277+000.514MDE51.278+000.521MDG51.396-001.178MDL53.359-002.084MDN50.780-002.569MDS51.396-000.200MDW51.271+000.516MEC53.646-002.976MEL52.091+000.009MEN50.426-004.409MEO53.399-003.154MEP51.386+000.357MER51.745-003.377MES52.104+001.338MEV51.687-003.337MEW51.605-003.649MEX53.491-001.289MEY55.749-003.979MFA52.707-004.032MFF52.926-004.086MFH51.716-005.041MFL55.827-004.262MFT53.142-001.198MGM53.139-000.391MGN52.467-001.756MHM51.264-000.150MHR52.480-000.909MHS53.417-001.412MIA53.362-002.269MIC51.182-001.260MIH53.551-002.171MIJ51.393-000.157MIK53.789-001.325MIL51.613-000.250MIM51.992-001.701MIN55.825-004.533MIR53.672-001.693MIS51.943+001.080MKC52.034-000.773MKM51.380-002.144MKR53.384-000.337MKT51.881+000.782MLB52.054-000.533MLD53.232-002.733MLF51.164-000.637MLG57.005-005.831MLH53.735-002.501MLM54.211-003.271MLN55.941-004.315MLT54.132-000.799MLW51.571-000.766MLY53.750-001.592MMO52.761-000.886MNC56.200-003.131MNE52.498+000.179MNG51.949+001.046MNN53.892-001.735MNP51.552+000.045MNR53.395-003.171MNS53.517-002.921MOB53.330-002.333MOG51.519-000.090MON56.480-002.818MOO57.518-004.461MOR51.372-001.036MOS53.764-002.944MOT51.395-000.239MOV52.446-001.885MPK55.839-004.336MPL53.401-002.057MPT55.163-001.683MRB51.660-004.792MRD50.832-003.776MRF53.409-002.989MRN51.176+000.494MRP53.594-001.305MRR56.970-005.822MRS51.735-000.830MRT53.408-003.113MRW51.610-000.050MRY54.712-003.495MSD53.516-002.351MSH53.379-002.915MSK54.587-001.019MSL53.515-002.041MSN53.603-001.932MSO53.523-002.172MSR51.330+001.317MSS53.556-002.401MST51.611-003.655MSW53.164-001.202MTA51.683-003.378MTB53.122-001.558MTC51.408-000.155MTG51.440+000.050MTH55.792-003.995MTL51.468-000.267MTM51.171+001.349MTN50.701-002.313MTO54.544-001.198MTP51.468-002.589MTS56.713-002.472MTV55.840-004.137MUB55.930-003.063MUF53.463-002.291MUI55.810-004.274MVL52.125-002.320MYB51.522-000.164MYH55.898-004.301MYL51.546+000.006MYT53.729-001.982MZH51.483+000.003NAN53.064-002.519NAR51.800-004.727NAY54.613-001.588NBA51.649-000.173NBC51.417-000.036NBE51.666-003.142NBN53.437-003.049NBR52.572-001.203NBT51.412-000.285NBW56.058-002.729NBY51.398-001.323NCE53.574-000.061NCK55.402-004.182NCL54.968-001.617NCM51.276-000.731NCO50.705-003.473NCT53.080-000.813NDL51.455-000.087NEG55.866-003.066NEH51.438+000.070NEI55.782-004.427NEL53.834-002.214NEM51.403-000.256NES53.292-003.064NET52.961-001.078NEW55.933-003.092NFA51.649+000.682NFD52.408-001.965NFL51.446+000.324NFN54.012-000.387NGT51.354+000.663NHD51.467-000.054NHE51.312+000.455NHL53.702-000.361NIT55.812-004.360NLN53.611-002.868NLR53.141-003.793NLS51.419-002.751NLT51.558-000.360NLW53.453-002.614NMC53.365-002.007NMK52.238+000.406NMN53.359-002.009NMP52.237-000.907NMT52.156+001.051NNG53.083-000.800NNP51.476-003.201NNT54.528-001.170NOA55.474-004.626NOP55.033-001.520NOR53.700-001.424NOT52.947-001.146NPD53.805-001.680NQU56.013-003.395NQY50.415-005.076NRB51.411-000.123NRC51.398-001.309NRD54.537-001.555NRN57.580-003.873NRT54.457-003.566NRW52.627+001.307NSB50.825+000.390NSD53.070-001.222NSG51.614-000.143NSH51.465-000.285NTA50.530-003.600NTB52.866-002.190NTC50.779-003.589NTH51.662-003.807NTL50.875-001.342NTN55.819-004.134NTR54.333-001.442NUF51.227-000.132NUM51.602-000.054NUN52.526-001.463NUT50.846-000.884NVH50.790+000.054NVN50.795+000.055NVR53.395-002.344NWA52.817+001.385NWB51.562-000.303NWD51.397-000.075NWE51.980+000.216NWH55.103-001.524NWI53.261-002.497NWM50.756-001.658NWN53.456-002.068NWP51.590-002.999NWR57.060-004.119NWT52.512-003.311NWX51.476-000.033NXG51.476-000.042OBN56.412-005.474OCK51.522+000.290OHL52.471-002.056OKE50.732-003.988OKL51.638-000.166OKM52.672-000.734OKN52.693-002.451OLD51.526-000.089OLF51.380-002.381OLT52.438-001.804OLY51.151-000.336OMS53.569-002.882OPK53.462-002.963ORE50.867+000.591ORN53.487-002.951ORP51.373+000.089ORR53.531-002.709OTF51.312+000.197OUN52.478+001.717OUS52.470+001.707OUT53.714-001.512OVE53.284-002.925OVR51.254-001.259OXF51.754-001.270OXN54.305-002.722OXP51.804-001.274OXS51.337-000.362OXT51.257-000.005PAD51.516-000.176PAL51.619-000.109PAN51.485-001.091PAR50.355-004.705PAT53.485-002.358PBL53.591-002.771PBO52.575-000.250PBR51.697-000.193PBY51.683-004.248PCD51.525-003.501PCN55.841-004.423PDG53.406-002.557PDW51.182+000.389PEA52.897-001.473PEB50.818+000.342PEG55.179-001.645PEM53.530-002.670PEN51.436-003.174PER51.672-003.364PES52.831-004.112PET51.389+000.075PEV50.816+000.325PEW51.342-001.772PFL51.481+000.237PFM53.699-001.305PFR53.692-001.303PFY53.848-002.990PGM51.671-003.231PGN50.435-003.564PHG52.545-004.035PHR51.197+000.174PIL51.557-002.627PIN50.738-003.470PIR52.430-001.910PIT56.703-003.736PKG52.724-002.119PKS50.723-001.949PKT51.726-000.341PLC51.157+000.749PLD50.836-000.205PLE55.841-004.269PLG50.821+000.252PLK57.333-005.667PLM53.275-002.420PLN57.060-002.129PLS53.731-002.544PLT51.747-003.279PLU51.490+000.083PLW55.837-004.277PLY50.378-004.143PMA50.957-003.951PMB51.674-004.906PMD51.694-004.937PMH50.796-001.109PMP50.929-000.060PMR51.471-000.068PMS50.798-001.090PMT55.985-003.717PMW53.271-003.924PNA51.659-004.722PNC52.903-004.338PNE51.419-000.056PNF53.143-003.055PNL53.959-001.534PNM50.150-005.083PNR54.662-002.758PNS53.526-001.621PNW51.417-000.061PNY52.274-003.322PNZ50.122-005.532POK50.731-001.826POL50.731-003.502PON51.643-000.034POO50.719-001.983POP53.976-001.148POR51.612-003.408POT53.694-001.320PPD51.599-003.343PPK55.891-004.259PPL51.698-003.014PRA55.512-004.616PRB53.293-002.145PRE53.756-002.707PRH52.929-004.065PRI51.489-002.688PRL51.550+000.712PRN54.570-003.581PRP50.846-000.155PRR51.718-000.844PRS52.900-002.690PRT53.336-003.407PRU54.966-001.864PRW50.216-005.112PRY52.516-001.902PSC53.424-002.799PSE51.560+000.509PSH52.130-002.072PSL53.349-002.998PSN51.433-002.610PST55.953-002.974PSW52.626-001.610PTA51.592-003.781PTB51.725-003.362PTC50.848-001.126PTD51.717-004.045PTF51.779-003.997PTG55.934-004.689PTH56.393-003.440PTK55.870-004.311PTL55.813-004.344PTM52.931-004.136PTR51.007-000.941PTT55.790-004.335PTW55.502-004.614PUL50.957-000.518PUO51.347-000.099PUR51.337-000.114PUT51.461-000.216PWE55.825-004.287PWL52.888-004.417PWW55.824-004.302PWY51.526-002.563PYC51.524-003.391PYE51.580-003.038PYG55.848-004.425PYJ55.852-004.442PYL51.527-003.702PYN50.170-005.111PYP53.065-003.862PYT53.350-002.134QBR51.416+000.750QPK55.836-004.267QPW51.534-000.205QRB51.475-000.147QRP51.474-000.058QUI50.404-005.030QYD51.661-003.323RAD51.686-001.240RAI51.367+000.612RAM51.341+001.406RAN56.685-004.576RAU52.985-000.455RAV54.356-003.409RAY51.409-000.230RBR50.985+000.469RCA51.604-003.094RCC54.616-001.069RCD53.610-002.153RCE54.609-001.051RDA51.469-002.599RDB50.920-001.471RDC52.306-001.945RDD51.333-000.099RDF52.949-001.031RDG51.459-000.972RDH51.240-000.165RDM54.949-001.972RDN53.449-002.157RDR51.516-003.248RDS53.436-002.159RDT51.685-000.318RDW51.455-000.990REC51.559-000.068RED50.233-005.226REE52.564+001.559REI51.242-000.203RET53.316-000.948RFD51.581+000.702RFY53.372-003.011RGL52.769-001.930RGP51.427-001.001RGT52.755-001.937RGW53.788-002.477RHD54.206-002.361RHI51.521-003.214RHL53.318-003.489RHM51.332-000.124RHO53.235-004.506RHY51.759-003.289RIA51.387-003.348RIC51.640-000.473RID52.027-000.595RIL53.458-002.962RIS53.764-002.420RKT53.042-000.380RLG51.590+000.601RLN50.893-000.958RMB53.044-003.921RMC53.429-001.359RMD51.463-000.301RMF51.575+000.182RML53.414-002.089RNF53.517-002.789RNH53.417-002.766RNM51.517+000.191RNR52.918+001.299ROB53.410-002.856ROC50.419-004.831ROE51.501-000.054ROG57.989-004.158ROL53.066-000.900ROM50.993-001.493ROO54.115-003.195ROR51.593-003.065ROS56.046-003.427ROW52.477-002.031RRB53.458-002.176RRN55.888-004.172RSG53.787-002.282RSH53.396-002.077RSN55.851-002.197RTN55.971-004.586RTR51.385+000.511RUA52.987-003.044RUE53.327-002.665RUF53.635-002.807RUG52.379-001.249RUN53.339-002.739RUS54.470-000.627RUT55.830-004.213RVB51.414-000.007RVN53.676-001.653RWC53.688-000.961RYB56.888-004.836RYD50.734-001.160RYE50.952+000.731RYH51.769+000.006RYN51.775+000.035RYP50.739-001.160RYR50.724-001.157RYS52.054-000.027SAA51.745-000.342SAB50.713-001.157SAC51.749-000.327SAD52.508-002.011SAE53.838-001.790SAF51.201-000.162SAH52.675+001.392SAJ51.469-000.023SAL51.071-001.806SAM53.723-000.809SAN50.657-001.162SAR51.513-002.696SAS53.753-003.030SAT51.500-000.270SAU50.339-004.790SAV52.194-001.716SAW51.815+000.160SAX52.215+001.490SAY51.393+000.168SBE53.999-001.501SBF50.401-004.187SBJ52.448-002.134SBK54.582-001.186SBM51.487-000.054SBP51.544-000.275SBR56.890-004.920SBS54.492-003.591SBT52.457-002.143SBU51.648-000.053SBV50.403-004.188SBY53.783-001.064SCA54.280-000.406SCF52.485-001.810SCG51.452+000.264SCH55.884-004.352SCR50.399-004.941SCS50.628-003.448SCT58.483-003.554SCU53.586-000.651SCY51.362-000.094SDA51.331+000.449SDB53.150-002.394SDC51.523-000.076SDE51.511-000.057SDF51.722-004.719SDG51.090+001.066SDH51.558-000.336SDL53.430-002.991SDM55.776-003.953SDN50.922-001.388SDP50.387-004.465SDR51.676-000.826SDW51.270+001.343SDY52.125-000.281SEA54.837-001.341SEB54.930-001.387SEC54.658-001.200SED52.150+000.140SEE50.831+000.031SEF50.772+000.100SEG51.278+000.941SEH51.332+000.188SEJ55.075-001.537SEL54.417-003.510SEM54.241-000.416SEN52.639-001.845SER50.171-005.444SES53.595-001.285SET54.067-002.281SEV51.277+000.182SFA51.544-000.010SFD53.483-002.255SFI55.920-003.079SFL53.466-003.006SFN52.666-002.371SFO51.514+000.423SFR51.214-000.567SGB52.502-001.981SGL55.937-003.298SGM50.394-004.309SGN51.533-000.336SGR51.467+000.190SHB53.204-001.202SHC53.676-001.399SHD54.627-001.638SHE50.944-002.514SHF53.379-001.463SHH51.484-002.679SHI51.511-000.882SHJ53.434-002.700SHL55.829-004.293SHM52.941+001.210SHN50.634-001.180SHO50.897-001.364SHP51.397-000.448SHR52.711-002.749SHS55.818-003.800SHT53.214-003.038SHU51.746-002.280SHW51.021-001.328SHY53.834-001.774SIA51.569+000.704SIC54.226-003.334SID51.434+000.103SIE53.797-001.232SIH51.390-000.199SIL52.732-001.110SIN55.908-004.406SIP51.866-001.592SIT51.342+000.734SIV50.209-005.477SJP50.731-003.523SJS51.581-000.033SKE51.661-003.848SKG53.143+000.334SKI53.959-002.026SKM51.788-000.784SKN50.423-004.462SKS54.946-001.917SKW51.565-000.072SLA55.927-003.243SLB54.583-000.974SLD53.486-002.276SLH54.461-000.662SLK53.537-001.561SLL53.587-000.183SLO51.512-000.592SLQ50.856+000.560SLR52.995-000.410SLS55.853-004.160SLT55.634-004.785SLV51.615-000.067SLW53.782-002.818SLY52.441-001.937SMA52.463-001.859SMB53.633-002.113SMD52.647-000.480SMG51.455-000.320SMH51.575-000.076SMK52.190+001.001SML51.480-002.649SMN51.661+000.835SMO51.404-000.206SMR52.496-001.970SMT51.788+000.001SMY51.395+000.107SNA53.665-001.485SND51.346-000.804SNE52.908-002.155SNF51.631+000.331SNG51.391-000.633SNH53.453-002.730SNI53.693-001.028SNK53.392-002.651SNL51.364-000.248SNN53.515-002.337SNO52.231-000.247SNR51.349-000.093SNS51.433-000.502SNT53.278-002.841SNW50.875-001.265SNY51.470-000.559SOA50.951-001.364SOB50.848-000.908SOC51.537+000.712SOE51.539+000.731SOF51.650+000.607SOG51.020+000.364SOH51.541-000.179SOI55.691-002.858SOJ52.334+000.328SOK51.570-000.309SOL52.415-001.790SOM53.782-001.252SON53.900-001.947SOO51.396+000.500SOP53.647-003.002SOR51.383+000.377SOT53.008-002.181SOU50.908-001.414SOV51.542+000.711SOW53.708-001.908SPA52.788-000.157SPB51.506-000.218SPF56.295-003.052SPH51.188+001.230SPI53.340-002.994SPK53.122-001.236SPN52.535+001.086SPO52.912-001.411SPP52.430+000.412SPR55.881-004.230SPS55.890-004.147SPT53.405-002.162SPU51.172+000.551SPY53.589-001.704SQE51.493+000.048SQH55.371-003.923SQU53.777-003.049SRA51.542-000.004SRC51.419-000.136SRD51.468-002.566SRG51.610-000.608SRH51.438-000.128SRI52.444-001.837SRL52.403-001.846SRN53.375-002.034SRO53.325-001.168SRR51.540-003.589SRS51.393-000.090SRT51.406+000.003SRU51.557-000.399SRY51.531+000.796SSC54.395-003.485SSD51.889+000.262SSE50.834-000.272SSM53.594-001.723SSS51.441+000.758SST51.901+000.200STA52.804-002.123STC57.423-005.429STD51.744-002.219STE51.426-000.132STF57.353-005.551STG56.119-003.935STH52.115+000.032STJ51.585-002.778STK54.570-001.318STL51.506-000.379STM53.376-002.953STN56.967-002.225STO51.580-000.072STP51.532-000.126STQ50.895-001.406STR54.910-005.025STS50.407-004.209STT55.682-004.519STU51.301+001.122STV55.634-004.750STW51.440-000.340STY52.206-001.731STZ54.911-001.384SUC51.376-000.197SUD51.554-000.317SUG52.082-003.687SUM55.898-004.284SUN54.906-001.382SUO51.360-000.190SUP51.413+000.020SUR51.392-000.304SUT52.565-001.824SUU51.418-000.417SUY52.036+000.735SVB51.560-002.664SVG51.899-000.206SVK51.564+000.096SVL54.376-002.819SVR54.170-002.804SVS51.584-000.075SWA51.625-003.942SWD53.169-000.703SWE52.970-000.186SWG50.942-001.377SWI51.565-001.786SWK50.833-000.236SWL51.390+000.748SWM51.449+000.310SWN53.487-001.305SWO51.215+001.213SWR52.070-000.521SWS52.582-001.133SWT53.624-001.879SWY50.784-001.610SXY53.267-000.664SYA53.348-002.240SYB53.484-002.063SYD51.427-000.055SYH51.433-000.079SYL51.482-000.325SYS52.693-001.083SYT52.510+001.653TAB52.551-001.975TAC51.881-001.297TAD51.292-000.236TAF51.541-003.263TAI57.815-004.052TAL52.904-004.068TAM52.637-001.687TAP51.524-000.681TAT51.309-000.242TAU51.024-003.102TAY56.431-005.239TBD51.117-000.161TBW51.130+000.262TBY54.560-001.301TCR51.516-000.131TDU51.548-003.595TEA54.518-001.425TED51.424-000.333TEN51.673-004.707TEO51.692-000.035TEY51.333+000.808TFC52.679-002.441TGM50.548-003.495TGS51.519-003.193THA51.394-001.243THB55.811-004.312THC53.545-001.309THD51.388-000.340THE51.433-001.075THH53.437-002.759THI54.228-001.373THL52.395-001.594THO50.911-002.579THP51.331+001.362THS58.590-003.528THT55.768-004.251THU53.029-000.962THW52.505-001.963TIL51.463+000.354TIP52.530-002.065TIR51.721-003.246TIS51.060-002.078TLB52.773-004.098TLC53.228-003.819TLH51.471-001.030TLK52.359-001.846TLS51.848+001.162TMC51.001-002.418TNA53.654-000.323TNF52.614-004.124TNN53.616-000.972TNP51.620-003.450TNS53.603-000.957TOD53.714-002.100TOK50.901+000.613TOL51.377-000.280TOM51.588-000.060TON51.191+000.270TOO51.420-000.161TOP50.686-003.464TOT50.436-003.688TPB51.538+000.763TPC53.123+000.200TPN51.648-003.486TQY50.461-003.544TRA53.455-002.311TRB51.672-003.536TRD51.713-003.346TRE51.568-003.291TRF51.591-003.325TRH51.610-003.381TRI51.800-000.622TRM51.977+001.318TRN55.543-004.655TRO51.320-002.215TRR50.473-003.547TRS52.250+000.808TRU50.264-005.063TRY51.658-003.505TTF52.419+000.744TTH51.399-000.101TTN50.918-001.482TUH51.440-000.105TUL56.884-004.702TUR51.673-000.048TUT52.864-001.682TVP50.917-003.360TWB55.604-002.765TWI51.450-000.329TWN53.543-002.905TWY51.476-000.864TYC53.223-004.476TYG52.893-004.080TYL56.433-004.715TYS52.454-001.840TYW52.585-004.093UCK50.969+000.095UDD55.824-004.086UHA55.919-003.499UHL51.564-000.129ULC53.619-000.301ULL53.853-001.216ULV54.192-003.097UMB50.997-003.982UNI52.451-001.937UPH51.413-000.430UPL53.528-002.741UPM51.559+000.252UPT53.386-003.084UPW50.648-002.467URM53.448-002.353UTT52.897-001.857UTY56.435-004.704UWL51.308-000.077VAL53.281-004.563VIC51.497-000.145VIR51.401-000.562VXH51.486-000.124WAC53.392-002.592WAD51.073+000.312WAE51.505-000.108WAF55.942-003.013WAL51.372-000.414WAM51.204+001.383WAN51.245-000.668WAO53.456-002.966WAR51.808-000.029WAS51.857-000.120WAT51.502-000.111WAV53.405-002.923WAW53.394-002.637WBC52.263+000.197WBD53.699-001.159WBL50.853-000.967WBO51.410-000.214WBP51.487-000.195WBQ53.386-002.603WBR53.330-001.983WBY51.339-000.505WCB51.484+000.018WCF51.537+000.692WCH51.237-001.338WCK58.442-003.098WCL55.854-003.567WCM52.151+001.399WCP51.382-000.245WCR55.790-004.311WCX51.554-000.285WCY51.379-000.102WDB52.090+001.318WDD55.241-001.616WDE52.344-001.844WDH53.365-001.358WDL55.931-004.656WDM54.380-002.904WDN53.696-002.105WDO51.367-000.117WDS53.757-001.443WDT51.510-000.473WDU51.440-000.091WEA51.513-000.321WED52.952-002.171WEE51.853+001.115WEH51.529+000.005WEL52.304-000.676WEM52.856-002.719WES55.905-004.335WET53.924-001.581WEY50.615-002.455WFF55.853-004.022WFH51.653-000.392WFI52.081+001.167WFJ51.663-000.397WFL53.105+000.235WFN51.675-000.390WGA51.381+001.338WGC51.801-000.203WGN53.544-002.632WGR51.549+000.045WGT54.829-003.164WGV51.498-000.877WGW53.545-002.634WHA51.095+001.038WHC51.583-000.020WHD51.547-000.191WHE53.824-002.412WHG53.556-002.524WHI51.358+001.034WHL51.605-000.071WHM50.768-003.354WHN53.414-002.796WHP51.549-000.192WHR51.567+000.342WHS51.303-000.078WHT51.521-003.222WHY51.310-000.082WIA52.582-002.055WIC51.615+000.519WID53.378-002.734WIH51.634-000.101WIJ51.532-000.243WIL52.854-001.563WIM51.422-000.206WIN51.067-001.321WIV51.856+000.955WKB55.697-004.851WKD53.520-002.395WKF53.682-001.506WKG54.645-003.559WKI53.373-003.184WKK53.679-001.488WKM51.412-000.842WLC51.685-000.027WLD50.854+000.540WLE52.550-000.117WLF52.104+000.165WLG53.428-003.070WLI51.465+000.102WLM55.794-004.290WLN52.701-002.516WLO53.475-003.026WLP52.657-003.141WLS50.899-001.377WLT51.360-000.151WLV53.423-003.070WLW51.824-000.192WLY53.429-002.093WMA51.292+000.418WMB51.551-000.297WMC52.223-001.755WMD52.565+001.118WME51.310-000.155WMG51.736-000.210WMI51.521-003.580WML53.327-002.225WMN51.207-002.177WMR52.396-001.774WMS55.877-004.889WMW51.581-000.024WNC51.483-000.609WND51.762-000.748WNE52.611-001.679WNF51.284-000.907WNG51.486-003.228WNH51.093-000.329WNL55.938-004.747WNM51.349-002.942WNN54.124-002.588WNP51.552+000.025WNR51.486-000.606WNS51.431-000.878WNT51.461-000.188WNW51.432-000.103WNY51.839+000.597WOB52.018-000.654WOF52.195-002.221WOH51.290-000.051WOK51.318-000.558WOL52.065-000.804WOM53.518-001.418WON51.847+001.268WOO50.681-002.221WOP52.156-002.160WOR51.358-002.910WOS52.195-002.211WPE51.504-000.056WPL51.288-000.582WRB51.939+001.170WRE53.019-002.596WRH50.819-000.376WRK53.311-001.123WRL54.883-002.834WRM50.692-002.115WRN52.935+001.246WRP52.286-001.613WRS53.773-000.924WRT52.777+001.404WRU51.570-000.438WRW52.287-001.582WRX53.050-003.002WRY51.458-000.542WSA53.369-002.907WSB51.267-002.199WSE50.934+000.701WSF53.191-002.495WSH55.772-003.927WSL52.584-001.985WSM51.345-002.972WSR53.386-002.141WST51.587-000.002WSU51.366-000.204WSW51.446-000.165WTA55.914-003.285WTB54.485-000.615WTC52.968-002.671WTE52.392-001.852WTG52.673+000.383WTH54.553-003.587WTI51.437-000.895WTL51.818-004.614WTM51.806+000.641WTN51.447-000.357WTO52.518-001.744WTR51.249+000.423WTS53.083-001.504WTT52.511-001.884WTY51.133-000.645WVF50.964-000.122WVH52.588-002.120WWA51.490+000.070WWC51.492+000.072WWD51.491+000.054WWI51.382-000.015WWL53.281-001.201WWO50.818-000.393WWR51.471-000.138WWW52.266-001.785WXC53.045-002.996WYB51.361-000.457WYE51.185+000.929WYL52.546-001.831WYM54.975-001.814WYT52.380-001.866YAE51.541-002.433YAL51.226+000.412YAT51.391-002.828YEO50.777-003.726YET50.896-002.573YNW51.668-003.527YOK55.893-004.387YRD52.421-001.854YRK53.958-001.093YRM54.506-001.356YRT52.809-002.736YSM51.641-003.241YSR51.644-003.476YVJ50.925-002.613YVP50.944-002.613ZCW51.498-000.051ZFD51.520-000.105ZLW51.519-000.061';
+
+        function hasPlace() {
+            const s = data.settings;
+            return Number.isFinite(s.lat) && Number.isFinite(s.lon);
+        }
+
+        // Metres between two points. Flat-earth approximation, which is well within a
+        // metre or two at the distances shown here and far cheaper than haversine.
+        function metresBetween(aLat, aLon, bLat, bLon) {
+            const k = Math.cos((aLat + bLat) / 2 * Math.PI / 180);
+            const dy = (bLat - aLat) * 111320;
+            const dx = (bLon - aLon) * 111320 * k;
+            return Math.sqrt(dy * dy + dx * dx);
+        }
+        function prettyDistance(m) {
+            return m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} km`;
+        }
+        // Roughly 80 metres a minute at a normal walking pace
+        function walkMins(m) { return Math.max(1, Math.round(m / 80)); }
+
+        // The nearest `count` stations to a point, closest first, with their positions
+        function nearestStations(lat, lon, count) {
+            lat = Number(lat); lon = Number(lon);
+            if (!isFinite(lat) || !isFinite(lon)) return [];
+            const k = Math.cos(lat * Math.PI / 180); // longitude degrees shrink towards the poles
+            const best = [];
+            for (let i = 0; i < STATION_DATA.length; i += STATION_REC) {
+                const sLat = +STATION_DATA.substr(i + 3, 6);
+                const sLon = +STATION_DATA.substr(i + 9, 8);
+                const dy = sLat - lat, dx = (sLon - lon) * k;
+                const d = dy * dy + dx * dx;
+                if (best.length < count || d < best[best.length - 1].d) {
+                    best.push({ d, crs: STATION_DATA.substr(i, 3), lat: sLat, lon: sLon });
+                    best.sort((a, b) => a.d - b.d);
+                    if (best.length > count) best.pop();
+                }
+            }
+            // Nothing within ~60 km means you're probably not in Great Britain
+            return best.filter(b => Math.sqrt(b.d) * 111 < 60)
+                .map(b => ({ crs: b.crs, lat: b.lat, lon: b.lon, dist: metresBetween(lat, lon, b.lat, b.lon) }));
+        }
+        function nearestStationCodes(lat, lon, count) {
+            return nearestStations(lat, lon, count).map(st => st.crs);
+        }
+
+        // The stations actually in use: yours if you chose some, otherwise the nearest
+        function activeStations() {
+            const cfg = data.settings.travel;
+            if (!cfg.autoStations) return (cfg.stations || []).filter(c => CRS_RE.test(c)).slice(0, 3);
+            return hasPlace() ? nearestStationCodes(data.settings.lat, data.settings.lon, 3) : [];
+        }
+
+        // "Use nearest to me" in Settings
+        function useNearestStations() {
+            if (!hasPlace()) { flash('travel-settings-status', 'Set your location above first.', true); return; }
+            data.settings.travel.autoStations = true;
+            data.settings.travel.stations = [];
+            saveData();
+            $('travel-stations').value = '';
+            const found = activeStations();
+            flash('travel-settings-status', found.length
+                ? `Using ${found.join(', ')}.`
+                : 'No station found near your location. Type a code instead.', !found.length);
+            renderSettings();
+            fetchTrains();
+        }
+
+        function onLocationChanged() {
+            aroundState.pois = []; aroundState.key = ''; aroundState.error = ''; aroundState.at = 0;
+            aroundMap.key = '';
+            renderSettings();
+            fetchTrains();
+            if ($('view-travel').style.display !== 'none') renderTravel();
+        }
+
+        // =====================================================================
+        // AROUND YOU (v3.3): a map of your location, your nearest stations, the bus
+        // stops near you and the nearest supermarkets.
+        //
+        // Stations come from the built-in table above, so they need no network at all.
+        // Bus stops and supermarkets come from OpenStreetMap's Overpass API: free, no
+        // key, no account. Public Overpass servers are shared and shed load under
+        // pressure, so this tries more than one, and caches the answer in this browser
+        // for a month -- bus stops and supermarkets don't move, and it means opening
+        // the Travel tab normally costs nothing.
+        // =====================================================================
+        const OVERPASS_SERVERS = [
+            'https://overpass-api.de/api/interpreter',
+            'https://overpass.kumi.systems/api/interpreter'
+        ];
+        const AROUND_KEY = 'dpaul_student_around_v1';
+        const AROUND_TTL = 30 * 24 * 3600 * 1000;
+        const aroundState = { pois: [], key: '', loading: false, error: '', at: 0 };
+        const aroundMap = { map: null, layer: null, key: '' };
+
+        // Rounded to about 100 metres: precise enough to find your stops, and it keeps
+        // the cache useful instead of missing every time the location wobbles slightly
+        function aroundKey() {
+            return `${(+data.settings.lat).toFixed(3)},${(+data.settings.lon).toFixed(3)}`;
+        }
+
+        function readAroundCache(key) {
+            try {
+                const c = JSON.parse(localStorage.getItem(AROUND_KEY) || 'null');
+                if (c && c.key === key && Date.now() - c.at < AROUND_TTL && Array.isArray(c.pois)) return c;
+            } catch (e) {}
+            return null;
+        }
+
+        function overpassQuery(lat, lon) {
+            return `[out:json][timeout:20];(`
+                + `node["highway"="bus_stop"](around:1200,${lat},${lon});`
+                + `nwr["shop"="supermarket"](around:2500,${lat},${lon});`
+                + `nwr["shop"="convenience"](around:800,${lat},${lon});`
+                + `);out center 80;`;
+        }
+
+        function shapeOverpass(elements, lat, lon) {
+            const out = [];
+            (elements || []).forEach(el => {
+                const t = el.tags || {};
+                const p = el.center || el;
+                if (typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
+                let kind = '', sub = '';
+                if (t.highway === 'bus_stop') { kind = 'bus'; sub = ['Bus stop', t.local_ref || t.ref || ''].filter(Boolean).join(' '); }
+                else if (t.shop === 'supermarket') { kind = 'shop'; sub = 'Supermarket'; }
+                else if (t.shop === 'convenience') { kind = 'shop'; sub = 'Convenience store'; }
+                else return;
+                const name = t.name || t.brand || t.operator || (kind === 'bus' ? 'Bus stop' : 'Shop');
+                out.push({ kind, name: String(name).slice(0, 60), sub, lat: p.lat, lon: p.lon, dist: metresBetween(lat, lon, p.lat, p.lon) });
+            });
+            // Two stops on opposite sides of the same road are useful; exact duplicates aren't
+            const seen = new Set();
+            return out.filter(p => {
+                const k = `${p.kind}|${p.name}|${p.lat.toFixed(4)}|${p.lon.toFixed(4)}`;
+                if (seen.has(k)) return false;
+                seen.add(k); return true;
+            }).sort((a, b) => a.dist - b.dist);
+        }
+
+        async function loadAround(force) {
+            if (!hasPlace() || aroundState.loading) return;
+            const key = aroundKey();
+            if (!force && aroundState.key === key && aroundState.pois.length) return;
+
+            const cached = !force && readAroundCache(key);
+            if (cached) {
+                aroundState.pois = cached.pois; aroundState.key = key;
+                aroundState.at = cached.at; aroundState.error = '';
+                return;
+            }
+
+            aroundState.loading = true;
+            aroundState.error = '';
+            renderAround();
+            const body = 'data=' + encodeURIComponent(overpassQuery(data.settings.lat, data.settings.lon));
+            let lastErr = '';
+            for (const server of OVERPASS_SERVERS) {
+                try {
+                    const r = await fetch(server, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body
+                    });
+                    if (!r.ok) throw new Error(r.status === 429 || r.status === 504
+                        ? 'the map service is busy'
+                        : `the map service returned ${r.status}`);
+                    const j = await r.json();
+                    const pois = shapeOverpass(j.elements, data.settings.lat, data.settings.lon);
+                    aroundState.pois = pois;
+                    aroundState.key = key;
+                    aroundState.at = Date.now();
+                    aroundState.error = pois.length ? '' : 'Nothing found near your location.';
+                    try { localStorage.setItem(AROUND_KEY, JSON.stringify({ key, at: aroundState.at, pois })); } catch (e) {}
+                    lastErr = '';
+                    break;
+                } catch (e) {
+                    lastErr = (e && e.message) || 'the map service didn\'t answer';
+                }
+            }
+            if (lastErr) {
+                // Fall back to anything cached, however old, rather than an empty map
+                let old = null;
+                try { old = JSON.parse(localStorage.getItem(AROUND_KEY) || 'null'); } catch (e) {}
+                if (old && old.key === key && Array.isArray(old.pois)) { aroundState.pois = old.pois; aroundState.at = old.at; }
+                aroundState.error = `Bus stops and shops couldn't load: ${lastErr}. Your stations are still shown.`;
+            }
+            aroundState.loading = false;
+            renderAround();
+        }
+
+        function aroundPin(kind, label) {
+            return L.divIcon({
+                className: 'map-pin ' + kind,
+                html: `<span>${esc(label)}</span>`,
+                iconSize: [24, 24], iconAnchor: [12, 12]
+            });
+        }
+
+        // Everything to show, in one list: you, then stations, stops and shops
+        function aroundPoints() {
+            const show = k => { const el = $('lay-' + k); return !el || el.checked; };
+            const list = [];
+            if (show('station')) {
+                nearestStations(data.settings.lat, data.settings.lon, 3).forEach(st =>
+                    list.push({ kind: 'station', badge: 'T', name: st.crs, sub: 'Train station', lat: st.lat, lon: st.lon, dist: st.dist }));
+            }
+            aroundState.pois.forEach(p => {
+                if (p.kind === 'bus' && !show('bus')) return;
+                if (p.kind === 'shop' && !show('shop')) return;
+                list.push({ ...p, badge: p.kind === 'bus' ? 'B' : 'S' });
+            });
+            return list.sort((a, b) => a.dist - b.dist);
+        }
+
+        function focusAround(lat, lon) {
+            if (!aroundMap.map) return;
+            aroundMap.map.setView([lat, lon], Math.max(aroundMap.map.getZoom(), 16), { animate: true });
+        }
+
+        async function renderAround() {
+            const box = $('around-map');
+            const listEl = $('around-list');
+            const note = $('around-note');
+            if (!box || !listEl) return;
+
+            if (!hasPlace()) {
+                box.innerHTML = '<div class="place-map-empty">Set your location in Settings to see what\'s around you</div>';
+                listEl.innerHTML = '';
+                note.textContent = '';
+                return;
+            }
+
+            const pts = aroundPoints();
+            const counts = { bus: 0, shop: 0 };
+            aroundState.pois.forEach(p => { counts[p.kind]++; });
+            note.textContent = aroundState.error
+                ? aroundState.error
+                : aroundState.loading
+                    ? 'Looking up bus stops and shops near you'
+                    : `${counts.bus} bus stop${counts.bus === 1 ? '' : 's'} and ${counts.shop} shop${counts.shop === 1 ? '' : 's'} near you. Times are a rough walk.`;
+
+            listEl.innerHTML = pts.slice(0, 30).map(p => `
+                <li class="around-row" onclick="focusAround(${p.lat}, ${p.lon})" title="Show on the map">
+                    <span class="around-badge">${esc(p.badge)}</span>
+                    <span class="around-main"><span class="around-name">${esc(p.name)}</span><span class="around-sub">${esc(p.sub)}</span></span>
+                    <span class="around-dist">${esc(prettyDistance(p.dist))} &middot; ${walkMins(p.dist)} min</span>
+                </li>`).join('') || '<li class="empty">Nothing found near your location.</li>';
+
+            if (box.offsetParent === null) return; // Travel tab not on screen; draw when it is
+            try { await loadLeaflet(); }
+            catch (e) { if (!aroundMap.map) box.innerHTML = '<div class="place-map-empty">Map couldn\'t load</div>'; return; }
+
+            const { lat, lon } = data.settings;
+            if (!aroundMap.map) {
+                box.innerHTML = '';
+                aroundMap.map = L.map(box, { zoomControl: true, scrollWheelZoom: false, attributionControl: true }).setView([lat, lon], 15);
+                aroundMap.map.attributionControl.setPrefix(false);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+                }).addTo(aroundMap.map);
+                aroundMap.layer = L.layerGroup().addTo(aroundMap.map);
+            }
+            aroundMap.map.invalidateSize();
+            if (aroundMap.key !== `${lat},${lon}`) {
+                aroundMap.map.setView([lat, lon], 15);
+                aroundMap.key = `${lat},${lon}`;
+            }
+
+            aroundMap.layer.clearLayers();
+            L.marker([lat, lon], { icon: placePin(false), title: 'You are here', zIndexOffset: 1000 })
+                .addTo(aroundMap.layer).bindPopup('<strong>You are here</strong>');
+            pts.forEach(p => {
+                L.marker([p.lat, p.lon], { icon: aroundPin(p.kind, p.badge), title: p.name })
+                    .addTo(aroundMap.layer)
+                    .bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.sub)}<br>${esc(prettyDistance(p.dist))}, about ${walkMins(p.dist)} min walk`);
+            });
         }
 
         // =====================================================================
@@ -3806,16 +4286,18 @@
         }
 
         async function renderTravel() {
-            const box = $('travel-boards');
-            const cfg = data.settings.travel;
-            $('btn-travel-buses').href = cfg.busLink || TFGM_DEPARTURES_URL;
+            const box = $('travel-rail-boards');
+            renderAround();
+            loadAround();
             if (!TRAINS_PROXY_URL) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet. Live buses still works from the button above.</p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">Live trains aren\'t available on this copy of the app yet.</p>';
                 return;
             }
-            const stations = cfg.stations.filter(c => CRS_RE.test(c)).slice(0, 3);
+            const stations = activeStations();
             if (!stations.length) {
-                box.innerHTML = '<p class="empty" style="margin: 0;">Add a station in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live departure boards.</p>';
+                box.innerHTML = '<p class="empty" style="margin: 0;">' + (hasPlace()
+                    ? 'No station found near your location. Add one in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a>.'
+                    : 'Set your location in <a href="#" onclick="switchTab(\'settings\'); return false;">Settings</a> to see live departure boards.') + '</p>';
                 return;
             }
             if (!box.querySelector('.rail-board')) box.innerHTML = '<p class="empty" style="margin: 0;">Loading departures</p>';
@@ -4042,9 +4524,19 @@
             applyTheme();
             renderNewsSettings();
             $('set-place-current').textContent = data.settings.place;
+            renderAccount();
             renderPlaceMap();
-            $('travel-stations').value = data.settings.travel.stations.join(', ');
-            $('travel-bus-link').value = data.settings.travel.busLink;
+            $('travel-place-current').textContent = data.settings.place || 'not set yet';
+            const tcfg = data.settings.travel;
+            if (document.activeElement !== $('travel-stations')) {
+                $('travel-stations').value = tcfg.autoStations ? '' : tcfg.stations.join(', ');
+            }
+            const near = tcfg.autoStations ? activeStations() : [];
+            $('travel-stations-note').innerHTML = tcfg.autoStations
+                ? (near.length
+                    ? `Following your location: <strong>${esc(near.join(', '))}</strong>. Type your own 3-letter codes to override.`
+                    : 'Following your location. Type your own 3-letter codes, separated by commas, to override.')
+                : 'Your own choice, up to three 3-letter codes. Empty the box and press Save and test to go back to following your location.';
             renderGoogleState();
             $('rem-on').checked = !!data.reminders.on;
             $('rem-every').value = String(data.reminders.every);
@@ -5091,8 +5583,8 @@
             },
             {
                 id: 'travel', tab: 'settings', title: 'Check your train stations',
-                text: () => 'Live trains for the next hour show on the Home Page. MCO is Manchester Oxford Road and MAN is Piccadilly. Change them to the stations you use, then press Save and test.',
-                targets: () => ['#travel-stations', '#btn-travel-save'],
+                text: () => 'Your nearest stations are worked out from the location you just set. If you use different ones, type their 3-letter codes here and press Save and test.',
+                targets: () => ['#travel-stations', '#btn-stations-auto', '#btn-travel-save'],
                 done: () => !!(data.setup.done && data.setup.done.travel)
             },
             {
@@ -5465,6 +5957,7 @@
             setTimeout(playLogos, 50); // the header logo was hidden behind sign-in until now
             renderAll();
             applyTheme();
+            renderAccount();
             switchTab(data.settings.lastTab || 'today');
             $('app-version').textContent = 'v' + APP_VERSION;
             if (!data.settings.seenGuide) openGuide();
@@ -5617,7 +6110,16 @@
         // =====================================================================
         // SIGN-IN (v1.6): Supabase magic link. The app starts only once signed in.
         // =====================================================================
-        const authState = { client: null, started: false, signingOut: false, email: '', cooldownTimer: null };
+        const authState = { client: null, started: false, signingOut: false, email: '', firstName: '', cooldownTimer: null };
+
+        // Keep the name on the Supabase account so it follows you to another device.
+        // signInWithOtp only stores it when the account is first created, so returning
+        // users get it written here instead. Quietly does nothing if it fails.
+        async function pushNameToAccount(name) {
+            const clean = cleanName(name);
+            if (!clean || !authState.client || !authState.started) return;
+            try { await authState.client.auth.updateUser({ data: { first_name: clean } }); } catch (e) {}
+        }
         const RESEND_WAIT = 60; // Supabase allows one link per email roughly every 60 seconds
 
         function authMsg(text, kind = 'error', id) {
@@ -5657,6 +6159,8 @@
         async function sendMagicLink(resend) {
             if (!authState.client) { authMsg('Sign-in couldn\'t load. Check your internet connection and refresh the page.'); return; }
             const email = resend ? authState.email : $('auth-email').value.trim();
+            const name = resend ? authState.firstName : cleanName($('auth-name').value);
+            if (!resend && !name) { authMsg('Type your first name so the app knows what to call you.'); $('auth-name').focus(); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { authMsg('Type your full email address, like you@example.com.'); $('auth-email').focus(); return; }
             const btn = resend ? $('auth-resend') : $('auth-send');
             const label = btn.textContent;
@@ -5664,11 +6168,16 @@
             authMsg('');
             const { error } = await authState.client.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true }
+                options: {
+                    emailRedirectTo: location.origin + location.pathname,
+                    shouldCreateUser: true,
+                    data: name ? { first_name: name } : undefined // only saved when the account is created
+                }
             });
             btn.textContent = label; btn.disabled = false;
             if (error) { authMsg(friendlyAuthError(error)); return; }
             authState.email = email;
+            if (name) { authState.firstName = name; try { localStorage.setItem(NAME_KEY, name); } catch (e) {} }
             try {
                 localStorage.setItem('dpaul_student_last_email', email);
                 localStorage.setItem(CODE_PENDING_KEY, JSON.stringify({ email, at: Date.now() }));
@@ -5725,10 +6234,18 @@
         function unlockApp(session) {
             try { localStorage.removeItem(CODE_PENDING_KEY); } catch (e) {}
             authState.email = (session.user && session.user.email) || '';
+            signedInEmail = authState.email;
             $('set-account-email').textContent = authState.email;
+            // The account wins, then whatever this browser or your saved data remembers
+            const fromAccount = cleanName(((session.user || {}).user_metadata || {}).first_name);
+            const name = fromAccount || cleanName(authState.firstName) || storedName() || cleanName(data.settings.firstName);
+            authState.firstName = name;
             clearInterval(authState.cooldownTimer);
             document.documentElement.classList.remove('auth-locked');
             startApp();
+            if (name) setFirstName(name);
+            renderAccount();
+            if (name && name !== fromAccount) pushNameToAccount(name); // first sign-in on an older account
         }
 
         function lockApp() {
@@ -5764,6 +6281,8 @@
             let seen = false;
             try { seen = !!localStorage.getItem(WELCOME_KEY); } catch (e) {}
             if (seen && !/[?&]welcome\b/.test(location.search)) return;
+            const known = signedInName || storedName();
+            if (known) $('welcome-title').textContent = `Welcome, ${known}`;
             $('welcome').classList.add('open');
             setTimeout(() => $('welcome-go').focus(), 50);
         }
@@ -5781,6 +6300,7 @@
             $('auth-version').textContent = 'v' + APP_VERSION;
             showWelcomeIfNew();
             try { $('auth-email').value = localStorage.getItem('dpaul_student_last_email') || ''; } catch (e) {}
+            $('auth-name').value = storedName();
             const linkError = readLinkError();
 
             if (!window.supabase || !window.supabase.createClient) {
