@@ -415,6 +415,28 @@
         .music-dock.mini .full-only { display: none !important; }
         .music-dock.mini #music-error:empty { display: none; }
         .music-dock.mini .music-head h2 { font-size: 1rem; }
+        /* Tucked away: the dock shrinks to a small tab in the corner. The player is parked
+           off-screen rather than removed, so whatever is playing carries on playing. */
+        .music-dock.tucked {
+            width: auto; max-width: none; max-height: none; padding: 0; overflow: visible;
+            background: transparent; border: 0; box-shadow: none;
+        }
+        .music-dock.tucked > *:not(.music-tab):not(.music-player) { display: none !important; }
+        .music-dock.tucked .music-player {
+            position: fixed; left: -10000px; top: 0; width: 320px; height: 180px;
+            min-height: 0; aspect-ratio: auto; pointer-events: none;
+        }
+        .music-tab { display: none; }
+        .music-dock.tucked .music-tab {
+            display: inline-flex; align-items: center; gap: 8px; max-width: min(280px, calc(100vw - 40px));
+            padding: 10px 16px; border-radius: 999px; font-size: 0.95rem; text-align: left;
+            background: #1f1f1f; border: 1px solid #3a3a3a; color: var(--fg);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); cursor: pointer;
+        }
+        .music-tab:hover { background: #2a2a2a; }
+        .music-tab .dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--fg-soft); }
+        .music-tab.playing .dot { background: var(--link-hi); }
+        .music-tab .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .music-player { width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; border-radius: 6px; overflow: hidden; }
         .music-player iframe, .music-player > div { width: 100%; height: 100%; display: block; border: 0; }
         .music-placeholder { display: flex !important; align-items: center; justify-content: center; color: var(--fg-muted); font-size: 0.95rem; text-align: center; padding: 20px; box-sizing: border-box; }
@@ -430,9 +452,9 @@
         .music-vol { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 0.9rem; color: var(--fg-soft); }
         .music-vol input { width: 80px; accent-color: var(--link); }
         .music-lib { border-top: 2px solid #2e2e2e; margin-top: 12px; padding-top: 12px; }
-        .music-add { display: flex; gap: 8px; margin-bottom: 8px; }
-        .music-add input { padding: 10px !important; font-size: 0.95rem !important; }
-        .music-add button { padding: 10px 14px; font-size: 0.95rem; white-space: nowrap; }
+        .music-add { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .music-add input { padding: 10px !important; font-size: 0.95rem !important; flex: 1 1 100%; min-width: 0; }
+        .music-add button { padding: 10px 14px; font-size: 0.95rem; white-space: nowrap; flex: 1 1 auto; }
         .music-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-bottom: 1px solid #3a3a3a; border-radius: 6px; }
         .music-row:last-child { border-bottom: none; }
         .music-row.playing { background: var(--tint); }
@@ -453,6 +475,7 @@
         .btn-help.playing::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--fg); margin-right: 8px; vertical-align: middle; }
         @media (max-width: 900px) {
             .music-dock { left: 12px; right: auto; bottom: 12px; width: calc(100vw - 24px); max-width: none; max-height: 75vh; }
+            .music-dock.tucked { left: auto; right: 12px; bottom: 12px; width: auto; }
             .music-head-btns button { padding: 6px 8px; font-size: 0.85rem; }
             .btn-help { padding: 8px 12px; font-size: 0.95rem; }
             .header-right { gap: 10px; flex-wrap: wrap; }
@@ -1009,7 +1032,7 @@
         <div class="header-right">
             <button class="btn-help account-chip" id="btn-account" data-dot="green" onclick="switchTab('settings')" title="Your account"><span id="account-name">Signed in</span></button>
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
-            <button class="btn-help" id="btn-music" onclick="openMusic()">Music</button>
+            <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
             <span class="version-tag" id="app-version">v3.3</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
@@ -1764,6 +1787,9 @@
     </div>
 
     <aside class="music-dock" id="music-dock" aria-label="Background music">
+        <button class="music-tab" id="music-tab" onclick="untuckMusic()" aria-label="Open the music player">
+            <span class="dot" aria-hidden="true"></span><span class="label" id="music-tab-label">Music</span>
+        </button>
         <div class="music-head" id="music-head" tabindex="0" title="Drag to move. Double-click to put it back in the corner." aria-label="Music player. Drag, or use the arrow keys, to move it.">
             <span class="music-grip" aria-hidden="true"></span>
             <h2 id="music-head-title">Music</h2>
@@ -1771,6 +1797,7 @@
                 <button class="btn-cal-filter mini-only" id="music-mini-play" onclick="togglePlay()" aria-label="Play or pause">Play</button>
                 <button class="btn-toggle full-only" id="btn-music-lib" onclick="toggleMusicLibrary()">Hide list</button>
                 <button class="btn-toggle" id="btn-music-mini" onclick="toggleMusicMini()" aria-pressed="false">Minimise</button>
+                <button class="btn-toggle" id="btn-music-hide" onclick="tuckMusic()" title="Tuck the player away into a small tab. Anything playing keeps playing.">Hide</button>
                 <button class="btn-delete" style="padding: 6px 12px; font-size: 0.9rem;" onclick="closeMusic()" title="Stop the music and close">Stop</button>
             </div>
         </div>
@@ -1792,7 +1819,8 @@
         <div class="music-lib full-only" id="music-lib">
             <div class="music-add">
                 <input type="text" id="music-url" placeholder="Paste a YouTube video or playlist link" onkeydown="if(event.key==='Enter') addMusicLink()" aria-label="YouTube link">
-                <button onclick="addMusicLink()">Add &amp; Play</button>
+                <button onclick="addMusicLink(true)">Add &amp; Play</button>
+                <button class="btn-toggle" onclick="addMusicLink(false)" title="Add it to your list without interrupting what's playing">Save for later</button>
             </div>
             <span id="music-status"></span>
             <div id="music-list"></div>
@@ -1955,8 +1983,8 @@
                     </div>
                     <div class="guide-card">
                         <h3>Music and break reminders</h3>
-                        <p>Press Music at the top and paste a YouTube link to play music while you work. To send your list to a friend, press <strong>Share my list</strong> under your tracks. A reminder pops up every 15 minutes to get you moving. You can change or turn it off in Settings.</p>
-                        <button class="btn-small" onclick="closeGuide(); openMusic();">Open Music</button>
+                        <p>Press Music at the top and paste a YouTube link to play music while you work. <strong>Add &amp; Play</strong> starts it straight away; <strong>Save for later</strong> just puts it on your list without interrupting anything. <strong>Hide</strong> tucks the player into a small tab in the corner, and the music keeps going &mdash; press the tab to bring it back. To send your list to a friend, press <strong>Share my list</strong> under your tracks. A reminder pops up every 15 minutes to get you moving. You can change or turn it off in Settings.</p>
+                        <button class="btn-small" onclick="closeGuide(); showMusic();">Open Music</button>
                     </div>
                 </div>
 
@@ -2063,6 +2091,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v3.4  Music: "Save for later" adds a link to your list without interrupting what's playing,
+        //       and "Hide" tucks the player away into a small corner tab (audio carries on) that
+        //       you press to bring it back
         // v3.3  "Around you" map on Travel: you are here, nearest stations, bus stops and
         //       supermarkets, with distances and walking times. Stations come from the
         //       built-in table; stops and shops from OpenStreetMap, cached for a month.
@@ -2110,7 +2141,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '3.3';
+        const APP_VERSION = '3.4';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2230,7 +2261,7 @@
                     home: null, pages: {}, newsArea: ''
                 },
                 focus: { date: '', sessions: 0 },
-                music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, pos: null, open: true, seeded: true },
+                music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
                 food: { items: [], known: {}, weekBudget: '' },
                 reminders: { on: true, every: 15 },
                 setup: { started: false, skipped: [], done: {} }
@@ -4613,10 +4644,17 @@
         // Pad the page so nothing ends up stuck underneath the dock
         const dockObserver = window.ResizeObserver ? new ResizeObserver(() => {
             const dock = $('music-dock');
+            if (dock.classList.contains('tucked')) { document.body.style.paddingBottom = ''; return; }
             // In the static layout the dock floats over the page (drag it anywhere) instead of pushing everything up
             document.body.style.paddingBottom = (!isFitMode() && dock.classList.contains('open') && !data.music.pos) ? (dock.offsetHeight + 30) + 'px' : '';
             if (data.music.pos) placeDock(data.music.pos.x, data.music.pos.y, false);
         }) : null;
+
+        // What the Music button at the top does: always brings the player back into view
+        function showMusic() {
+            data.music.tucked = false;
+            openMusic();
+        }
 
         function openMusic() {
             $('music-dock').classList.add('open');
@@ -4642,30 +4680,37 @@
             if (ytPlayer && ytPlayer.destroy) { try { ytPlayer.destroy(); } catch (e) {} }
             ytPlayer = null; ytReady = false; musicState = -1;
             $('music-player-wrap').innerHTML = '<div id="yt-player" class="music-placeholder">Paste a YouTube link below to start listening.</div>';
-            $('music-dock').classList.remove('open');
+            $('music-dock').classList.remove('open', 'tucked');
             data.music.open = false;
+            data.music.tucked = false;
             saveData(true);
             document.body.style.paddingBottom = '';
             clearInterval(musicTick);
             updateMusicButtons();
         }
 
-        async function addMusicLink() {
+        // play = true: add it and start it now. play = false: just keep it on the list for later,
+        // leaving whatever is already playing alone.
+        async function addMusicLink(play) {
+            if (play === undefined) play = true;
             const input = $('music-url');
             const parsed = parseYouTube(input.value);
             if (!parsed) { flash('music-status', 'That isn\'t a YouTube link. Copy it from the address bar or YouTube\'s Share button.', true); return; }
             let t = data.music.tracks.find(x => x.videoId === parsed.videoId && x.listId === parsed.listId);
+            const already = !!t;
             if (!t) {
                 t = { id: uid(), videoId: parsed.videoId, listId: parsed.listId, title: '', author: '' };
                 data.music.tracks.push(t);
             }
             input.value = '';
-            data.music.current = t.id;
+            if (play) data.music.current = t.id;
             saveData();
             renderMusicLibrary();
             renderNowPlaying();
             fetchTrackInfo(t);
-            startPlayer(true);
+            if (play) { startPlayer(true); return; }
+            if (!data.music.libOpen) toggleMusicLibrary();
+            flash('music-status', already ? 'That one was already on your list.' : 'Saved to your list. Press Play on it whenever you want it.');
         }
 
         function playTrack(id) {
@@ -4834,12 +4879,51 @@
 
         function applyDockLayout() {
             const dock = $('music-dock');
+            const tucked = !!data.music.tucked;
+            dock.classList.toggle('tucked', tucked);
             dock.classList.toggle('mini', !!data.music.mini);
             const btn = $('btn-music-mini');
             btn.textContent = data.music.mini ? 'Expand' : 'Minimise';
             btn.setAttribute('aria-pressed', !!data.music.mini);
             updateMiniTitle();
+            updateMusicTab();
+            if (tucked) {
+                // The tab always sits in the corner, so drop any dragged position while it's away
+                ['left', 'top', 'right', 'bottom'].forEach(k => { dock.style[k] = ''; });
+                document.body.style.paddingBottom = '';
+                return;
+            }
             if (data.music.pos) requestAnimationFrame(() => placeDock(data.music.pos.x, data.music.pos.y, false));
+        }
+
+        // ---- Tuck away / bring back ----
+        function tuckMusic() {
+            data.music.tucked = true;
+            saveData(true);
+            applyDockLayout();
+            $('music-tab').focus();
+        }
+
+        function untuckMusic() {
+            data.music.tucked = false;
+            saveData(true);
+            applyDockLayout();
+            $('btn-music-hide').focus();
+        }
+
+        // The tab shows what's on, so you know why there's sound with no player in sight
+        function updateMusicTab() {
+            const tab = $('music-tab');
+            if (!tab) return;
+            const t = currentTrack();
+            const playing = musicState === 1 || musicState === 3;
+            const vd = (ytReady && ytPlayer.getVideoData) ? (ytPlayer.getVideoData() || {}) : {};
+            const title = vd.title || (t && t.title) || '';
+            tab.classList.toggle('playing', musicState === 1);
+            $('music-tab-label').textContent = playing && title ? title : (playing ? 'Music playing' : 'Music');
+            const label = playing && title ? `Playing ${title}. Open the music player.` : 'Open the music player';
+            tab.title = label;
+            tab.setAttribute('aria-label', label);
         }
 
         function toggleMusicMini() {
@@ -4905,6 +4989,7 @@
                 placeDock(r.left + moves[e.key][0], r.top + moves[e.key][1], true);
             });
             window.addEventListener('resize', () => {
+                if (data.music.tucked) return;
                 if (data.music.pos && $('music-dock').classList.contains('open')) placeDock(data.music.pos.x, data.music.pos.y, false);
             });
         })();
@@ -4920,6 +5005,7 @@
             $('music-play').textContent = playing ? 'Pause' : 'Play';
             $('music-mini-play').textContent = playing ? 'Pause' : 'Play';
             updateMiniTitle();
+            updateMusicTab();
             $('btn-music').classList.toggle('playing', musicState === 1);
             $('btn-music').textContent = musicState === 1 ? 'Music playing' : 'Music';
             const r = $('music-repeat');
@@ -6098,6 +6184,7 @@
             closeShare();
             data.music.libOpen = true;
             data.music.mini = false; // show the full player so the new tracks are visible
+            data.music.tucked = false;
             saveData();
             openMusic();
             renderMusicLibrary();
@@ -6341,5 +6428,231 @@
             if (data && data.session) unlockApp(data.session);
         });
     </script>
+<!-- ============================================================
+     DEV THEME PANEL  —  paste this whole block just before </body>
+     Opens with Ctrl/Cmd + Shift + D, or call devTheme.open()
+     Only loads if ?dev=1 is in the URL (or localStorage devMode = 1),
+     so students never see it.
+     ============================================================ -->
+<div id="devTheme" hidden>
+  <header>
+    <strong>Theme tester</strong>
+    <button type="button" data-dev="close" aria-label="Close">&times;</button>
+  </header>
+
+  <div class="dev-body">
+    <section>
+      <label for="devFont">Font family</label>
+      <select id="devFont">
+        <option value="">— leave as is —</option>
+        <option value="system-ui, -apple-system, sans-serif">System sans</option>
+        <option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+        <option value="'Helvetica Neue', Arial, sans-serif">Helvetica / Arial</option>
+        <option value="'Courier New', monospace">Courier (mono)</option>
+        <option value="Inter">Inter (Google)</option>
+        <option value="Space Grotesk">Space Grotesk (Google)</option>
+        <option value="IBM Plex Sans">IBM Plex Sans (Google)</option>
+        <option value="IBM Plex Mono">IBM Plex Mono (Google)</option>
+        <option value="Outfit">Outfit (Google)</option>
+        <option value="Sora">Sora (Google)</option>
+        <option value="JetBrains Mono">JetBrains Mono (Google)</option>
+      </select>
+      <input id="devFontCustom" type="text" placeholder="or type any Google Font name">
+    </section>
+
+    <section>
+      <label for="devScale">Base size <span id="devScaleOut">16px</span></label>
+      <input id="devScale" type="range" min="12" max="22" step="0.5" value="16">
+    </section>
+
+    <section>
+      <label>Colours</label>
+      <div id="devVars" class="dev-vars"></div>
+      <p id="devNoVars" hidden>No CSS custom properties found on :root — the panel needs
+        variables like <code>--bg</code> to work on colours.</p>
+    </section>
+  </div>
+
+  <footer>
+    <button type="button" data-dev="copy">Copy CSS</button>
+    <button type="button" data-dev="reset">Reset</button>
+  </footer>
+</div>
+
+<style>
+#devTheme{position:fixed;top:12px;right:12px;z-index:99999;width:290px;max-height:80vh;
+  display:flex;flex-direction:column;background:#15171c;color:#e7e9ee;border:1px solid #333a45;
+  border-radius:10px;font:13px/1.4 system-ui,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+#devTheme[hidden]{display:none}
+#devTheme header,#devTheme footer{display:flex;align-items:center;gap:8px;padding:10px 12px}
+#devTheme header{justify-content:space-between;border-bottom:1px solid #262c35}
+#devTheme footer{border-top:1px solid #262c35}
+#devTheme .dev-body{overflow-y:auto;padding:4px 12px 10px}
+#devTheme section{margin:12px 0}
+#devTheme label{display:flex;justify-content:space-between;margin-bottom:6px;color:#9aa3b1;font-size:11px}
+#devTheme select,#devTheme input[type=text]{width:100%;margin-bottom:6px;padding:6px 8px;
+  background:#0e1015;color:#e7e9ee;border:1px solid #333a45;border-radius:6px;font:inherit}
+#devTheme input[type=range]{width:100%}
+#devTheme button{background:#242a33;color:#e7e9ee;border:1px solid #3a424e;border-radius:6px;
+  padding:6px 10px;font:inherit;cursor:pointer}
+#devTheme button:hover{background:#2e3641}
+#devTheme header button{border:0;background:none;font-size:18px;line-height:1;padding:0 4px}
+#devTheme .dev-vars{display:flex;flex-direction:column;gap:6px}
+#devTheme .dev-row{display:grid;grid-template-columns:1fr 30px;gap:8px;align-items:center}
+#devTheme .dev-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#c3c9d4}
+#devTheme .dev-row input[type=color]{width:30px;height:24px;padding:0;border:1px solid #3a424e;
+  border-radius:4px;background:none;cursor:pointer}
+#devTheme p{margin:0;font-size:11px;color:#8b93a1}
+#devTheme code{background:#0e1015;padding:1px 4px;border-radius:3px}
+</style>
+
+<script>
+(function () {
+  var on = /[?&]dev=1/.test(location.search) || localStorage.getItem('devMode') === '1';
+  if (/[?&]dev=1/.test(location.search)) localStorage.setItem('devMode', '1');
+  if (!on) return;
+
+  var KEY = 'devThemeOverrides';
+  var root = document.documentElement;
+  var panel = document.getElementById('devTheme');
+  var varsBox = document.getElementById('devVars');
+  var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+
+  // --- find every custom property declared on :root -----------------------
+  function collectVars() {
+    var found = {};
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var rules;
+      try { rules = document.styleSheets[s].cssRules; } catch (e) { continue; } // cross-origin
+      if (!rules) continue;
+      for (var r = 0; r < rules.length; r++) {
+        var rule = rules[r];
+        if (!rule.selectorText || !/:root|^html$/.test(rule.selectorText)) continue;
+        for (var i = 0; i < rule.style.length; i++) {
+          var name = rule.style[i];
+          if (name.indexOf('--') === 0) found[name] = rule.style.getPropertyValue(name).trim();
+        }
+      }
+    }
+    return found;
+  }
+
+  function toHex(value) {
+    var probe = document.createElement('span');
+    probe.style.color = '';
+    probe.style.color = value;
+    if (!probe.style.color) return null;            // not a colour
+    document.body.appendChild(probe);
+    var rgb = getComputedStyle(probe).color;
+    document.body.removeChild(probe);
+    var m = rgb.match(/\d+/g);
+    if (!m) return null;
+    return '#' + m.slice(0, 3).map(function (n) {
+      return ('0' + parseInt(n, 10).toString(16)).slice(-2);
+    }).join('');
+  }
+
+  var vars = collectVars();
+  var colourVars = [];
+  Object.keys(vars).sort().forEach(function (name) {
+    var hex = toHex(vars[name]);
+    if (!hex) return;
+    colourVars.push(name);
+    var row = document.createElement('label');
+    row.className = 'dev-row';
+    row.innerHTML = '<span title="' + name + '">' + name.replace(/^--/, '') + '</span>';
+    var input = document.createElement('input');
+    input.type = 'color';
+    input.value = saved[name] || hex;
+    input.addEventListener('input', function () {
+      root.style.setProperty(name, input.value);
+      saved[name] = input.value;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+    row.appendChild(input);
+    varsBox.appendChild(row);
+  });
+  if (!colourVars.length) document.getElementById('devNoVars').hidden = false;
+
+  // --- fonts ---------------------------------------------------------------
+  function applyFont(family) {
+    if (!family) { root.style.removeProperty('font-family'); return; }
+    // Single-word-ish names are treated as Google Fonts and loaded on demand
+    if (!/,|serif|sans-serif|monospace/.test(family)) {
+      var id = 'devFontLink';
+      var link = document.getElementById(id) || document.createElement('link');
+      link.id = id; link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=' +
+        encodeURIComponent(family).replace(/%20/g, '+') + ':wght@300;400;500;600;700&display=swap';
+      document.head.appendChild(link);
+      family = "'" + family + "', sans-serif";
+    }
+    root.style.setProperty('font-family', family);
+    // also push into a --font style variable if the app defines one
+    ['--font', '--font-family', '--font-body'].forEach(function (v) {
+      if (vars[v] !== undefined) root.style.setProperty(v, family);
+    });
+    saved.__font = family;
+    localStorage.setItem(KEY, JSON.stringify(saved));
+  }
+
+  var sel = document.getElementById('devFont');
+  var custom = document.getElementById('devFontCustom');
+  sel.addEventListener('change', function () { applyFont(sel.value); });
+  custom.addEventListener('change', function () { applyFont(custom.value.trim()); });
+
+  var scale = document.getElementById('devScale');
+  var scaleOut = document.getElementById('devScaleOut');
+  scale.addEventListener('input', function () {
+    root.style.fontSize = scale.value + 'px';
+    scaleOut.textContent = scale.value + 'px';
+    saved.__scale = scale.value;
+    localStorage.setItem(KEY, JSON.stringify(saved));
+  });
+
+  // --- restore anything saved from a previous session ----------------------
+  Object.keys(saved).forEach(function (k) {
+    if (k.indexOf('--') === 0) root.style.setProperty(k, saved[k]);
+  });
+  if (saved.__font) root.style.setProperty('font-family', saved.__font);
+  if (saved.__scale) { root.style.fontSize = saved.__scale + 'px'; scale.value = saved.__scale;
+    scaleOut.textContent = saved.__scale + 'px'; }
+
+  // --- buttons -------------------------------------------------------------
+  panel.addEventListener('click', function (e) {
+    var act = e.target.getAttribute && e.target.getAttribute('data-dev');
+    if (act === 'close') panel.hidden = true;
+    if (act === 'reset') {
+      localStorage.removeItem(KEY);
+      location.reload();
+    }
+    if (act === 'copy') {
+      var lines = colourVars.filter(function (n) { return saved[n]; })
+        .map(function (n) { return '  ' + n + ': ' + saved[n] + ';'; });
+      if (saved.__font) lines.push('  font-family: ' + saved.__font + ';');
+      if (saved.__scale) lines.push('  font-size: ' + saved.__scale + 'px;');
+      var css = ':root {\n' + lines.join('\n') + '\n}';
+      navigator.clipboard.writeText(css).then(function () {
+        e.target.textContent = 'Copied';
+        setTimeout(function () { e.target.textContent = 'Copy CSS'; }, 1200);
+      });
+    }
+  });
+
+  // --- open / close --------------------------------------------------------
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+      e.preventDefault();
+      panel.hidden = !panel.hidden;
+    }
+  });
+
+  window.devTheme = {
+    open: function () { panel.hidden = false; },
+    close: function () { panel.hidden = true; },
+    off: function () { localStorage.removeItem('devMode'); location.reload(); }
+  };
+})();
+</script>
 </body>
 </html>
