@@ -324,6 +324,10 @@
         }
         /* Food shop */
         .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .site-group + .site-group { margin-top: 12px; }
+        .site-group h3 { margin: 0 0 6px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-muted); }
+        a.chip { display: inline-block; text-decoration: none; }
+        a.chip:hover { background: var(--panel-3); text-decoration: underline; }
         .chip { background: var(--panel-2); color: var(--fg); padding: 7px 12px; font-size: 0.95rem; font-weight: bold; border-radius: 20px; }
         .chip:hover { background: var(--panel-2); }
         .shop-section { margin-bottom: 18px; }
@@ -1093,7 +1097,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v5.2</span>
+            <span class="version-tag" id="app-version">v5.3</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1228,6 +1232,17 @@
                         <button class="btn-toggle panel-hide" onclick="homeHide('newsUk')">Hide</button>
                     </div>
                     <ul class="news-list" id="news-uk"></ul>
+                </div>
+
+                <div class="container home-panel" data-panel="links" data-name="Useful sites">
+                    <div class="controls-row">
+                        <h2>Useful sites</h2>
+                        <div class="row-gap">
+                            <button class="btn-toggle panel-hide" id="min-links" onclick="newsMinToggle('links')" aria-pressed="false">Minimise</button>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('links')">Hide</button>
+                        </div>
+                    </div>
+                    <div id="useful-sites"></div>
                 </div>
 
                 <div class="container home-panel" data-panel="wellbeing" data-name="Feeling alright?">
@@ -2120,7 +2135,7 @@
                 <div class="guide-grid">
                     <div class="guide-card">
                         <h3>Home Page</h3>
-                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar, local, UK, sport and university news and a focus timer, all on one screen.</p>
+                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar, local, UK, sport and university news, useful links and a focus timer, all on one screen.</p>
                         <p>Press <strong>Hide</strong> on any panel you don't need. Press <strong>Arrange</strong> at the top right to drag panels where you want them, or to bring hidden ones back. Press <strong>Done</strong> when you're finished.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Home Page</button>
                     </div>
@@ -2281,6 +2296,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v5.3  A Useful sites panel on the Home Page: student finance, discount cards, the
+        //       railcard, UCAS, Prospects, Citizens Advice and a few more, grouped and one
+        //       tap each. Minimise leaves just the money ones. Every link checked by hand.
         // v5.2  Talk to someone: fixed a dead Nightline link and a wrong NHS one, and dropped
         //       a Student Space phone number that couldn't be confirmed against Student Minds'
         //       own pages. Student Space is being folded into studentminds.org.uk, so the links
@@ -2389,7 +2407,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '5.2';
+        const APP_VERSION = '5.3';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2865,7 +2883,7 @@
         // HOME PAGE (v2.3): hide any panel, and Arrange to move them or bring hidden ones back
         // =====================================================================
         const HOME_DEFAULT = {
-            cols: [['money', 'classes', 'quick'], ['due', 'agenda', 'focus', 'wellbeing'], ['trains', 'newsLocal', 'newsUk', 'newsUni', 'newsSport']],
+            cols: [['money', 'classes', 'quick', 'links'], ['due', 'agenda', 'focus', 'wellbeing'], ['trains', 'newsLocal', 'newsUk', 'newsUni', 'newsSport']],
             hidden: []
         };
         const homePanels = {};
@@ -2979,6 +2997,7 @@
             L.min = L.min.includes(id) ? L.min.filter(x => x !== id) : L.min.concat(id);
             saveData();
             renderNews();
+            renderUseful();
         }
 
         function homeHide(id) {
@@ -3283,6 +3302,51 @@
                 .join('');
             sel.value = data.settings.newsArea && NEWS_AREAS[data.settings.newsArea] ? data.settings.newsArea : 'auto';
         }
+
+        // =====================================================================
+        // USEFUL SITES
+        // Official or long-established UK student sites only, so the links keep
+        // working. Every address here was opened and checked on 13 September 2026.
+        // Add your own by adding a line below; nothing else needs changing.
+        // =====================================================================
+        const USEFUL_SITES = [
+            ['Money', [
+                ['Student Finance', 'https://www.gov.uk/student-finance', 'Apply, check payments, update your details'],
+                ['Save the Student', 'https://www.savethestudent.org', 'Budgeting, part-time work and money guides']
+            ]],
+            ['Discounts', [
+                ['UNiDAYS', 'https://www.myunidays.com/GB/en-GB', 'Free to join with a university email'],
+                ['Student Beans', 'https://www.studentbeans.com/uk', 'Free, another set of shops'],
+                ['TOTUM', 'https://totum.com', 'Paid card, worth it if you shop the brands'],
+                ['16-25 Railcard', 'https://www.16-25railcard.co.uk', 'A third off train fares. Pays for itself fast']
+            ]],
+            ['Course and careers', [
+                ['UCAS', 'https://www.ucas.com', 'Applications, Clearing, course search'],
+                ['Discover Uni', 'https://discoveruni.gov.uk', 'Official course comparison data'],
+                ['Prospects', 'https://www.prospects.ac.uk', 'Graduate jobs, CVs and what to do next']
+            ]],
+            ['Advice', [
+                ['Citizens Advice', 'https://www.citizensadvice.org.uk', 'Housing, contracts, debt, your rights at work'],
+                ['Student Minds', 'https://www.studentminds.org.uk', 'Student mental health charity'],
+                ['NHS', 'https://www.nhs.uk', 'Find a GP, dentist or pharmacy near you']
+            ]]
+        ];
+
+        function renderUseful() {
+            const box = $('useful-sites');
+            if (!box) return;
+            const min = newsMinimised('links');
+            const groups = min ? USEFUL_SITES.slice(0, 1) : USEFUL_SITES;
+            box.innerHTML = groups.map(([name, items]) => `
+                <div class="site-group">
+                    <h3>${esc(name)}</h3>
+                    <div class="chip-row">${items.map(([label, url, note]) =>
+                        `<a class="chip" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(note)}">${esc(label)}</a>`).join('')}</div>
+                </div>`).join('');
+            const b = $('min-links');
+            if (b) { b.textContent = min ? 'Show all' : 'Minimise'; b.setAttribute('aria-pressed', min); }
+        }
+
         function uniName() { return String(data.settings.uniName || '').trim(); }
         function uniUrl() { return String(data.settings.uniUrl || '').trim(); }
         // Only a real https address is kept, so nothing odd can be put behind a link that
@@ -6638,7 +6702,7 @@
             renderToday(); renderBudget(); renderTasks(); renderDeadlines();
             renderTimetable(); renderProjects(); renderGrades(); renderSettings(); renderTimer();
             renderMusicLibrary(); renderNowPlaying(); renderFood(); renderSetupPill();
-            renderHomeLayout(); renderNews(); renderNudge();
+            renderHomeLayout(); renderNews(); renderNudge(); renderUseful();
         }
 
         function startApp() {
