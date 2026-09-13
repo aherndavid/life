@@ -291,6 +291,9 @@
 
         .grade-input { width: 90px !important; padding: 8px !important; font-size: 1rem !important; text-align: center; }
 
+        .support-link { display: inline-block; margin-bottom: 6px; }
+        .btn-link.btn-teal-link { background: var(--panel-2); color: var(--fg); }
+        .btn-link.btn-teal-link:hover { background: var(--panel-3); }
         .footer { text-align: center; color: var(--fg-muted); font-size: 0.95rem; padding: 10px 0 30px; line-height: 1.8; }
         .footer a { color: var(--link); font-weight: bold; text-decoration: none; }
 
@@ -619,17 +622,22 @@
         .place-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
         .place-map-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fg-muted); font-size: 0.9rem; text-align: center; padding: 8px; box-sizing: border-box; }
         /* ---- Around you (v3.3): map of what's nearby, on the Travel tab ---- */
-        .around { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, 1fr); gap: 18px; margin-bottom: 22px; align-items: stretch; }
+        /* The chosen size is a real height, not a floor. With a floor, the nearby list (up to
+           30 rows) made the grid row taller than any of the three sizes, so the map stretched
+           to the list and changing size did nothing. Both columns now take the chosen height
+           and the list scrolls inside it. */
+        .around { --map-h: 360px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, 1fr); gap: 18px; margin-bottom: 22px; align-items: stretch; }
         .map-size button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
-        .around.map-s .around-map { min-height: 220px; }
-        .around.map-m .around-map { min-height: 360px; }
-        .around.map-l .around-map { min-height: 620px; }
+        .around.map-s { --map-h: 220px; }
+        .around.map-m { --map-h: 360px; }
+        .around.map-l { --map-h: 620px; }
         /* Minimised: the map goes, the list of what's nearby stays */
         .around.map-min { grid-template-columns: minmax(0, 1fr); }
         .around.map-min .around-map { display: none; }
-        .around-map { min-height: 320px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel-2); position: relative; z-index: 0; }
+        .around.map-min .around-side { height: auto; max-height: 420px; }
+        .around-map { height: var(--map-h); min-height: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel-2); position: relative; z-index: 0; }
         .around-map .leaflet-control-attribution { font-size: 10px; padding: 0 4px; }
-        .around-side { display: flex; flex-direction: column; min-width: 0; }
+        .around-side { display: flex; flex-direction: column; min-width: 0; height: var(--map-h); min-height: 0; }
         .around-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 10px; }
         .around-legend label { font-size: 0.95rem; }
         .around-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; min-height: 0; }
@@ -654,7 +662,7 @@
         .map-pin.station span { background: var(--accent); color: var(--on-accent); }
         @media (max-width: 900px) {
             .around { grid-template-columns: minmax(0, 1fr); }
-            .around-map { min-height: 260px; }
+            .around-side { height: auto; }
             .around-list { max-height: 260px; }
         }
         .place-pin { position: relative; }
@@ -1085,7 +1093,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v4.7</span>
+            <span class="version-tag" id="app-version">v5.0</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1220,6 +1228,27 @@
                         <button class="btn-toggle panel-hide" onclick="homeHide('newsUk')">Hide</button>
                     </div>
                     <ul class="news-list" id="news-uk"></ul>
+                </div>
+
+                <div class="container home-panel" data-panel="wellbeing" data-name="Feeling alright?">
+                    <div class="controls-row">
+                        <h2>Feeling alright?</h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('wellbeing')">Hide</button>
+                    </div>
+                    <p class="note" id="nudge-text" style="margin: 0 0 12px;"></p>
+                    <div class="row-gap">
+                        <button class="btn-toggle" onclick="nextNudge()">Another idea</button>
+                        <button onclick="openSupport()">Talk to someone</button>
+                    </div>
+                </div>
+
+                <div class="container home-panel" data-panel="newsUni" data-name="University news">
+                    <div class="controls-row">
+                        <h2>University <span class="news-src" id="news-uni-src"></span></h2>
+                        <button class="btn-toggle panel-hide" id="min-newsUni" onclick="newsMinToggle('newsUni')" aria-pressed="false">Minimise</button>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('newsUni')">Hide</button>
+                    </div>
+                    <ul class="news-list" id="news-uni-list"></ul>
                 </div>
 
                 <div class="container home-panel" data-panel="newsSport" data-name="Sport news">
@@ -1743,10 +1772,18 @@
 
                 <div class="container">
                     <h2 style="margin-top: 0;">News</h2>
-                    <p class="note">Headlines on the Home Page: one list for your area, one for the whole UK and one for sport. They come from BBC News where it's available, and other UK news sites when it isn't, so the panel keeps working if a feed goes down. Whoever published each story is shown under the headline, and pressing it opens their website.</p>
+                    <p class="note">Headlines on the Home Page: one list for your area, one for the whole UK, one for sport and one for your university. They come from BBC News where it's available, and other UK news sites when it isn't, so the panel keeps working if a feed goes down. Whoever published each story is shown under the headline, and pressing it opens their website.</p>
                     <label for="news-area">Local news area</label>
                     <select id="news-area" onchange="setNewsArea(this.value)" style="max-width: 420px;"></select>
                     <span id="news-settings-status" class="status-ok"></span>
+                    <label for="news-uni" style="margin-top: 16px;">Your university</label>
+                    <p class="note" style="margin: 0 0 8px;">Start typing and pick yours, or type any college or school name. Leave it empty to turn the University panel off.</p>
+                    <div class="task-input-row" style="margin-bottom: 0;">
+                        <input type="text" id="news-uni" list="uni-list" placeholder="e.g. University of Reading" style="flex: 1; min-width: 220px; max-width: 420px;" onchange="setUniversity(this.value)">
+                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" onclick="setUniversity('')">Clear</button>
+                    </div>
+                    <datalist id="uni-list"></datalist>
+                    <span id="news-uni-status" class="status-ok"></span>
                 </div>
 
                 <div class="container">
@@ -1966,6 +2003,59 @@
         </div>
     </div>
 
+
+    <!-- TALK TO SOMEONE -->
+    <div class="guide-overlay" id="support-overlay" onclick="if(event.target === this) closeSupport()">
+        <div class="guide-modal reminder-modal" style="max-width: 760px;" role="dialog" aria-modal="true" aria-labelledby="support-title">
+            <div class="guide-head">
+                <div>
+                    <h2 id="support-title">Talk to someone</h2>
+                    <p>Everyone has a rough patch at some point. None of these will judge you, and you don't need a reason.</p>
+                </div>
+                <button class="guide-close" id="support-close" onclick="closeSupport()" aria-label="Close">&times;</button>
+            </div>
+            <div class="guide-body">
+                <div class="backup-section highlight">
+                    <h3>Right now, any time of day</h3>
+                    <p><strong>Samaritans</strong> &mdash; free, 24 hours a day, every day of the year. You can call about anything, not only a crisis.</p>
+                    <div class="row-gap"><a class="btn-link" href="tel:116123">Call 116 123</a>
+                        <a class="btn-link btn-teal-link" href="https://www.samaritans.org" target="_blank" rel="noopener">samaritans.org</a></div>
+                    <p style="margin-top: 16px;"><strong>Shout</strong> &mdash; if talking out loud feels like too much, this one is by text. Free, 24 hours.</p>
+                    <div class="row-gap"><a class="btn-link" href="sms:85258?&amp;body=SHOUT">Text SHOUT to 85258</a></div>
+                </div>
+
+                <div class="backup-section">
+                    <h3>Made for students</h3>
+                    <p><strong>Student Space</strong>, from the charity Student Minds. Phone lines are open 3pm to midnight, and the text service runs 24 hours.</p>
+                    <div class="row-gap"><a class="btn-link" href="tel:08081895260">Call 0808 189 5260</a>
+                        <a class="btn-link" href="sms:85258?&amp;body=STUDENT">Text STUDENT to 85258</a>
+                        <a class="btn-link btn-teal-link" href="https://studentspace.org.uk" target="_blank" rel="noopener">studentspace.org.uk</a></div>
+                    <p style="margin-top: 16px;"><strong>Nightline</strong> is run by students, for students, and open at night during term. Anonymous, and they won't tell your university. Not every university has one, so check yours.</p>
+                    <div class="row-gap"><a class="btn-link btn-teal-link" href="https://nightline.ac.uk/want-to-talk/" target="_blank" rel="noopener">Find your Nightline</a></div>
+                </div>
+
+                <div class="backup-section">
+                    <h3 id="support-uni-head">Your university</h3>
+                    <p id="support-uni-text">Every university has a wellbeing or counselling service, and it's free. They deal with this every day, and asking doesn't go on your record or affect your course.</p>
+                    <div class="row-gap" id="support-uni-actions"></div>
+                </div>
+
+                <div class="backup-section">
+                    <h3>Your doctor</h3>
+                    <p>A GP can refer you for talking therapy, and you can register with one near your university even if your family home is elsewhere. If you need mental health help urgently and it isn't life-threatening, NHS 111 has a mental health option.</p>
+                    <div class="row-gap"><a class="btn-link" href="tel:111">Call 111</a>
+                        <a class="btn-link btn-teal-link" href="https://www.nhs.uk/service-search/mental-health" target="_blank" rel="noopener">NHS mental health services</a></div>
+                </div>
+            </div>
+            <div class="guide-foot">
+                <span class="muted" style="font-size: 0.95rem;">If someone is in immediate danger, call 999.</span>
+                <div class="reminder-actions">
+                    <button class="btn-cal-filter" style="padding: 12px 20px; font-size: 1rem;" onclick="closeSupport()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- BREAK REMINDER -->
     <div class="guide-overlay" id="reminder-overlay" onclick="if(event.target === this) closeReminder()">
         <div class="guide-modal reminder-modal" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
@@ -2023,7 +2113,7 @@
                 <div class="guide-grid">
                     <div class="guide-card">
                         <h3>Home Page</h3>
-                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar, local, UK and sport news and a focus timer, all on one screen.</p>
+                        <p>Your home screen. See how much you can spend today, your classes, what's due soon, the next trains, your calendar, local, UK, sport and university news and a focus timer, all on one screen.</p>
                         <p>Press <strong>Hide</strong> on any panel you don't need. Press <strong>Arrange</strong> at the top right to drag panels where you want them, or to bring hidden ones back. Press <strong>Done</strong> when you're finished.</p>
                         <button class="btn-small" onclick="guideGo('today')">Go to Home Page</button>
                     </div>
@@ -2175,6 +2265,7 @@
     </div>
 
     <div class="footer">
+        <a href="#" class="support-link" onclick="openSupport(); return false;">Feeling rubbish? Talk to someone</a><br>
         Life - Student Edition by <a href="https://dpaul.studio" target="_blank" rel="noopener">dPaul Studio</a>.
         More apps and tools at <a href="https://www.dpaul-software.uk" target="_blank" rel="noopener">www.dpaul-software.uk</a>
     </div>
@@ -2183,6 +2274,19 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v5.0  "Talk to someone": a page of real people who can help, one tap from the link
+        //       in the footer on every tab or from the Home Page. Samaritans and Shout for any
+        //       time of day, Student Space and Nightline for students, your own university's
+        //       wellbeing service, and your GP. Numbers are all in one block in the script so
+        //       they can be checked in one place. Alongside it, a small "Feeling alright?"
+        //       panel with one practical suggestion at a time for when things feel cut off.
+        //       No mood scores, no streaks, and nothing recorded about how anyone feels.
+        // v4.9  A University panel on the Home Page. Pick your university under News in
+        //       Settings (type-ahead of UK universities, or type any college or school) and
+        //       its headlines appear alongside the others. Leave it empty to turn it off.
+        // v4.8  Fixes Small, Medium and Large on the travel map doing nothing: the sizes were
+        //       a minimum height, but the nearby list made the row taller than all three, so
+        //       the map always stretched to the list. Each size is now the actual height.
         // v4.7  A Sport panel joins Local and UK news on the Home Page. All three now stop at
         //       the height their headlines need instead of stretching down the column.
         // v4.6  One look for everyone: the amber and green display colours have gone, so the
@@ -2270,7 +2374,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '4.7';
+        const APP_VERSION = '5.0';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2405,7 +2509,7 @@
                     travel: { stations: [], autoStations: true, map: { size: 'm', min: false, hidden: false } },
                     firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, wxOpen: false,
-                    home: null, pages: {}, newsArea: ''
+                    home: null, pages: {}, newsArea: '', uniName: ''
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
@@ -2746,7 +2850,7 @@
         // HOME PAGE (v2.3): hide any panel, and Arrange to move them or bring hidden ones back
         // =====================================================================
         const HOME_DEFAULT = {
-            cols: [['money', 'classes', 'quick'], ['due', 'agenda', 'focus'], ['trains', 'newsLocal', 'newsUk', 'newsSport']],
+            cols: [['money', 'classes', 'quick'], ['due', 'agenda', 'focus', 'wellbeing'], ['trains', 'newsLocal', 'newsUk', 'newsUni', 'newsSport']],
             hidden: []
         };
         const homePanels = {};
@@ -2996,6 +3100,33 @@
             wales: ['Wales', [[51.48, -3.18], [51.62, -3.94], [53.23, -4.13], [52.41, -4.08], [53.05, -3.00], [51.80, -4.97], [52.24, -3.38]]],
             northern_ireland: ['Northern Ireland', [[54.60, -5.93], [55.00, -7.30], [54.35, -6.65], [54.34, -7.64]]]
         };
+        // A starting list for the type-ahead. Anything can be typed in, so this doesn't
+        // need to be complete -- it just saves most people the spelling.
+        const UK_UNIS = ['Anglia Ruskin University', 'Aston University', 'Bangor University', 'Bath Spa University',
+            'Birkbeck, University of London', 'Bournemouth University', 'Brunel University London', 'Cardiff University',
+            'City St George\'s, University of London', 'Coventry University', 'Cranfield University', 'De Montfort University',
+            'Durham University', 'Edge Hill University', 'Edinburgh Napier University', 'Falmouth University',
+            'Glasgow Caledonian University', 'Goldsmiths, University of London', 'Heriot-Watt University', 'Imperial College London',
+            'Keele University', 'King\'s College London', 'Kingston University', 'Lancaster University', 'Leeds Beckett University',
+            'Liverpool John Moores University', 'London School of Economics', 'London South Bank University', 'Loughborough University',
+            'Manchester Metropolitan University', 'Middlesex University', 'Newcastle University', 'Northumbria University',
+            'Nottingham Trent University', 'Open University', 'Oxford Brookes University', 'Queen Mary University of London',
+            'Queen\'s University Belfast', 'Robert Gordon University', 'Royal Holloway, University of London', 'Sheffield Hallam University',
+            'SOAS University of London', 'Solent University', 'Staffordshire University', 'Swansea University', 'Teesside University',
+            'University College London', 'University of Aberdeen', 'University of Bath', 'University of Birmingham',
+            'University of Brighton', 'University of Bristol', 'University of Cambridge', 'University of Central Lancashire',
+            'University of Chester', 'University of Derby', 'University of Dundee', 'University of East Anglia',
+            'University of East London', 'University of Edinburgh', 'University of Essex', 'University of Exeter',
+            'University of Glasgow', 'University of Greenwich', 'University of Hertfordshire', 'University of Huddersfield',
+            'University of Hull', 'University of Kent', 'University of Leeds', 'University of Leicester', 'University of Lincoln',
+            'University of Liverpool', 'University of Manchester', 'University of Northampton', 'University of Nottingham',
+            'University of Oxford', 'University of Plymouth', 'University of Portsmouth', 'University of Reading',
+            'University of Salford', 'University of Sheffield', 'University of Southampton', 'University of St Andrews',
+            'University of Stirling', 'University of Strathclyde', 'University of Sunderland', 'University of Surrey',
+            'University of Sussex', 'University of the Arts London', 'University of the West of England', 'University of Warwick',
+            'University of West London', 'University of Westminster', 'University of Wolverhampton', 'University of York',
+            'Ulster University'];
+
         const newsState = { cache: {} };
 
         function nearestNewsArea(lat, lon) {
@@ -3020,6 +3151,7 @@
             const areas = [];
             if (!L.hidden.includes('newsUk')) areas.push('uk');
             if (!L.hidden.includes('newsSport')) areas.push('sport');
+            if (uniName() && !L.hidden.includes('newsUni')) areas.push('uni');
             const local = newsLocalArea();
             if (local && !L.hidden.includes('newsLocal')) areas.push(local);
             renderNews();
@@ -3028,7 +3160,7 @@
                 if (c && (c.loading || (!force && Date.now() - c.at < 15 * 60000))) return;
                 newsState.cache[area] = { ...(c || { items: [] }), loading: true };
                 try {
-                    const label = area === 'uk' ? '' : area === 'sport' ? 'UK sport' : (NEWS_AREAS[area] || [''])[0];
+                    const label = area === 'uk' ? '' : area === 'sport' ? 'UK sport' : area === 'uni' ? uniName() : (NEWS_AREAS[area] || [''])[0];
                     const r = await fetch(`${NEWS_PROXY_URL}?area=${encodeURIComponent(area)}${label ? `&q=${encodeURIComponent(label)}` : ''}`);
                     const j = await r.json().catch(() => ({}));
                     if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
@@ -3092,15 +3224,19 @@
             const lc = local && newsState.cache[local];
             const uc = newsState.cache.uk;
             const sc = newsState.cache.sport;
+            const nc = newsState.cache.uni;
             $('news-uk-src').textContent = (uc && uc.source) || '';
             $('news-sport-src').textContent = (sc && sc.source) || '';
+            $('news-uni-src').textContent = uniName() ? ((nc && nc.source) || '') : '';
             $('news-local-src').textContent = !local ? '' : ((lc && lc.source) || '');
             $('news-local-src').title = lc && lc.fallback
                 ? `The usual ${NEWS_AREAS[local][0]} feed didn't answer, so these came from ${lc.source}`
                 : '';
             renderNewsList('news-uk', 'uk', 'newsUk');
             renderNewsList('news-sport', 'sport', 'newsSport');
-            ['newsUk', 'newsSport', 'newsLocal'].forEach(id => {
+            if (uniName()) renderNewsList('news-uni-list', 'uni', 'newsUni');
+            else $('news-uni-list').innerHTML = '<li class="empty">Pick your university in <a href="#" onclick="switchTab(\'settings\'); showFitPage(\'settings\', 2); return false;">Settings</a> to see its news here.</li>';
+            ['newsUk', 'newsSport', 'newsUni', 'newsLocal'].forEach(id => {
                 const el = homePanels[id];
                 if (el) el.classList.toggle('is-min', newsMinimised(id));
                 const b = $('min-' + id);
@@ -3111,6 +3247,11 @@
         }
 
         function renderNewsSettings() {
+            const uni = $('news-uni');
+            if (uni) {
+                uni.value = uniName();
+                if (!$('uni-list').children.length) $('uni-list').innerHTML = UK_UNIS.map(n => `<option value="${esc(n)}">`).join('');
+            }
             const sel = $('news-area');
             if (!sel) return;
             const auto = nearestNewsArea(data.settings.lat, data.settings.lon);
@@ -3119,6 +3260,19 @@
                 .join('');
             sel.value = data.settings.newsArea && NEWS_AREAS[data.settings.newsArea] ? data.settings.newsArea : 'auto';
         }
+        function uniName() { return String(data.settings.uniName || '').trim(); }
+        function setUniversity(v) {
+            const name = String(v || '').trim().slice(0, 80);
+            if (name === uniName()) return;
+            data.settings.uniName = name;
+            delete newsState.cache.uni;   // the old university's headlines are no use now
+            saveData();
+            $('news-uni').value = name;
+            flash('news-uni-status', name ? `Saved. The University panel now follows ${name}.` : 'Cleared. The University panel is off.');
+            renderNews();
+            fetchNews(true);
+        }
+
         function setNewsArea(v) {
             data.settings.newsArea = v === 'auto' ? '' : v;
             saveData();
@@ -6255,6 +6409,70 @@
             return FUN_FACTS[factDeck.pop()];
         }
 
+
+        // =====================================================================
+        // TALK TO SOMEONE
+        // Phone numbers and opening hours live here and nowhere else, so there is
+        // one place to check them. Worth a look once a year, or if a student says
+        // a number didn't work. Last checked September 2026.
+        //   Samaritans      116 123          free, 24/7
+        //   Shout           text 85258       free, 24/7
+        //   Student Space   0808 189 5260    3pm to midnight; text STUDENT 24/7
+        //   NHS             111              mental health option
+        // The page deliberately holds no tracking, no mood score and no chatbot:
+        // it lists people who can actually help and gets out of the way.
+        // =====================================================================
+        let supportReturnFocus = null;
+        function openSupport() {
+            renderSupportUni();
+            supportReturnFocus = document.activeElement;
+            $('support-overlay').classList.add('open');
+            document.body.classList.add('guide-open');
+            $('support-close').focus();
+        }
+        function closeSupport() {
+            $('support-overlay').classList.remove('open');
+            if (!anyOverlayOpen()) document.body.classList.remove('guide-open');
+            if (supportReturnFocus && supportReturnFocus.focus) supportReturnFocus.focus();
+        }
+        function renderSupportUni() {
+            const name = uniName();
+            const head = $('support-uni-head');
+            const acts = $('support-uni-actions');
+            if (!head || !acts) return;
+            head.textContent = name || 'Your university';
+            acts.innerHTML = name
+                ? `<a class="btn-link btn-teal-link" href="https://www.google.com/search?q=${encodeURIComponent(name + ' student wellbeing counselling service')}" target="_blank" rel="noopener">Find ${esc(name)} wellbeing</a>`
+                : '<a class="btn-link btn-teal-link" href="#" onclick="closeSupport(); switchTab(\'settings\'); return false;">Add your university in Settings</a>';
+        }
+
+        // Small practical things that help with feeling cut off. Suggestions to act on,
+        // not feelings to record: no scores, no streaks, nothing kept about how anyone
+        // says they feel.
+        const NUDGES = [
+            'Message one person you haven\'t spoken to in a couple of weeks. No occasion needed.',
+            'Work somewhere with other people in it today. The library or a cafe beats your room.',
+            'Go to one society taster. You can leave after ten minutes and nobody minds.',
+            'Say yes to the next thing you get invited to, even if you\'d rather not.',
+            'Ask someone on your course if they want to revise together.',
+            'Ring someone from home. Texting isn\'t the same as hearing a voice.',
+            'Get outside for twenty minutes before it gets dark. It does more than it sounds like it should.',
+            'Cook something properly and eat it away from your desk.',
+            'Turn up early to a lecture and talk to whoever\'s sat next to you.',
+            'Find one thing on this week that isn\'t work, and put it in your calendar.',
+            'Your students\' union will have something on tonight. Have a look at what.',
+            'Volunteer for one thing. Regular, low pressure, and you meet the same faces.',
+            'Text the person you sit next to in seminars. Course friends start somewhere.',
+            'Have a proper night\'s sleep tonight. Everything is worse on five hours.',
+            'If you\'ve been putting off asking for help with work, ask this week. Tutors would rather you did.'
+        ];
+        let nudgeAt = Math.floor(Math.random() * NUDGES.length);
+        function renderNudge() {
+            const el = $('nudge-text');
+            if (el) el.textContent = NUDGES[nudgeAt % NUDGES.length];
+        }
+        function nextNudge() { nudgeAt = (nudgeAt + 1) % NUDGES.length; renderNudge(); }
+
         function anyOverlayOpen() { return !!document.querySelector('.guide-overlay.open'); }
 
         function showReminder() {
@@ -6347,7 +6565,7 @@
         document.addEventListener('keydown', e => {
             const overlay = document.querySelector('.guide-overlay.open');
             if (!overlay) return;
-            if (e.key === 'Escape') { if (overlay.id === 'reminder-overlay') closeReminder(); else if (overlay.id === 'backup-overlay') closeBackup(); else if (overlay.id.startsWith('share-')) closeShare(); else closeGuide(); return; }
+            if (e.key === 'Escape') { if (overlay.id === 'reminder-overlay') closeReminder(); else if (overlay.id === 'backup-overlay') closeBackup(); else if (overlay.id === 'support-overlay') closeSupport(); else if (overlay.id.startsWith('share-')) closeShare(); else closeGuide(); return; }
             if (e.key === 'Tab') {
                 const f = [...overlay.querySelectorAll('button, a[href], input, select')].filter(el => el.offsetParent !== null);
                 if (!f.length) return;
@@ -6361,7 +6579,7 @@
             renderToday(); renderBudget(); renderTasks(); renderDeadlines();
             renderTimetable(); renderProjects(); renderGrades(); renderSettings(); renderTimer();
             renderMusicLibrary(); renderNowPlaying(); renderFood(); renderSetupPill();
-            renderHomeLayout(); renderNews();
+            renderHomeLayout(); renderNews(); renderNudge();
         }
 
         function startApp() {
