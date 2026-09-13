@@ -79,7 +79,7 @@
         .header-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
         .header-meta .clock, .header-meta .weather-widget { margin: 0 !important; }
         /* Greeting and signed-in chip (v2.9): on every page, because the header is shared */
-        .header-meta .greeting { font-weight: bold; color: var(--fg); white-space: nowrap; }
+        .header-meta .greeting { font-size: 1.1rem; font-weight: bold; color: var(--fg); white-space: nowrap; }
         .header-meta .greeting:empty { display: none; }
         .account-chip { display: inline-flex; align-items: center; max-width: 15em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .auth-card input[type="text"].auth-name { width: 100%; padding: 14px; font-size: 1.1rem; border: 1px solid #3a3a3a; border-radius: 6px; box-sizing: border-box; margin-bottom: 14px; }
@@ -293,7 +293,7 @@
             .header { flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
             .header-left h1 { font-size: 2.2rem; letter-spacing: 1px; line-height: 1.15; white-space: normal; }
             .header-right { justify-content: flex-start; }
-            .header-left .clock { font-size: 1rem; }
+            .header-left .clock, .header-left .greeting { font-size: 1rem; }
             .header-left .weather-widget { font-size: 0.95rem; }
             .header-right img, .header-right .brand-logo { max-height: 50px; height: 50px; }
             .tab-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -383,6 +383,11 @@
         .reminder-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
         /* Background music dock */
+        #store-warning {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 100000;
+            background: #5a1c1c; color: #ffe6e6; padding: 12px 16px; font-size: 0.95rem;
+            line-height: 1.45; text-align: center; border-top: 1px solid #7a2a2a;
+        }
         .music-dock {
             position: fixed; right: 20px; bottom: 20px; z-index: 900;
             width: 380px; max-width: calc(100vw - 24px); max-height: calc(100vh - 40px);
@@ -393,14 +398,21 @@
         }
         .music-dock.open { display: block; animation: guide-rise 0.25s ease-out; }
         .music-head {
-            display: flex; align-items: center; gap: 8px; margin: -12px -12px 10px; padding: 12px 12px 10px;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -12px -12px 10px; padding: 12px 12px 10px;
             cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
             border-bottom: 1px solid #3a3a3a; border-radius: 8px 8px 0 0;
         }
         .music-head:hover { background: #242424; }
         .music-head:focus-visible { outline: 3px solid var(--link); outline-offset: -3px; }
-        .music-head h2 { margin: 0; font-size: 1.3rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .music-head-btns { display: flex; gap: 6px; flex: 0 0 auto; }
+        /* The word "Music" always stays put. The track name sits beside it and is the part
+           that shortens when there isn't room, so the label can never be squeezed out. */
+        .music-head h2 { margin: 0; font-size: 1.3rem; flex: 0 0 auto; white-space: nowrap; }
+        .music-head-track { display: none; }
+        .music-dock.mini .music-head-track {
+            display: block; flex: 1 1 60px; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; font-size: 0.9rem; color: var(--fg-soft);
+        }
+        .music-head-btns { display: flex; gap: 6px; flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; }
         .music-head-btns button { padding: 6px 10px; font-size: 0.9rem; }
         .music-grip {
             flex: 0 0 auto; width: 10px; height: 18px; opacity: 0.55;
@@ -553,7 +565,7 @@
             body .header { padding-bottom: 18px; margin-bottom: 18px; }
             body .header-left h1 { font-size: 4.2rem; letter-spacing: 2px; }
             body .header-meta { margin-top: 10px; gap: 8px 16px; }
-            body .header-meta .clock { font-size: 1.45rem; }
+            body .header-meta .clock, body .header-meta .greeting { font-size: 1.45rem; }
             body .header-meta .weather-widget { font-size: 1.25rem; padding: 10px 16px; }
             body .header-right { gap: 14px; }
             body .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
@@ -564,7 +576,7 @@
         @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
             body .header-left h1 { font-size: 3rem; }
             body .header-meta { margin-top: 6px; }
-            body .header-meta .clock { font-size: 1.25rem; }
+            body .header-meta .clock, body .header-meta .greeting { font-size: 1.25rem; }
             body .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
             body .header-right img, body .header-right .brand-logo { max-height: 60px; height: 60px; }
             body .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
@@ -712,6 +724,9 @@
         .auth-link { background: none; color: var(--link); padding: 0; font-size: 1rem; font-weight: bold; width: auto !important; margin-top: 16px; }
         .auth-link:hover { background: none; text-decoration: underline; }
         .auth-help { margin-top: 20px; }
+        #auth-admin input { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid #3a3a3a; border-radius: 6px; box-sizing: border-box; margin: 6px 0 12px; }
+        #auth-admin button { width: 100%; }
+        #auth-admin label { font-size: 1rem; }
         .auth-help summary { cursor: pointer; font-weight: bold; color: var(--fg); }
         .auth-help ul { margin: 10px 0 0; padding-left: 22px; line-height: 1.7; color: var(--fg); }
         .auth-foot { color: var(--fg-muted); font-size: 0.95rem; text-align: center; line-height: 1.8; padding: 10px 0; }
@@ -912,7 +927,7 @@
         }
         @media (min-width: 901px) and (min-height: 560px) and (max-height: 760px) {
             body .header-left h1 { font-size: 2.5rem; }
-            body .header-meta .clock { font-size: 1.1rem; }
+            body .header-meta .clock, body .header-meta .greeting { font-size: 1.1rem; }
             body .header-meta .weather-widget { font-size: 0.95rem; padding: 5px 10px; }
             body .header-right img, body .header-right .brand-logo { max-height: 48px; height: 48px; }
             body .header-right .btn-help { padding: 7px 14px; font-size: 0.95rem; }
@@ -1002,6 +1017,15 @@
                 </div>
             </div>
 
+            <details class="auth-help" id="auth-admin">
+                <summary>Admin sign-in</summary>
+                <p style="margin: 0 0 10px;">For the person who runs the app. Opens it on this device without emailing a code.</p>
+                <label for="auth-admin-code">Admin code</label>
+                <input type="password" id="auth-admin-code" autocomplete="off" placeholder="Enter code" onkeydown="if(event.key==='Enter') adminSignIn()">
+                <button id="auth-admin-go" onclick="adminSignIn()">Open the app</button>
+                <div class="auth-msg" id="auth-admin-msg" role="alert"></div>
+            </details>
+
             <details class="auth-help">
                 <summary>Didn't get the email, or the code won't work?</summary>
                 <ul>
@@ -1034,7 +1058,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v3.3</span>
+            <span class="version-tag" id="app-version">v3.8</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1733,6 +1757,28 @@
                     </div>
                     <span id="data-status" class="status-ok"></span>
                 </div>
+
+                <div class="container" id="settings-admin">
+                    <h2 style="margin-top: 0;">Admin</h2>
+                    <div id="admin-locked">
+                        <p class="note">For the person who runs the app. Students don't need this.</p>
+                        <div class="name-row">
+                            <label for="admin-code" style="margin: 0; font-size: 1rem;">Code</label>
+                            <input type="password" id="admin-code" autocomplete="off" placeholder="Enter code" onkeydown="if(event.key==='Enter') unlockAdmin()">
+                            <button class="btn-toggle" style="padding: 10px 16px; font-size: 1rem;" onclick="unlockAdmin()">Unlock</button>
+                            <span id="admin-status"></span>
+                        </div>
+                    </div>
+                    <div id="admin-unlocked" style="display: none;">
+                        <p class="note">Admin mode is on for this browser. <span id="admin-version-line"></span></p>
+                        <div class="row-gap">
+                            <button class="btn-help" onclick="devTheme.open()">Theme tester</button>
+                            <button class="btn-teal" onclick="devTheme.reset()">Reset theme</button>
+                            <button class="btn-delete" style="margin-left: auto;" onclick="lockAdmin()">Turn admin off</button>
+                        </div>
+                        <p class="note" style="margin-top: 10px;">Theme tester shortcut: Ctrl or Cmd, Shift and D. Changes only affect this browser and are never sent to anyone.</p>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -1793,6 +1839,7 @@
         <div class="music-head" id="music-head" tabindex="0" title="Drag to move. Double-click to put it back in the corner." aria-label="Music player. Drag, or use the arrow keys, to move it.">
             <span class="music-grip" aria-hidden="true"></span>
             <h2 id="music-head-title">Music</h2>
+            <span class="music-head-track" id="music-head-track"></span>
             <div class="music-head-btns">
                 <button class="btn-cal-filter mini-only" id="music-mini-play" onclick="togglePlay()" aria-label="Play or pause">Play</button>
                 <button class="btn-toggle full-only" id="btn-music-lib" onclick="toggleMusicLibrary()">Hide list</button>
@@ -2091,6 +2138,19 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v3.8  Admin sign-in on the sign-in screen: enter the admin code to open the app on
+        //       this device without waiting for an emailed code. It stays signed in until you
+        //       press Sign out, and it also turns the admin tools on.
+        // v3.7  Admin mode: enter the code under Admin in Settings to turn on the owner-only
+        //       tools in this browser. The theme tester (colours, font and size) opens from
+        //       there, or with Ctrl/Cmd + Shift + D. Students never see any of it.
+        // v3.6  The word "Music" now always shows on the player: the track name sits next to it
+        //       and shortens instead. If the browser refuses to save (private browsing, or storage
+        //       full), the app now says so instead of losing your added links quietly, and it
+        //       clears the map cache and tries again first.
+        // v3.5  The greeting in the header now matches the size of the time and date next to it.
+        //       Theme tester for development: add ?dev=1 to the address to switch it on, then
+        //       Ctrl/Cmd + Shift + D to open it. Students never see it.
         // v3.4  Music: "Save for later" adds a link to your list without interrupting what's playing,
         //       and "Hide" tucks the player away into a small corner tab (audio carries on) that
         //       you press to bring it back
@@ -2141,7 +2201,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '3.4';
+        const APP_VERSION = '3.8';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2237,8 +2297,26 @@
         // STORAGE: one object, saveData() / loadData(), export / import / clear
         // =====================================================================
         let memoryStore = {};
+        let storeWarned = false;
         function storeGet(key) { try { return localStorage.getItem(key); } catch (e) { return memoryStore[key] ?? null; } }
-        function storeSet(key, v) { try { localStorage.setItem(key, v); } catch (e) { memoryStore[key] = v; } }
+        // Returns true only if the browser really wrote it down. If it didn't, the most likely
+        // reason is that storage is full: the "around you" map cache is the biggest thing in
+        // there and can always be fetched again, so it gets dropped and the save is retried.
+        // Anything still failing after that is only held in memory and is lost on reload, so
+        // say so rather than letting it disappear quietly.
+        function storeSet(key, v) {
+            try { localStorage.setItem(key, v); return true; } catch (e) {}
+            try { localStorage.removeItem('dpaul_student_around_v1'); localStorage.setItem(key, v); return true; } catch (e) {}
+            memoryStore[key] = v;
+            if (!storeWarned) {
+                storeWarned = true;
+                const bar = document.createElement('div');
+                bar.id = 'store-warning';
+                bar.textContent = 'This browser won\u2019t let the app save anything right now, so changes will be lost when you reload. Private browsing and full storage are the usual causes. Save a spreadsheet backup from Settings.';
+                document.body.appendChild(bar);
+            }
+            return false;
+        }
         function storeDel(key) { try { localStorage.removeItem(key); } catch (e) { delete memoryStore[key]; } }
 
         function defaultData() {
@@ -2313,8 +2391,9 @@
         }
         // quiet = UI state only (tab, player position...). Anything else counts as a change to back up.
         function saveData(quiet) {
-            storeSet(STORE_KEY, JSON.stringify(data));
+            const ok = storeSet(STORE_KEY, JSON.stringify(data));
             if (!quiet && typeof noteChange === 'function') noteChange();
+            return ok;
         }
 
         let data = loadData();
@@ -2500,7 +2579,7 @@
             grades: [{ cols: '1fr', sections: [[0, { i: 1, grow: true }]] }],
             travel: [{ cols: '1fr', sections: [[{ i: 0, grow: '#travel-boards' }]] }],
             settings: [
-                { label: 'General', cols: '1fr 1fr 1.3fr', sections: [[0, 6], [1, 8], [7, 9]] },
+                { label: 'General', cols: '1fr 1fr 1.3fr', sections: [[0, 6], [1, 8], [7, 9, 10]] },
                 { label: 'Location and trains', cols: '1fr 1fr', sections: [[2], [4]] },
                 { label: 'Calendar and news', cols: '1fr 1fr', sections: [[3], [5]] }
             ]
@@ -4571,6 +4650,58 @@
             renderGoogleState();
             $('rem-on').checked = !!data.reminders.on;
             $('rem-every').value = String(data.reminders.every);
+            renderAdmin();
+        }
+
+        // =====================================================================
+        // ADMIN MODE: a code, entered under Admin in Settings, turns on the
+        // owner-only tools (the theme tester) for this browser only. The code
+        // itself isn't in this file, only a one-way hash of it, so reading the
+        // page source doesn't give it away. This keeps students from wandering
+        // into the tools by accident; it is not security, because anyone who
+        // knows their way around a browser can set the flag themselves. Never
+        // put anything behind it that actually needs protecting.
+        //
+        // To change the code: open the browser console and run
+        //   adminHash('your new code')
+        // then paste the result over ADMIN_CODE_HASH below.
+        // =====================================================================
+        const ADMIN_KEY = 'devMode';
+        const ADMIN_CODE_HASH = 'a419bfb4b7e9f436769add15da31e0062409d10ca6055cd01cf166c3bac60b50';
+
+        async function adminHash(code) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(code)));
+            return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        function isAdmin() { try { return localStorage.getItem(ADMIN_KEY) === '1'; } catch (e) { return false; } }
+
+        function renderAdmin() {
+            const on = isAdmin();
+            const locked = $('admin-locked'), open = $('admin-unlocked');
+            if (!locked || !open) return;
+            locked.style.display = on ? 'none' : '';
+            open.style.display = on ? '' : 'none';
+            if (on) $('admin-version-line').textContent = 'Running v' + APP_VERSION + '.';
+        }
+
+        async function unlockAdmin() {
+            const input = $('admin-code');
+            const code = input.value.trim();
+            if (!code) { flash('admin-status', 'Enter the code first.', true); return; }
+            let hash = '';
+            try { hash = await adminHash(code); }
+            catch (e) { flash('admin-status', 'This browser can\'t check the code. Open the app over https.', true); return; }
+            if (hash !== ADMIN_CODE_HASH) { flash('admin-status', 'That code isn\'t right.', true); return; }
+            input.value = '';
+            try { localStorage.setItem(ADMIN_KEY, '1'); } catch (e) {}
+            renderAdmin();
+            flash('admin-status', 'Admin mode on.');
+        }
+
+        function lockAdmin() {
+            try { localStorage.removeItem(ADMIN_KEY); localStorage.removeItem(ADMIN_SESSION_KEY); } catch (e) {}
+            if (window.devTheme) { devTheme.reset(); return; } // reset reloads the page
+            renderAdmin();
         }
 
         // =====================================================================
@@ -4704,10 +4835,15 @@
             }
             input.value = '';
             if (play) data.music.current = t.id;
-            saveData();
+            const ok = saveData();
             renderMusicLibrary();
             renderNowPlaying();
             fetchTrackInfo(t);
+            if (!ok) {
+                if (!data.music.libOpen) toggleMusicLibrary();
+                flash('music-status', 'Added, but this browser wouldn\'t save it, so it will go when you reload. Check you aren\'t in private browsing.', true);
+                return;
+            }
             if (play) { startPlayer(true); return; }
             if (!data.music.libOpen) toggleMusicLibrary();
             flash('music-status', already ? 'That one was already on your list.' : 'Saved to your list. Press Play on it whenever you want it.');
@@ -4941,10 +5077,11 @@
 
         function updateMiniTitle() {
             const t = currentTrack();
-            const el = $('music-head-title');
-            if (!data.music.mini || !t) { el.textContent = 'Music'; el.title = ''; return; }
+            const el = $('music-head-track');
+            $('music-head-title').textContent = 'Music';
+            if (!data.music.mini || !t) { el.textContent = ''; el.title = ''; return; }
             const vd = (ytReady && ytPlayer.getVideoData) ? (ytPlayer.getVideoData() || {}) : {};
-            const title = vd.title || t.title || 'Music';
+            const title = vd.title || t.title || '';
             el.textContent = title;
             el.title = title;
         }
@@ -6340,9 +6477,37 @@
             showAuthStep('email');
         }
 
+        // ---- Admin sign-in ----------------------------------------------------
+        // Opens the app on this device without the emailed code, for testing. It's the
+        // same code as Admin in Settings. Nothing on the server is bypassed: the news and
+        // trains functions are open to anyone anyway, and all your data is in this browser.
+        // It stays signed in until you press Sign out.
+        const ADMIN_SESSION_KEY = 'dpaul_student_admin_session';
+        function adminSessionOn() { try { return localStorage.getItem(ADMIN_SESSION_KEY) === '1'; } catch (e) { return false; } }
+
+        async function adminSignIn() {
+            const input = $('auth-admin-code');
+            const code = input.value.trim();
+            const say = m => { const el = $('auth-admin-msg'); el.textContent = m; el.className = 'auth-msg' + (m ? ' show error' : ''); };
+            if (!code) { say('Enter the code first.'); return; }
+            let hash = '';
+            try { hash = await adminHash(code); }
+            catch (e) { say('This browser can\'t check the code. Open the app over https.'); return; }
+            if (hash !== ADMIN_CODE_HASH) { say('That code isn\'t right.'); return; }
+            input.value = '';
+            say('');
+            try { localStorage.setItem(ADMIN_SESSION_KEY, '1'); localStorage.setItem(ADMIN_KEY, '1'); } catch (e) {}
+            openAsAdmin();
+        }
+
+        function openAsAdmin() {
+            unlockApp({ user: { email: 'Admin (testing)', user_metadata: { first_name: storedName() || 'Admin' } } });
+        }
+
         async function signOut() {
             if (!confirm('Sign out? Your information stays saved in this browser.')) return;
             authState.signingOut = true;
+            try { localStorage.removeItem(ADMIN_SESSION_KEY); } catch (e) {}
             try { if (authState.client) await authState.client.auth.signOut(); } catch (e) {}
             location.reload(); // clean restart: the sign-in screen shows and nothing else runs
         }
@@ -6389,6 +6554,10 @@
             try { $('auth-email').value = localStorage.getItem('dpaul_student_last_email') || ''; } catch (e) {}
             $('auth-name').value = storedName();
             const linkError = readLinkError();
+
+            // Admin stays signed in on this device until Sign out, so testing doesn't
+            // mean a new emailed code every time.
+            if (adminSessionOn()) { openAsAdmin(); return; }
 
             if (!window.supabase || !window.supabase.createClient) {
                 lockApp();
@@ -6508,15 +6677,25 @@
 
 <script>
 (function () {
-  var on = /[?&]dev=1/.test(location.search) || localStorage.getItem('devMode') === '1';
-  if (/[?&]dev=1/.test(location.search)) localStorage.setItem('devMode', '1');
-  if (!on) return;
-
+  // Admin only. Unlock it with the code under Admin in Settings, or add ?dev=1
+  // to the address. Nothing below runs for anyone else.
   var KEY = 'devThemeOverrides';
   var root = document.documentElement;
   var panel = document.getElementById('devTheme');
   var varsBox = document.getElementById('devVars');
-  var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+  var saved = {};
+  var started = false;
+
+  function isOn() { try { return localStorage.getItem('devMode') === '1'; } catch (e) { return false; } }
+
+  function start() {
+    if (started) return;
+    started = true;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+    build();
+  }
+
+  function build() {
 
   // --- find every custom property declared on :root -----------------------
   function collectVars() {
@@ -6639,19 +6818,28 @@
     }
   });
 
+  } // end build()
+
   // --- open / close --------------------------------------------------------
   document.addEventListener('keydown', function (e) {
+    if (!isOn()) return;
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
       e.preventDefault();
+      start();
       panel.hidden = !panel.hidden;
     }
   });
 
   window.devTheme = {
-    open: function () { panel.hidden = false; },
+    open: function () { start(); panel.hidden = false; },
     close: function () { panel.hidden = true; },
-    off: function () { localStorage.removeItem('devMode'); location.reload(); }
+    reset: function () { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); },
+    off: function () { try { localStorage.removeItem('devMode'); } catch (e) {} location.reload(); }
   };
+
+  // ?dev=1 in the address turns admin on and opens the panel straight away
+  if (/[?&]dev=1/.test(location.search)) { try { localStorage.setItem('devMode', '1'); } catch (e) {} }
+  if (isOn()) start();
 })();
 </script>
 </body>
