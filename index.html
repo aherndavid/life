@@ -1093,7 +1093,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v5.0</span>
+            <span class="version-tag" id="app-version">v5.2</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -1784,6 +1784,13 @@
                     </div>
                     <datalist id="uni-list"></datalist>
                     <span id="news-uni-status" class="status-ok"></span>
+                    <label for="uni-url" style="margin-top: 16px;">Your university's wellbeing page</label>
+                    <p class="note" style="margin: 0 0 8px;">Optional. Search your university's site for "wellbeing" or "counselling", then paste the address here. Talk to someone will link straight to it instead of a web search. <a href="#" id="uni-search-link" target="_blank" rel="noopener">Search for it</a></p>
+                    <div class="task-input-row" style="margin-bottom: 0;">
+                        <input type="url" id="uni-url" placeholder="https://..." style="flex: 1; min-width: 220px; max-width: 420px;" onchange="setUniversityUrl(this.value)">
+                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" onclick="setUniversityUrl('')">Clear</button>
+                    </div>
+                    <span id="uni-url-status" class="status-ok"></span>
                 </div>
 
                 <div class="container">
@@ -2026,12 +2033,11 @@
 
                 <div class="backup-section">
                     <h3>Made for students</h3>
-                    <p><strong>Student Space</strong>, from the charity Student Minds. Phone lines are open 3pm to midnight, and the text service runs 24 hours.</p>
-                    <div class="row-gap"><a class="btn-link" href="tel:08081895260">Call 0808 189 5260</a>
-                        <a class="btn-link" href="sms:85258?&amp;body=STUDENT">Text STUDENT to 85258</a>
-                        <a class="btn-link btn-teal-link" href="https://studentspace.org.uk" target="_blank" rel="noopener">studentspace.org.uk</a></div>
+                    <p><strong>Student Minds</strong> is the UK's student mental health charity. Their pages walk you through what help exists and how to ask for it, written for students rather than about them.</p>
+                    <div class="row-gap"><a class="btn-link btn-teal-link" href="https://www.studentminds.org.uk/urgent-support/" target="_blank" rel="noopener">Urgent support</a>
+                        <a class="btn-link btn-teal-link" href="https://www.studentminds.org.uk/get-support/student/" target="_blank" rel="noopener">Support for students</a></div>
                     <p style="margin-top: 16px;"><strong>Nightline</strong> is run by students, for students, and open at night during term. Anonymous, and they won't tell your university. Not every university has one, so check yours.</p>
-                    <div class="row-gap"><a class="btn-link btn-teal-link" href="https://nightline.ac.uk/want-to-talk/" target="_blank" rel="noopener">Find your Nightline</a></div>
+                    <div class="row-gap"><a class="btn-link btn-teal-link" href="https://nightline.ac.uk/listening-services/" target="_blank" rel="noopener">Find your Nightline</a></div>
                 </div>
 
                 <div class="backup-section">
@@ -2044,7 +2050,8 @@
                     <h3>Your doctor</h3>
                     <p>A GP can refer you for talking therapy, and you can register with one near your university even if your family home is elsewhere. If you need mental health help urgently and it isn't life-threatening, NHS 111 has a mental health option.</p>
                     <div class="row-gap"><a class="btn-link" href="tel:111">Call 111</a>
-                        <a class="btn-link btn-teal-link" href="https://www.nhs.uk/service-search/mental-health" target="_blank" rel="noopener">NHS mental health services</a></div>
+                        <a class="btn-link btn-teal-link" href="https://111.nhs.uk/" target="_blank" rel="noopener">111 online</a>
+                        <a class="btn-link btn-teal-link" href="https://www.nhs.uk/nhs-services/mental-health-services/" target="_blank" rel="noopener">NHS mental health services</a></div>
                 </div>
             </div>
             <div class="guide-foot">
@@ -2274,6 +2281,14 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v5.2  Talk to someone: fixed a dead Nightline link and a wrong NHS one, and dropped
+        //       a Student Space phone number that couldn't be confirmed against Student Minds'
+        //       own pages. Student Space is being folded into studentminds.org.uk, so the links
+        //       point there now. Added 111 online and a Student Minds guide to what university
+        //       wellbeing services actually do. All links checked 13 September 2026.
+        // v5.1  Talk to someone can link straight to your own university's wellbeing page:
+        //       paste the address under News in Settings. Without one it falls back to a
+        //       web search for it, as before. Changing university clears the old link.
         // v5.0  "Talk to someone": a page of real people who can help, one tap from the link
         //       in the footer on every tab or from the Home Page. Samaritans and Shout for any
         //       time of day, Student Space and Nightline for students, your own university's
@@ -2374,7 +2389,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '5.0';
+        const APP_VERSION = '5.2';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2509,7 +2524,7 @@
                     travel: { stations: [], autoStations: true, map: { size: 'm', min: false, hidden: false } },
                     firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, wxOpen: false,
-                    home: null, pages: {}, newsArea: '', uniName: ''
+                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: ''
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
@@ -3252,6 +3267,14 @@
                 uni.value = uniName();
                 if (!$('uni-list').children.length) $('uni-list').innerHTML = UK_UNIS.map(n => `<option value="${esc(n)}">`).join('');
             }
+            const uurl = $('uni-url');
+            if (uurl) {
+                uurl.value = uniUrl();
+                uurl.placeholder = uniName() ? 'https://www...' : 'Pick your university above first';
+                uurl.disabled = !uniName();
+                $('uni-search-link').href = uniWellbeingSearch();
+                $('uni-search-link').style.display = uniName() ? '' : 'none';
+            }
             const sel = $('news-area');
             if (!sel) return;
             const auto = nearestNewsArea(data.settings.lat, data.settings.lon);
@@ -3261,11 +3284,35 @@
             sel.value = data.settings.newsArea && NEWS_AREAS[data.settings.newsArea] ? data.settings.newsArea : 'auto';
         }
         function uniName() { return String(data.settings.uniName || '').trim(); }
+        function uniUrl() { return String(data.settings.uniUrl || '').trim(); }
+        // Only a real https address is kept, so nothing odd can be put behind a link that
+        // someone might press when they're having a bad day.
+        function setUniversityUrl(v) {
+            const raw = String(v || '').trim();
+            if (!raw) {
+                data.settings.uniUrl = '';
+                saveData();
+                $('uni-url').value = '';
+                flash('uni-url-status', 'Cleared. Talk to someone will use a web search instead.');
+                return;
+            }
+            let url;
+            try { url = new URL(raw.includes('://') ? raw : 'https://' + raw); }
+            catch (e) { flash('uni-url-status', "That doesn't look like a web address.", true); return; }
+            if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+                flash('uni-url-status', 'Only web addresses starting https:// can be saved.', true); return;
+            }
+            data.settings.uniUrl = url.href;
+            saveData();
+            $('uni-url').value = url.href;
+            flash('uni-url-status', 'Saved. Talk to someone now links to your university page.');
+        }
         function setUniversity(v) {
             const name = String(v || '').trim().slice(0, 80);
             if (name === uniName()) return;
             data.settings.uniName = name;
-            delete newsState.cache.uni;   // the old university's headlines are no use now
+            data.settings.uniUrl = '';    // the old university's page belongs to the old university
+            delete newsState.cache.uni;   // and its headlines are no use now
             saveData();
             $('news-uni').value = name;
             flash('news-uni-status', name ? `Saved. The University panel now follows ${name}.` : 'Cleared. The University panel is off.');
@@ -6414,11 +6461,15 @@
         // TALK TO SOMEONE
         // Phone numbers and opening hours live here and nowhere else, so there is
         // one place to check them. Worth a look once a year, or if a student says
-        // a number didn't work. Last checked September 2026.
-        //   Samaritans      116 123          free, 24/7
-        //   Shout           text 85258       free, 24/7
-        //   Student Space   0808 189 5260    3pm to midnight; text STUDENT 24/7
-        //   NHS             111              mental health option
+        // a number didn't work. Every number and link below was checked against the
+        // organisation's own site on 13 September 2026.
+        //   Samaritans   116 123        free, 24/7, any reason
+        //   Shout        text 85258     free, 24/7
+        //   NHS 111      111            ask for the mental health option
+        //   Emergency    999
+        // Note: an 0808 189 5260 Student Space line appears on various third-party
+        // directories. Student Minds' own pages no longer list any phone number, so
+        // it is deliberately not here -- do not add it back without ringing it first.
         // The page deliberately holds no tracking, no mood score and no chatbot:
         // it lists people who can actually help and gets out of the way.
         // =====================================================================
@@ -6435,15 +6486,23 @@
             if (!anyOverlayOpen()) document.body.classList.remove('guide-open');
             if (supportReturnFocus && supportReturnFocus.focus) supportReturnFocus.focus();
         }
+        function uniWellbeingSearch() {
+            return 'https://duckduckgo.com/?q=' + encodeURIComponent(uniName() + ' student wellbeing counselling service');
+        }
         function renderSupportUni() {
             const name = uniName();
             const head = $('support-uni-head');
             const acts = $('support-uni-actions');
             if (!head || !acts) return;
             head.textContent = name || 'Your university';
-            acts.innerHTML = name
-                ? `<a class="btn-link btn-teal-link" href="https://www.google.com/search?q=${encodeURIComponent(name + ' student wellbeing counselling service')}" target="_blank" rel="noopener">Find ${esc(name)} wellbeing</a>`
-                : '<a class="btn-link btn-teal-link" href="#" onclick="closeSupport(); switchTab(\'settings\'); return false;">Add your university in Settings</a>';
+            if (!name) {
+                acts.innerHTML = '<a class="btn-link btn-teal-link" href="#" onclick="closeSupport(); switchTab(\'settings\'); return false;">Add your university in Settings</a>';
+                return;
+            }
+            acts.innerHTML = (uniUrl()
+                ? `<a class="btn-link" href="${esc(uniUrl())}" target="_blank" rel="noopener">Open ${esc(name)} wellbeing</a>`
+                : `<a class="btn-link btn-teal-link" href="${esc(uniWellbeingSearch())}" target="_blank" rel="noopener">Find ${esc(name)} wellbeing</a>`)
+                + ' <a class="btn-link btn-teal-link" href="https://www.studentminds.org.uk/get-support/support-at-your-university/" target="_blank" rel="noopener">What to expect</a>';
         }
 
         // Small practical things that help with feeling cut off. Suggestions to act on,
