@@ -1097,7 +1097,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v5.3</span>
+            <span class="version-tag" id="app-version">v5.4</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -2296,6 +2296,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v5.4  Connect Google was a live-looking button that did nothing, because no Google
+        //       client ID is set on this build. It is now greyed out and says Calendar isn't
+        //       switched on yet. See the notes above GOOGLE_CLIENT_ID to switch it on.
         // v5.3  A Useful sites panel on the Home Page: student finance, discount cards, the
         //       railcard, UCAS, Prospects, Citizens Advice and a few more, grouped and one
         //       tap each. Minimise leaves just the money ones. Every link checked by hand.
@@ -2407,14 +2410,26 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '5.3';
+        const APP_VERSION = '5.4';
 
         // =====================================================================
         // CONFIG: set these before you deploy
         // =====================================================================
-        // Google Cloud Console > APIs & Services > Credentials > OAuth client ID
-        // Type: "Web application". Add your site (e.g. https://dpaul.studio) to
-        // Authorised JavaScript origins. No client secret is used or needed here.
+        // EMPTY = Google Calendar is switched off. The Connect Google button is greyed out
+        // and says so, rather than doing nothing when pressed.
+        //
+        // To switch it on:
+        //   1. console.cloud.google.com > new project
+        //   2. APIs & Services > Library > enable "Google Calendar API"
+        //   3. APIs & Services > OAuth consent screen > External. Add the Calendar
+        //      read-only scope, and add each tester's Gmail address under Test users.
+        //      While the app is in Testing, anyone not on that list gets "Access blocked".
+        //   4. Credentials > Create credentials > OAuth client ID > Web application.
+        //      Authorised JavaScript origins must include https://aherndavid.github.io
+        //      (add http://localhost:8000 too if you test locally). No redirect URI needed,
+        //      and no client secret: this is the browser token flow.
+        //   5. Paste the client ID below. It ends in .apps.googleusercontent.com and is
+        //      not a secret, so it is fine sitting in this page.
         const GOOGLE_CLIENT_ID = '';
         // Sign-in (Supabase magic link). Shares the same Supabase project as the other site.
         // The publishable key is safe in this page. Never put the secret / service_role key here.
@@ -4923,8 +4938,10 @@
             const connected = tokenValid();
             const status = $('google-status');
             $('btn-google-connect').textContent = connected ? 'Reconnect' : 'Connect Google';
+            // Nothing to connect to without a client ID, so don't leave a live-looking button
+            $('btn-google-connect').disabled = !GOOGLE_CLIENT_ID;
             $('btn-google-disconnect').style.display = connected ? '' : 'none';
-            if (!GOOGLE_CLIENT_ID) status.innerHTML = 'Google Calendar isn\'t available on this copy of the app yet. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Google%20Calendar%20in%20Life%20-%20Student%20Edition">Contact support</a>';
+            if (!GOOGLE_CLIENT_ID) status.innerHTML = '<strong>Not switched on yet.</strong> Calendar is still being set up, so this button does nothing for now. Everything else works. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Google%20Calendar%20in%20Life%20-%20Student%20Edition">Contact support</a>';
             else status.textContent = message || (connected ? 'Connected' : 'Not connected');
             const prompt = msg => `<li class="empty">${msg}</li>`;
             if (!connected) {
