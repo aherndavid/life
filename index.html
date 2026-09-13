@@ -1018,8 +1018,7 @@
             </div>
 
             <details class="auth-help" id="auth-admin">
-                <summary>Admin sign-in</summary>
-                <p style="margin: 0 0 10px;">For the person who runs the app. Opens it on this device without emailing a code.</p>
+                <summary>Admin</summary>
                 <label for="auth-admin-code">Admin code</label>
                 <input type="password" id="auth-admin-code" autocomplete="off" placeholder="Enter code" onkeydown="if(event.key==='Enter') adminSignIn()">
                 <button id="auth-admin-go" onclick="adminSignIn()">Open the app</button>
@@ -1058,7 +1057,7 @@
             <button class="btn-help" id="btn-setup" onclick="startSetup()" data-dot="red" style="display: none;">Set up</button>
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
-            <span class="version-tag" id="app-version">v3.8</span>
+            <span class="version-tag" id="app-version">v3.9</span>
             <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -2138,6 +2137,7 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v3.9  Admin code changed. Admin box on the sign-in screen trimmed to just the code.
         // v3.8  Admin sign-in on the sign-in screen: enter the admin code to open the app on
         //       this device without waiting for an emailed code. It stays signed in until you
         //       press Sign out, and it also turns the admin tools on.
@@ -2201,7 +2201,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '3.8';
+        const APP_VERSION = '3.9';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -4667,7 +4667,7 @@
         // then paste the result over ADMIN_CODE_HASH below.
         // =====================================================================
         const ADMIN_KEY = 'devMode';
-        const ADMIN_CODE_HASH = 'a419bfb4b7e9f436769add15da31e0062409d10ca6055cd01cf166c3bac60b50';
+        const ADMIN_CODE_HASH = 'c4876de490dcf38b74d6c0d4f120cf01126c3d6a3a49b93ec81caae38ea1497e';
 
         async function adminHash(code) {
             const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(code)));
