@@ -1096,11 +1096,8 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <<h1 class="title-banner-h1">
-    <span class="sr-only">Life - Student Edition</span>
-    <video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline loop preload="auto" disablepictureinpicture aria-hidden="true"></video>
-</h1>
-<video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline loop preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
             <div class="auth-card" id="auth-step-email">
@@ -1155,7 +1152,7 @@
         </div>
     </div>
 
-    <div class="header">
+<div class="header">
         <div class="header-left">
             <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <div class="header-meta">
@@ -3570,26 +3567,16 @@
             videoFallback(v);
         }
 
-        function playLogos() {
-        document.querySelectorAll('video.loop-video').forEach(v => {
-            v.muted = true;
-            if (still) { videoFallback(v); return; }
-            v.addEventListener('error', () => videoFailed(v));
-            
-            // --- ADD THESE LINES to pause before the black frames ---
-            v.addEventListener('timeupdate', () => {
-                // Adjust the 0.5 to stop it earlier or later if needed
-                if (v.duration && v.duration - v.currentTime <= 0.5) {
-                    v.pause();
-                }
+       function playLogos() {
+            if (document.hidden) return;
+            document.querySelectorAll('video.loop-video').forEach(v => {
+                if (!v.offsetParent) return; // not on screen (e.g. the sign-in logo once you're in)
+                try { v.currentTime = 0; } catch (e) {}
+                const p = v.play();
+                if (p && p.catch) p.catch(() => {});
             });
-            // --------------------------------------------------------
-
-            if (v.error) videoFailed(v);
-            const src = v.querySelector('source');
-            if (src) src.addEventListener('error', () => videoFailed(v));
-        });
         }
+
         (function initLogos() {
             const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             applyBannerTheme();   // before anyone has signed in, from the html element
@@ -3597,6 +3584,15 @@
                 v.muted = true;
                 if (still) { videoFallback(v); return; }
                 v.addEventListener('error', () => videoFailed(v));
+                
+                // --- PAUSES VIDEO JUST BEFORE THE BLACK FRAME ---
+                v.addEventListener('timeupdate', () => {
+                    // Stop 0.5s before the end. Change to 0.8 if it still fades too much.
+                    if (v.duration && v.duration - v.currentTime <= 0.5) {
+                        v.pause();
+                    }
+                });
+                
                 if (v.error) videoFailed(v);
                 const src = v.querySelector('source');
                 if (src) src.addEventListener('error', () => videoFailed(v));
