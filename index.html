@@ -131,7 +131,7 @@
                their shape. Letter-spacing is pinned to nothing, which also stops the 2px the
                sign-in heading sets from pushing this line wider than the one in the header. */
             font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-stretch: condensed; letter-spacing: 0; }
+            font-stretch: condensed; letter-spacing: -0.025em; }
         /* 14 second round trip: 10s full, 1s out, 2s away, 1s back. */
         @keyframes title-cycle {
             0%, 71.4% { opacity: 1; }
@@ -2621,6 +2621,7 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v7.7  The edition line is pulled in a little tighter again.
         // v7.6  The edition line is set condensed and unspaced, so it runs narrower.
         // v7.5  The edition line is centred against LIFE instead of sharing its baseline,
         //       so it sits in the middle of the plate.
@@ -2823,7 +2824,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.6';
+        const APP_VERSION = '7.7';
 
         // =====================================================================
         // CONFIG: set these before you deploy
