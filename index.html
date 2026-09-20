@@ -28,7 +28,7 @@
             max-width: 1700px; 
             margin: 0 auto; 
             padding: 20px; 
-            background-color: var(--panel); 
+            background-color: transparent; 
             color: var(--fg);
         }
         
@@ -840,7 +840,9 @@
         #bg-preview { width: 100%; max-width: 320px; height: 110px; border: 1px solid var(--line);
             border-radius: 6px; background-position: center; background-size: cover;
             background-color: var(--panel-2); margin: 10px 0; }
-        body { background: var(--bg); color: var(--fg); font-family: sans-serif; font-weight: 400; }
+        /* body must stay transparent: #bg-layer sits at z-index -1 and a block-level
+           background on body paints straight over it. The page colour lives on html. */
+        body { background: transparent; color: var(--fg); font-family: sans-serif; font-weight: 400; }
         h1, h2, h3, h4, .tab-btn, button, label, strong, b, th { font-weight: bold; }
         button, input, select, textarea { font-family: inherit; }
         .header-left h1 { color: #000; letter-spacing: 2px; }
@@ -2513,6 +2515,10 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.5  Fixed: choosing a background picture appeared to do nothing. The picture was
+        //       being stored and applied correctly, but body carried its own solid colour,
+        //       which paints over a layer sitting at z-index -1. Body is transparent now and
+        //       the page colour is held on html, where it belongs.
         // v6.4  The background picture now comes through the panels as well as around them,
         //       so it's visible where you actually look. The panel colour keeps most of its
         //       weight and there's a slight blur behind it, so nothing gets hard to read, and
@@ -2682,7 +2688,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.4';
+        const APP_VERSION = '6.5';
 
         // =====================================================================
         // CONFIG: set these before you deploy

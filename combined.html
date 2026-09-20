@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>buses-setup</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#buses-edge-function-setup"
+id="toc-buses-edge-function-setup">Buses edge function — setup</a>
+<ul>
+<li><a href="#cache-table-do-this-first"
+id="toc-cache-table-do-this-first">1. Cache table (do this
+first)</a></li>
+<li><a href="#secrets" id="toc-secrets">2. Secrets</a></li>
+<li><a href="#deploy" id="toc-deploy">3. Deploy</a></li>
+<li><a href="#test" id="toc-test">4. Test</a></li>
+<li><a href="#what-it-does-to-stay-inside-30-requests-a-day"
+id="toc-what-it-does-to-stay-inside-30-requests-a-day">What it does to
+stay inside 30 requests a day</a></li>
+<li><a href="#endpoints-used" id="toc-endpoints-used">Endpoints
+used</a></li>
+</ul></li>
+<li><a href="#life---student-edition"
+id="toc-life---student-edition">Life - Student Edition</a>
+<ul>
+<li><a href="#hosting-on-github-pages"
+id="toc-hosting-on-github-pages">1. Hosting on GitHub Pages</a></li>
+<li><a href="#google-calendar-optional"
+id="toc-google-calendar-optional">2. Google Calendar (optional)</a>
+<ul>
+<li><a href="#letting-other-people-connect"
+id="toc-letting-other-people-connect">Letting other people
+connect</a></li>
+<li><a href="#common-errors" id="toc-common-errors">Common
+errors</a></li>
+</ul></li>
+<li><a href="#live-trains-optional" id="toc-live-trains-optional">3.
+Live trains (optional)</a></li>
+<li><a href="#updating" id="toc-updating">4. Updating</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="buses-edge-function-setup">Buses edge function — setup</h1>
+<p>The key never touches the page. It lives as a Supabase secret, same
+pattern as your <code>trains</code> and <code>news</code> functions.</p>
+<h2 id="cache-table-do-this-first">1. Cache table (do this first)</h2>
+<p>Supabase → SQL Editor. The function works without it, but each edge
+isolate then caches on its own, so you’d burn through the daily
+allowance far quicker.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">create</span> <span class="kw">table</span> <span class="cf">if</span> <span class="kw">not</span> <span class="kw">exists</span> <span class="kw">public</span>.tapi_cache (</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">key</span>  text <span class="kw">primary</span> <span class="kw">key</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">body</span> jsonb  <span class="kw">not</span> <span class="kw">null</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">at</span>   bigint <span class="kw">not</span> <span class="kw">null</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">alter</span> <span class="kw">table</span> <span class="kw">public</span>.tapi_cache <span class="kw">enable</span> <span class="kw">row</span> <span class="kw">level</span> security;</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- no policies: only the service role (the function) touches this</span></span></code></pre></div>
+<h2 id="secrets">2. Secrets</h2>
+<p>Supabase → Project Settings → Edge Functions → Secrets.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TRANSPORTAPI_APP_ID</code></td>
+<td><code>10125585</code></td>
+</tr>
+<tr>
+<td><code>TRANSPORTAPI_APP_KEY</code></td>
+<td><strong>a freshly generated key</strong> — not the one pasted in
+chat</td>
+</tr>
+<tr>
+<td><code>TAPI_DAILY_BUDGET</code></td>
+<td><code>25</code> on Free, <code>250</code> on the Home plan</td>
+</tr>
+<tr>
+<td><code>TAPI_STOPS</code></td>
+<td><code>1</code> on Free, <code>3</code> on the Home plan</td>
+</tr>
+<tr>
+<td><code>TAPI_NEXTBUSES</code></td>
+<td><code>no</code> on Free, <code>yes</code> on the Home plan</td>
+</tr>
+<tr>
+<td><code>TAPI_LIVE_TTL</code></td>
+<td><code>600</code> on Free, <code>120</code> on the Home plan</td>
+</tr>
+</tbody>
+</table>
+<p><code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code>
+are injected automatically — don’t add them.</p>
+<h2 id="deploy">3. Deploy</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">supabase</span> functions deploy buses <span class="at">--no-verify-jwt</span></span></code></pre></div>
+<p><code>--no-verify-jwt</code> matters: the page calls it with a plain
+<code>fetch</code> and no auth header, exactly like
+<code>trains</code>.</p>
+<h2 id="test">4. Test</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="st">&quot;https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/buses?lat=51.5227&amp;lon=-0.7153&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="st">&quot;https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/buses?lat=51.5227&amp;lon=-0.7153&amp;stations=1&quot;</span></span></code></pre></div>
+<p>The first should return <code>stops</code> with
+<code>departures</code>; the second <code>stations</code> with CRS
+codes. Every response carries <code>budget: { used, limit }</code> so
+you can watch the allowance. Run the same call twice — <code>used</code>
+should not move the second time.</p>
+<h2 id="what-it-does-to-stay-inside-30-requests-a-day">What it does to
+stay inside 30 requests a day</h2>
+<ul>
+<li>Nearby stops and nearest stations are cached <strong>30
+days</strong> per rounded coordinate. Stops don’t move, so this is a
+one-off cost per location.</li>
+<li>Live departures are cached and shared across every user, so twenty
+students at the same stop cost one upstream call, not twenty.</li>
+<li>The browser won’t re-request inside 90 seconds and only polls every
+3 minutes while the page is visible.</li>
+<li>A daily counter stops upstream calls at
+<code>TAPI_DAILY_BUDGET</code> and serves the last known times instead,
+flagged <code>stale: true</code>. The app shows “Showing the last times
+we got” rather than an error.</li>
+<li><code>TAPI_NEXTBUSES=no</code> gets timetabled times for 1 request.
+<code>yes</code> gets real-time but TransportAPI bills it as more than
+one, so it’s off by default.</li>
+</ul>
+<p>Even so: on the Free plan, <code>TAPI_STOPS=1</code> and a 10-minute
+cache works out at roughly 100 upstream calls a day if the app were used
+continuously, which is over the 30 limit. The budget cap absorbs it, but
+the times go stale by mid-morning. The £5/month Home plan is what makes
+this actually usable.</p>
+<h2 id="endpoints-used">Endpoints used</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>TransportAPI endpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nearest bus stops</td>
+<td><code>GET /v3/uk/bus/stops/near.json?lat=&amp;lon=&amp;rpp=10</code></td>
+</tr>
+<tr>
+<td>Live departures</td>
+<td><code>GET /v3/uk/bus/stop/{atcocode}/live.json?group=no&amp;nextbuses=&amp;limit=12</code></td>
+</tr>
+<tr>
+<td>Nearest stations</td>
+<td><code>GET /v3/uk/places.json?lat=&amp;lon=&amp;type=train_station&amp;rpp=5</code></td>
+</tr>
+</tbody>
+</table>
+<p>Auth goes in the <code>X-App-Id</code> / <code>X-App-Key</code>
+headers rather than the query string, so the credentials stay out of any
+upstream logs.</p>
+<p>If <code>places.json</code> doesn’t return <code>station_code</code>
+on your plan, the station auto-fill quietly does nothing and the
+Stations box still works by hand — trains carry on regardless, since
+they go through your <code>trains</code> function, not this one.</p>
+<h1 id="life---student-edition">Life - Student Edition</h1>
+<p>A single-page student planner by dPaul Studio: budget, food shop,
+tasks, deadlines, timetable, projects, grades, Google Calendar agenda,
+live trains and a focus timer. Everything is saved in the user’s own
+browser. There’s no server and no accounts.</p>
+<p>Live copy: https://aherndavid.github.io/student/</p>
+<p>This README is for whoever hosts a copy. People using the app don’t
+need any of it: the How to use guide and the help in Settings cover
+them.</p>
+<hr />
+<h2 id="hosting-on-github-pages">1. Hosting on GitHub Pages</h2>
+<ol type="1">
+<li>Put <code>index.html</code> and the <code>assets</code> folder at
+the top level of the repo.</li>
+<li>Keep an empty <code>.nojekyll</code> file at the top level, so
+GitHub publishes the files as they are.</li>
+<li>Go to <strong>Settings → Pages → Source → GitHub Actions</strong>
+and use the <strong>Static HTML</strong> workflow.</li>
+<li>Every push to <code>main</code> redeploys. The site is at
+<code>https://&lt;username&gt;.github.io/&lt;repo&gt;/</code>.</li>
+</ol>
+<p><strong>Never commit a Python <code>venv</code> folder.</strong> Its
+shortcut links make the Pages deploy fail within seconds.
+<code>.gitignore</code> already excludes <code>venv/</code>.</p>
+<p>A private repo can publish Pages on GitHub Pro, and the published
+site is still public. Nothing secret lives in
+<code>index.html</code>.</p>
+<h2 id="google-calendar-optional">2. Google Calendar (optional)</h2>
+<p>The client ID identifies the app, not a person. Create it once and
+every user signs in with their own Google account. Access is read-only
+(<code>calendar.readonly</code>).</p>
+<ol type="1">
+<li>At <strong>console.cloud.google.com</strong>, create a project, then
+enable <strong>Google Calendar API</strong> in APIs &amp; Services →
+Library.</li>
+<li>Set up <strong>Google Auth Platform</strong>:
+<ul>
+<li><strong>Branding:</strong> set the app name to “Life - Student
+Edition” and add a support email.</li>
+<li><strong>Audience:</strong> choose <strong>External</strong>.</li>
+<li><strong>Data access:</strong> add the
+<code>.../auth/calendar.readonly</code> scope.</li>
+</ul></li>
+<li>Go to <strong>Clients → Create client → Web application</strong>.
+Under <strong>Authorised JavaScript origins</strong>, add the live
+site’s origin exactly, with no path and no trailing slash:
+<ul>
+<li><code>https://aherndavid.github.io</code></li>
+<li>plus <code>https://dpaul.studio</code> or any other domain the app
+is served from</li>
+</ul></li>
+<li>Paste the Client ID into <code>GOOGLE_CLIENT_ID</code> near the top
+of the script in <code>index.html</code>, then push.</li>
+</ol>
+<h3 id="letting-other-people-connect">Letting other people connect</h3>
+<p>While the app is in <strong>Testing</strong>, only emails listed
+under <strong>Audience → Test users</strong> can connect, up to 100.
+Everyone else sees “Access blocked”. Test users see a “Google hasn’t
+verified this app” screen and press Continue.</p>
+<p>To open it to anyone, press <strong>Publish app</strong> and complete
+Google’s verification. For <code>calendar.readonly</code> (a sensitive
+scope) that’s free, but it needs: - a privacy policy page - a homepage
+on a domain you’ve verified - a short demo video</p>
+<h3 id="common-errors">Common errors</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>What the user sees</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Settings says “Not switched on yet”</td>
+<td><code>GOOGLE_CLIENT_ID</code> is empty in
+<code>index.html</code></td>
+</tr>
+<tr>
+<td><code>Error 400: origin_mismatch</code> / “not a valid origin”</td>
+<td>The origin in step 3 doesn’t match the address bar exactly</td>
+</tr>
+<tr>
+<td>“Access blocked”</td>
+<td>Add their email to Test users, or publish the app</td>
+</tr>
+<tr>
+<td>Agenda empty after connecting</td>
+<td>They didn’t tick the calendar permission box; connect again and tick
+it</td>
+</tr>
+</tbody>
+</table>
+<h2 id="live-trains-optional">3. Live trains (optional)</h2>
+<p>National Rail data needs a private key, so the page talks to a small
+Cloudflare Worker (<code>trains-worker.js</code>). The Worker holds the
+key and returns the next 60 minutes of departures for a station. It also
+caches each station for 30 seconds, so every user shares the same
+lookups.</p>
+<ol type="1">
+<li>Sign up at <strong>raildata.org.uk</strong>, subscribe to
+<strong>Live Departure Board</strong>, and copy the <strong>consumer
+key</strong>.</li>
+<li>In Cloudflare, go to <strong>Workers &amp; Pages → Create → Start
+with Hello World → Edit code</strong>. Paste in
+<code>trains-worker.js</code> and press Deploy.</li>
+<li>In the Worker’s <strong>Settings → Variables and Secrets</strong>,
+add:
+<ul>
+<li><code>RDM_KEY</code> (Secret): the consumer key</li>
+<li><code>ALLOWED_ORIGINS</code> (Text):
+<code>https://aherndavid.github.io,https://dpaul.studio</code></li>
+</ul></li>
+<li>Paste the Worker address (<code>https://….workers.dev</code>) into
+<code>TRAINS_PROXY_URL</code> in <code>index.html</code>, then
+push.</li>
+</ol>
+<p>Test the Worker by opening
+<code>https://….workers.dev/departures/MCO</code> in a browser. You
+should see departure data.</p>
+<p>Until <code>TRAINS_PROXY_URL</code> is set, the Today panel says live
+trains aren’t switched on. The Live buses button works regardless: it
+opens TfGM’s live departures page, and users can paste their own stop’s
+link in Settings.</p>
+<h2 id="updating">4. Updating</h2>
+<ul>
+<li>Bump <code>APP_VERSION</code> and add a line to the version notes at
+the top of the script with every change.</li>
+<li>Commit and push to <code>main</code>. The Actions tab shows the
+deploy, and the site updates within a minute or two.</li>
+</ul>
+</body>
+</html>
