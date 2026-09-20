@@ -101,10 +101,14 @@
         .title-text { color: var(--ink-accent, #007bff) !important; margin: 0;
             /* White plate behind the title (v6.9). inline-block so the box hugs the words
                rather than running the width of the header. Padding is in em, so it keeps its
-               proportions at every font size step. The soft shadow is there for the white
-               display setting, where the plate would otherwise be invisible. */
+               proportions at every font size step. */
             display: inline-block; background: #fff; border-radius: 14px;
-            padding: 0.16em 0.42em; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.14); }
+            /* Blue edge in the same ink as the words (v7.2), and a shallower box: the
+               vertical padding is nearly off and line-height is 1, so the plate sits close
+               to the capitals. Border and padding are both in em so they keep their weight
+               at every heading size. The drop shadow has gone; the border does that job now. */
+            border: 0.07em solid var(--ink-accent, #007bff);
+            padding: 0.02em 0.4em; line-height: 1; }
         /* The words are sized against the heading rather than set in their own rem value,
            so every screen-size step above still governs and this just takes a slice off it. */
         .title-words { font-size: 0.85em; }
@@ -2600,6 +2604,7 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v7.2  The title plate has a blue border matching the words, and a shallower box.
         // v7.1  Only "- STUDENT EDITION" fades now. LIFE and the white plate hold steady.
         // v7.0  The title is a little smaller against the heading size, and it now fades:
         //       ten seconds showing, a second to fade out, two away, a second back, on a loop.
@@ -2796,7 +2801,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.1';
+        const APP_VERSION = '7.2';
 
         // =====================================================================
         // CONFIG: set these before you deploy
