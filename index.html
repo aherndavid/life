@@ -111,10 +111,27 @@
             padding: 0.02em 0.4em; line-height: 1; }
         /* The words are sized against the heading rather than set in their own rem value,
            so every screen-size step above still governs and this just takes a slice off it. */
-        .title-words { font-size: 0.85em; }
+        /* Laid out as a flex row (v7.5) so the smaller edition line centres against LIFE
+           rather than sitting on its baseline, which left it hugging the bottom of the plate.
+           The gap replaces the space that used to be typed in front of the dash: a flex item
+           drops leading white space, so the space has to be spacing instead. */
+        .title-words { font-size: 0.85em; display: inline-flex; align-items: center; gap: 0.28em; }
+        /* LIFE goes heavy and black (v7.3). Arial Black first because it is a real heavy
+           face on both Mac and Windows; the 900 weight is there for anywhere that falls
+           back to a family with a black cut of its own. The plate is always white, so a
+           flat black is safe on either display setting. */
+        .title-main { color: #000; font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 900; letter-spacing: 0.01em; font-size: 1.2em; }
         /* Only "- STUDENT EDITION" fades (v7.1); LIFE and the plate stay put. Opacity alone,
            so the box keeps its width and nothing shuffles along while the words are away. */
-        .title-sub { animation: title-cycle 14s ease-in-out infinite; }
+        /* Both sizes are em against .title-words (v7.4), so LIFE leads and the edition line
+           sits under it at every screen size without touching the heading rules. */
+        .title-sub { font-size: 0.75em; animation: title-cycle 14s ease-in-out infinite;
+            /* Narrower line (v7.6): a condensed face rather than a squash, so the letters keep
+               their shape. Letter-spacing is pinned to nothing, which also stops the 2px the
+               sign-in heading sets from pushing this line wider than the one in the header. */
+            font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-stretch: condensed; letter-spacing: 0; }
         /* 14 second round trip: 10s full, 1s out, 2s away, 1s back. */
         @keyframes title-cycle {
             0%, 71.4% { opacity: 1; }
@@ -1196,7 +1213,7 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1 class="title-text"><span class="title-words">LIFE<span class="title-sub"> - STUDENT EDITION</span></span></h1>
+            <h1 class="title-text"><span class="title-words"><span class="title-main">LIFE</span><span class="title-sub">- STUDENT EDITION</span></span></h1>
             <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
@@ -1256,7 +1273,7 @@
     <div class="header">
         <div class="header-left">
             <div class="brand-row">
-                <h1 class="title-text"><span class="title-words">LIFE<span class="title-sub"> - STUDENT EDITION</span></span></h1>
+                <h1 class="title-text"><span class="title-words"><span class="title-main">LIFE</span><span class="title-sub">- STUDENT EDITION</span></span></h1>
             </div>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
@@ -2604,6 +2621,11 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v7.6  The edition line is set condensed and unspaced, so it runs narrower.
+        // v7.5  The edition line is centred against LIFE instead of sharing its baseline,
+        //       so it sits in the middle of the plate.
+        // v7.4  LIFE is set larger and the edition line smaller, so one leads and one trails.
+        // v7.3  LIFE is set heavy and black against the blue of the rest of the title.
         // v7.2  The title plate has a blue border matching the words, and a shallower box.
         // v7.1  Only "- STUDENT EDITION" fades now. LIFE and the white plate hold steady.
         // v7.0  The title is a little smaller against the heading size, and it now fades:
@@ -2801,7 +2823,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.2';
+        const APP_VERSION = '7.6';
 
         // =====================================================================
         // CONFIG: set these before you deploy
