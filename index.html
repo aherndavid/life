@@ -6,6 +6,18 @@
     <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and live trains in one place.">
     <meta name="theme-color" content="#ffffff">
     <title>Life - Student Edition | dPaul Studio</title>
+    <!-- Background colour (v5.5): painted before the page draws, so choosing grey
+         doesn't flash white on every load. The app keeps the same choice in your data. -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('dpaul_student_theme') !== 'grey') return;
+                document.documentElement.setAttribute('data-theme', 'grey');
+                var m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.content = '#d8d8d6';
+            } catch (e) {}
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=block" rel="stylesheet">
@@ -59,6 +71,13 @@
            so the existing size rules for each screen still apply. */
         .title-banner-h1 { line-height: 1 !important; text-shadow: none !important; }
         .title-banner { display: block; height: 1.1em; width: auto; max-width: 100%; object-fit: contain; object-position: left center; }
+        /* The title is a short video (v5.7). Same box as the still image it replaces, and
+           a transparent background so it sits on either display colour. */
+        video.title-banner { background: transparent; pointer-events: none; }
+        /* Read by screen readers, invisible on screen: the heading still says its name
+           even though what you see is a video. */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         .brand-logo { display: block; height: 56px; width: auto; object-fit: contain; background: transparent; pointer-events: none; }
         .wx-more { padding: 6px 12px; font-size: 0.9rem; }
         .wx-forecast { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; max-width: 640px; }
@@ -664,6 +683,12 @@
             font-family: "Doto", monospace; font-weight: 800; font-size: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.45); }
         .map-pin.station span { background: var(--accent); color: var(--on-accent); }
+        /* v5.6: health pins stand out from the everyday ones, because they're the ones
+           you'll be looking for in a hurry */
+        .map-pin.hospital span { background: var(--danger); color: #fff; border-color: var(--danger-hi); }
+        .map-pin.health span { background: var(--ok); color: #fff; border-color: var(--fg); }
+        .around-badge.hospital { background: var(--danger); color: #fff; border-color: var(--danger-hi); }
+        .around-badge.health { background: var(--ok); color: #fff; }
         @media (max-width: 900px) {
             .around { grid-template-columns: minmax(0, 1fr); }
             .around-side { height: auto; }
@@ -783,6 +808,15 @@
             --board-fg: #fff; --board-glow: 255, 255, 255; --board-dim: rgba(255,255,255,.45); --board-bezel: #3a3a3a; --danger: #dc3545; --danger-hi: #c82333; --danger-bg: #fdecea; --danger-line: #f5c2c7;
             --ok: #28a745; --ok-bg: #e8f5ec;
             --amber: var(--fg); --amber-soft: var(--fg-soft); --amber-dim: var(--fg-dim); }
+        /* Light matt grey (v5.5): the same black-on-light look, with the white swapped for a
+           flat grey. Only the background shades, lines and the greys that sit on them move;
+           the text stays black, the buttons stay blue and the departure boards are untouched. */
+        :root[data-theme="grey"] { color-scheme: light; --bg: #d8d8d6; --panel: #d2d2d0;
+            --panel-2: #c4c5c6; --panel-3: #b7b9bb; --line: #a8a8a6; --rule: #c6c6c4; --table-bg: #d8d8d6;
+            --fg: #2b2b2b; --fg-hi: #000; --fg-soft: #4a4a4a; --fg-muted: #565654; --fg-dim: #8d8d8b; --fg-ph: #66665f;
+            --tint: #cccece; --tint-2: #c0c6cd;
+            --danger-bg: #ecd7d5; --danger-line: #c9a09d;
+            --ok-bg: #cfe0d4; }
         html { background: var(--bg); }
         body { background: var(--bg); color: var(--fg); font-family: sans-serif; font-weight: 400; }
         h1, h2, h3, h4, .tab-btn, button, label, strong, b, th { font-weight: bold; }
@@ -872,6 +906,43 @@
         .news-item a { display: block; color: var(--fg); text-decoration: none; line-height: 1.35; font-size: 1rem; }
         .news-item a:hover { color: var(--fg-hi); text-decoration: underline; }
         .news-time { display: block; margin-top: 3px; font-size: 0.8rem; color: var(--fg-muted); }
+
+        /* Settling in (v5.6): a tick list of the jobs that come with a new address */
+        .settle-list { list-style: none; margin: 0; padding: 0; }
+        .settle-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+        .settle-item:last-child { border-bottom: none; }
+        .settle-item input { margin-top: 3px; flex: none; }
+        .settle-main { min-width: 0; line-height: 1.4; }
+        .settle-title { font-weight: bold; }
+        .settle-item.done .settle-title { text-decoration: line-through; color: var(--fg-muted); }
+        .settle-item.done .settle-note { display: none; }
+        .settle-note { display: block; margin-top: 2px; color: var(--fg-soft); font-size: 0.9rem; }
+        .settle-note a { margin-right: 10px; white-space: nowrap; }
+        .settle-done { color: var(--fg-muted); font-size: 0.9rem; padding: 10px 0; }
+
+        /* Moon and stars (v6.0) */
+        .moon-row { display: flex; align-items: center; gap: 16px; }
+        .moon-svg { flex: none; }
+        .moon-dark { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+        .moon-lit { fill: var(--fg); }
+        .moon-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        .moon-name { font-size: 1.15rem; }
+        .moon-sub { color: var(--fg-soft); font-size: 0.9rem; line-height: 1.35; }
+        .moon-next { list-style: none; margin: 14px 0 0; padding: 0; }
+        .moon-next li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+        .moon-next li:last-child { border-bottom: none; }
+        .moon-next li span:last-child { color: var(--fg-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .moon-note { font-size: 0.82rem; margin: 10px 0 0; }
+        .star-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .star-symbol { font-size: 2.4rem; line-height: 1; }
+        .star-text { display: flex; flex-direction: column; gap: 2px; }
+        .star-text strong { font-size: 1.15rem; }
+        .star-read { margin: 0; line-height: 1.55; }
+        .star-focus { margin: 10px 0 0; font-weight: bold; }
+
+        /* Key dates (v5.6) */
+        .kd-tag { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fg-muted); }
+        .kd-est { font-style: italic; }
 
         /* Arrange mode */
         .arrange-bar { display: none; }
@@ -1007,7 +1078,7 @@
     <!-- Welcome screen (v1.7): first visit on each device. Add ?welcome to the address to see it again. -->
     <div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
         <div class="auth-top" style="justify-content: flex-end; border-bottom: none;">
-            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
+            <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="welcome-main">
             <h2 id="welcome-title">Welcome to <span style="white-space: nowrap;">Life - Student</span> Edition</h2>
@@ -1025,8 +1096,8 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1 class="title-banner-h1"><img class="title-banner" src="Assets/life-student-edition.webp" alt="Life - Student Edition" onerror="var h=this.parentNode;h.classList.remove('title-banner-h1');h.textContent='Life - Student Edition';"></h1>
-            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
             <div class="auth-card" id="auth-step-email">
@@ -1083,7 +1154,7 @@
 
     <div class="header">
         <div class="header-left">
-            <h1 class="title-banner-h1"><img class="title-banner" src="Assets/life-student-edition.webp" alt="Life - Student Edition" onerror="var h=this.parentNode;h.classList.remove('title-banner-h1');h.textContent='Life - Student Edition';"></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
                 <div class="clock" id="live-clock">Loading time...</div>
@@ -1098,7 +1169,7 @@
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
             <span class="version-tag" id="app-version">v5.4</span>
-            <video class="brand-logo" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
+            <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
 
@@ -1156,6 +1227,45 @@
                         <button class="btn-toggle panel-hide" onclick="homeHide('due')">Hide</button>
                     </div>
                     <ul class="task-list panel-scroll" id="today-due"></ul>
+                </div>
+
+                <div class="container home-panel" data-panel="keydates" data-name="Key dates">
+                    <div class="controls-row">
+                        <h2>Key dates</h2>
+                        <div class="row-gap panel-actions">
+                            <button class="btn-toggle panel-hide" onclick="switchTab('settings'); showFitPage('settings', 0);">Set up</button>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('keydates')">Hide</button>
+                        </div>
+                    </div>
+                    <ul class="task-list panel-scroll" id="keydates-list"></ul>
+                </div>
+
+                <div class="container home-panel" data-panel="settling" data-name="Settling in">
+                    <div class="controls-row">
+                        <h2>Settling in <span class="news-src" id="settling-count"></span></h2>
+                        <div class="row-gap panel-actions">
+                            <button class="btn-toggle panel-hide" id="min-settling" onclick="newsMinToggle('settling')" aria-pressed="false">Minimise</button>
+                            <button class="btn-toggle panel-hide" onclick="homeHide('settling')">Hide</button>
+                        </div>
+                    </div>
+                    <p class="note" style="margin: 0 0 10px;">Moved to a new town? These are the jobs everyone forgets. Tick them off as you go. <a href="#" onclick="openGuide('guide-moving'); return false;">More detail</a></p>
+                    <ul class="settle-list" id="settling-list"></ul>
+                </div>
+
+                <div class="container home-panel" data-panel="moon" data-name="Moon tonight">
+                    <div class="controls-row">
+                        <h2>Moon tonight</h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('moon')">Hide</button>
+                    </div>
+                    <div id="moon-panel-body"></div>
+                </div>
+
+                <div class="container home-panel" data-panel="stars" data-name="Your stars">
+                    <div class="controls-row">
+                        <h2>Your stars</h2>
+                        <button class="btn-toggle panel-hide" onclick="homeHide('stars')">Hide</button>
+                    </div>
+                    <div id="stars-body"></div>
                 </div>
 
                 <div class="container home-panel" data-panel="quick" data-name="Quick task">
@@ -1696,6 +1806,10 @@
                                 <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-station" checked onchange="renderAround()"> Stations</label>
                                 <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-bus" checked onchange="renderAround()"> Bus stops</label>
                                 <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-shop" checked onchange="renderAround()"> Supermarkets</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-hospital" checked onchange="renderAround()"> Hospitals</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-health" checked onchange="renderAround()"> GPs and pharmacies</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-library" onchange="renderAround()"> Libraries</label>
+                                <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-museum" onchange="renderAround()"> Museums</label>
                             </div>
                             <p class="around-note" id="around-note"></p>
                             <ul class="around-list" id="around-list"></ul>
@@ -1822,6 +1936,56 @@
                         </select>
                         <button class="btn-teal btn-small" onclick="showReminder()">Show one now</button>
                     </div>
+                </div>
+
+                <div class="container">
+                    <h2 style="margin-top: 0;">Display</h2>
+                    <p class="note">The background colour of the app. The text stays black either way. If a white screen is harsh on your eyes, or you're working late, try the grey.</p>
+                    <label for="set-theme">Background</label>
+                    <select id="set-theme" onchange="setTheme(this.value)" style="max-width: 420px;">
+                        <option value="light">White (default)</option>
+                        <option value="grey">Light matt grey</option>
+                    </select>
+                    <span id="set-theme-status" class="status-ok"></span>
+                </div>
+
+                <div class="container">
+                    <h2 style="margin-top: 0;">Star sign</h2>
+                    <p class="note">The day and month you were born, for the Your stars panel on the Home Page. No year, so this isn't your date of birth, and like everything else it stays in this browser. Currently: <strong id="set-sign-current"></strong></p>
+                    <div class="task-input-row" style="margin-bottom: 0;">
+                        <select id="set-birth-month" onchange="saveBirthday()" style="flex: 1; min-width: 140px; max-width: 200px;"></select>
+                        <input type="number" id="set-birth-day" min="1" max="31" step="1" placeholder="Day" style="max-width: 110px;" onkeydown="if(event.key==='Enter') saveBirthday()" onchange="saveBirthday()">
+                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" onclick="clearBirthday()">Clear</button>
+                    </div>
+                    <span id="set-sign-status" class="status-ok"></span>
+                </div>
+
+                <div class="container">
+                    <h2 style="margin-top: 0;">Key dates</h2>
+                    <p class="note">Term dates are set by your own university, and they're different everywhere, so type yours in once from your university's term dates page. Everything else follows: the Key dates panel on the Home Page, when your loan instalments are roughly due, and a calendar file you can load into Google, Apple or Outlook.</p>
+                    <label for="set-nation">Where your student finance comes from</label>
+                    <select id="set-nation" onchange="setNation(this.value)" style="max-width: 420px;">
+                        <option value="england">England (Student Finance England)</option>
+                        <option value="scotland">Scotland (SAAS)</option>
+                        <option value="wales">Wales (Student Finance Wales)</option>
+                        <option value="ni">Northern Ireland (Student Finance NI)</option>
+                    </select>
+                    <p class="note" style="margin: 8px 0 0;" id="nation-note"></p>
+                    <div id="term-rows" style="margin-top: 18px;"></div>
+                    <div class="row-gap" style="margin-top: 6px;">
+                        <button id="btn-terms-save" onclick="saveTermDates()">Save term dates</button>
+                        <button class="btn-teal" onclick="downloadKeyDates()">Download calendar file</button>
+                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" onclick="clearTermDates()">Clear</button>
+                        <span id="term-status" class="status-ok"></span>
+                    </div>
+                    <details class="help-details">
+                        <summary>What goes in the calendar file, and what's guesswork</summary>
+                        <p>The file holds your term start and end dates, your own deadlines, and the national dates below. Open it and your calendar app asks whether to add them. They go in as one-off entries, so if your term dates change, clear the old ones out of your calendar and download a fresh file.</p>
+                        <p><strong>Exact:</strong> the dates you typed in, and the UCAS deadlines, which are set nationally.</p>
+                        <p><strong>An estimate:</strong> the loan instalments. Student Finance pays around the start of each term, but not until your university confirms you've registered, and the real date sits in your online student finance account. Scotland is different again: SAAS pays monthly on the 7th, so no instalment entries are added.</p>
+                        <p><strong>Not included:</strong> reading weeks, exam periods, resit dates and graduation. Those vary by course as well as by university, so add the ones that apply to you in <strong>Deadlines</strong>.</p>
+                    </details>
+                    <p class="note" style="margin-top: 12px;" id="keydates-checked"></p>
                 </div>
 
                 <div class="container">
@@ -2227,6 +2391,41 @@
                     </ol>
                 </details>
 
+                <h3 class="guide-section-title" id="guide-moving">Just moved to a new town?</h3>
+                <p style="margin: 0 0 14px; line-height: 1.55;">The Settling in panel on the Home Page has all of this as a tick list. Here's the detail behind each one. None of it is urgent on day one, but all of it is easier now than when you're ill, skint or being chased for council tax.</p>
+
+                <details class="help-details" id="help-gp">
+                    <summary>Do I have to change GP?</summary>
+                    <p>If you've moved to a different area for term time, yes, in practice. NHS practices only take patients who live inside their boundary, and you can only be permanently registered with one practice at a time. Registering where you study means your records move across and your new GP can actually refer you locally.</p>
+                    <p><strong>What happens when you go home for Christmas?</strong> You're not stuck. Any practice can give you emergency treatment for up to 14 days, and beyond that you can sign on as a temporary patient for up to 3 months without losing your main registration. It's a short form.</p>
+                    <p><strong>If you're living at home and commuting</strong>, nothing changes. Keep the GP you've got.</p>
+                    <p><strong>If you take regular medication</strong>, sort this in your first week rather than when the prescription runs out. Do the same with a repeat prescription before you travel home.</p>
+                    <p>Dentists are separate, and NHS dental treatment isn't free for most students. Get on a list early, they're long.</p>
+                    <p><a href="https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/" target="_blank" rel="noopener">How to register with a GP surgery (NHS)</a></p>
+                </details>
+
+                <details class="help-details" id="help-hospital">
+                    <summary>Where do I go when something's wrong?</summary>
+                    <ul>
+                        <li><strong>A pharmacy</strong> for coughs, rashes, hangovers, emergency contraception and advice. No appointment, and they can prescribe for some things themselves.</li>
+                        <li><strong>NHS 111</strong>, online or by phone, when you're not sure. It's free and it tells you where to go.</li>
+                        <li><strong>Your GP</strong> for anything ongoing, mental health included.</li>
+                        <li><strong>An urgent treatment centre or minor injuries unit</strong> for sprains, cuts and small breaks. Much faster than A&amp;E.</li>
+                        <li><strong>A&amp;E or 999</strong> for chest pain, serious bleeding, breathing trouble, a head injury, or anything you'd call life-threatening. Meningitis symptoms too: it moves fast, so don't wait it out.</li>
+                    </ul>
+                    <p>Your nearest hospitals, GP surgeries and pharmacies are on the map on the <strong>Travel</strong> tab. Worth looking at them once now, so you're not searching for them at 2am. Note that not every hospital has an A&amp;E department, so check before you set off.</p>
+                    <p>Two free jabs are worth chasing if you missed them at school: <strong>MenACWY</strong> and two doses of <strong>MMR</strong>. Both spread easily in halls.</p>
+                </details>
+
+                <details class="help-details" id="help-admin">
+                    <summary>Council tax, voting and the TV licence</summary>
+                    <p><strong>Council tax:</strong> full-time students are normally exempt, but councils rarely take your word for it. Ask your university for a council tax certificate and send it to the council for the address you live at. If you share with anyone who isn't a full-time student, the household may still get a bill, usually a reduced one.</p>
+                    <p><strong>Voting:</strong> takes about five minutes online. As a student you can be registered both at home and at your term-time address, but you can only vote once in a general election. In local elections for two different councils you may be able to vote in both.</p>
+                    <p><strong>TV Licence:</strong> you need one to watch live TV on any channel, or to use BBC iPlayer at all, including on a laptop or phone in halls. If you only ever use Netflix and YouTube, you don't. Don't let a flatmate assume the hall covers it.</p>
+                    <p><strong>Your address:</strong> tell your bank, student finance, your phone provider and the DVLA. Student finance is the one that stings if you forget, because letters about your payments go to the old address.</p>
+                    <p><strong>Contents insurance:</strong> some halls include basic cover, most private lets don't. Check what a stolen laptop would actually cost you.</p>
+                </details>
+
                 <h3 class="guide-section-title" id="guide-privacy">Your data and privacy</h3>
 
                 <details class="help-details">
@@ -2296,6 +2495,36 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.0  Two for the window sill. Moon tonight draws the real phase of the moon,
+        //       worked out on the device from the length of a lunar month, with how much is
+        //       lit and when the next full and new moons land. Your stars needs the day and
+        //       month you were born, typed into Settings, and works out your sign from that.
+        //       The reading is written by the app from word banks, the same for everyone born
+        //       under that sign on that day, and the panel says as much rather than pretending.
+        // v5.9  The title banner now follows the Display setting: assets/life-banner-white.webm
+        //       on white, assets/life-banner-grey.webm on the matt grey. Switching the setting
+        //       swaps the clip and restarts it straight away, on the sign-in screen as well as
+        //       in the header.
+        // v5.8  Anything under Assets/ that won't load is now retried once under assets/
+        //       (and the other way round), because GitHub Pages is case-sensitive about
+        //       folder names. Whatever is still missing is named in the browser console
+        //       instead of failing silently to the plain-text heading.
+        // v5.7  The "Life - Student Edition" title is now a short video (Assets/life-banner.webm)
+        //       in the header and on the sign-in screen. It plays on load and again every thirty
+        //       seconds, in step with the dpaul logo, and rests on its last frame in between.
+        //       If the clip won't play it falls back to the still banner, and if that's missing
+        //       too, to the words. Reduced motion gets the still image and no animation.
+        // v5.6  Key dates and Settling in. Type your own term dates into Settings (they're set
+        //       by each university, so there's no national list to pull) and the Home Page shows
+        //       what's coming: term starts and ends, rough loan instalment dates and the national
+        //       UCAS and tax deadlines. Download the lot, plus your deadlines, as a calendar file
+        //       for Google, Apple or Outlook. A Settling in tick list covers the jobs that come
+        //       with a new address: GP, dentist, jabs, council tax, voting, TV licence, insurance.
+        //       The Travel map gained hospitals (flagged where OpenStreetMap lists an A&E), GP
+        //       surgeries, pharmacies, libraries and museums, each with its own tick box.
+        // v5.5  A Display setting: keep the white background or switch to a light matt grey.
+        //       Black text, blue buttons and the departure boards stay exactly as they were.
+        //       Your choice is remembered in this browser and travels with your backup.
         // v5.4  Connect Google was a live-looking button that did nothing, because no Google
         //       client ID is set on this build. It is now greyed out and says Calendar isn't
         //       switched on yet. See the notes above GOOGLE_CLIENT_ID to switch it on.
@@ -2410,7 +2639,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '5.4';
+        const APP_VERSION = '6.0';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2540,6 +2769,544 @@
         }
         function storeDel(key) { try { localStorage.removeItem(key); } catch (e) { delete memoryStore[key]; } }
 
+        // =====================================================================
+        // KEY DATES (v5.6)
+        // Term dates are set by each university, and often by each course inside it.
+        // There is no national list and almost no university publishes a calendar
+        // feed, so the student types theirs in once and everything else follows from
+        // it. Only genuinely national dates are built in below, and they need
+        // checking once a year -- see KEY_DATES_CHECKED.
+        // =====================================================================
+        const NATIONS = {
+            england: { name: 'England', body: 'Student Finance England', url: 'https://www.gov.uk/student-finance', monthly: false },
+            scotland: { name: 'Scotland', body: 'SAAS', url: 'https://www.saas.gov.uk', monthly: true },
+            wales: { name: 'Wales', body: 'Student Finance Wales', url: 'https://www.studentfinancewales.co.uk', monthly: false },
+            ni: { name: 'Northern Ireland', body: 'Student Finance NI', url: 'https://www.studentfinanceni.co.uk', monthly: false }
+        };
+        const TERM_NAMES = ['Autumn term', 'Spring term', 'Summer term'];
+
+        // Dates that are the same wherever you study. Checked by hand against ucas.com
+        // and gov.uk on the date below. UCAS moves its January deadline by a day or two
+        // each cycle, so this list needs a look every summer.
+        const KEY_DATES_CHECKED = '20 September 2026';
+        const NATIONAL_DATES = [
+            { date: '2026-10-15', title: 'UCAS deadline, 18:00: Oxbridge, medicine, dentistry, veterinary', tag: 'UCAS', note: 'For courses starting in 2027.' },
+            { date: '2027-01-13', title: 'UCAS deadline, 18:00: most undergraduate courses', tag: 'UCAS', note: 'The equal consideration deadline for 2027 entry.' },
+            { date: '2027-01-31', title: 'Self Assessment tax return deadline', tag: 'Money', note: 'Only if you have self-employed or other untaxed income.' }
+        ];
+
+        function nationCfg() { return NATIONS[(data.keydates || {}).nation] || NATIONS.england; }
+        function termList() {
+            const t = (data.keydates || {}).terms;
+            return Array.isArray(t) ? t : [];
+        }
+        // Last Sunday of a month: when the clocks change. Computed, so it never goes stale.
+        function lastSunday(year, month) {
+            const d = new Date(year, month + 1, 0);
+            d.setDate(d.getDate() - d.getDay());
+            return isoDate(d);
+        }
+        function clockDates(fromYear) {
+            const out = [];
+            for (let y = fromYear; y <= fromYear + 1; y++) {
+                out.push({ date: lastSunday(y, 2), title: 'Clocks go forward an hour', tag: 'Clocks', note: 'You lose an hour in bed.' });
+                out.push({ date: lastSunday(y, 9), title: 'Clocks go back an hour', tag: 'Clocks', note: 'Dark by teatime from here.' });
+            }
+            return out;
+        }
+
+        // Everything the app knows about, sorted. Term dates and loan estimates come
+        // from what the student typed in; the rest is national.
+        function keyDateItems() {
+            const out = NATIONAL_DATES.concat(clockDates(new Date().getFullYear()));
+            const monthly = nationCfg().monthly;
+            termList().forEach((t, i) => {
+                const name = t.name || TERM_NAMES[i] || `Term ${i + 1}`;
+                if (t.start) {
+                    out.push({ date: t.start, title: `${name} starts`, tag: 'Term' });
+                    if (!monthly) out.push({
+                        date: t.start, tag: 'Money', est: true,
+                        title: 'Maintenance loan instalment, roughly',
+                        note: `${nationCfg().body} pays around the start of term, but not until your university confirms you've registered. Your own account has the real date.`
+                    });
+                }
+                if (t.end) out.push({ date: t.end, title: `${name} ends`, tag: 'Term' });
+            });
+            // Same-day ties: the term marker reads better above the loan estimate it caused
+            const rank = k => (k.tag === 'Term' ? 0 : 1);
+            return out.sort((a, b) => a.date.localeCompare(b.date) || rank(a) - rank(b) || a.title.localeCompare(b.title));
+        }
+
+        function renderKeyDates() {
+            const list = $('keydates-list');
+            if (!list) return;
+            const today = todayISO();
+            const items = keyDateItems().filter(k => k.date >= today).slice(0, 6);
+            list.innerHTML = items.length ? items.map(k => {
+                const c = countdown(k.date);
+                return `<li class="task-item"><span class="task-text">
+                    <strong class="${k.est ? 'kd-est' : ''}">${esc(k.title)}</strong>
+                    <span class="badge ${c.cls}">${c.text}</span><br>
+                    <span style="color: var(--fg-soft); font-size: 0.95em;"><span class="kd-tag">${esc(k.tag)}</span> &middot; ${fmtDate(k.date, true)}${k.est ? ' &middot; estimate' : ''}</span>
+                </span></li>`;
+            }).join('')
+                : `<li class="empty">Add your term dates in <a href="#" onclick="switchTab('settings'); showFitPage('settings', 0); return false;">Settings</a> to see what's coming.</li>`;
+        }
+
+        function renderTermRows() {
+            const box = $('term-rows');
+            if (!box) return;
+            // Redrawing while someone is halfway through a date would wipe what they typed
+            if (box.contains(document.activeElement)) return;
+            const terms = termList();
+            box.innerHTML = TERM_NAMES.map((name, i) => {
+                const t = terms[i] || {};
+                return `<div class="form-row form-group">
+                    <div><label for="term-start-${i}">${esc(name)} starts</label>
+                        <input type="date" id="term-start-${i}" value="${esc(t.start || '')}"></div>
+                    <div><label for="term-end-${i}">${esc(name)} ends</label>
+                        <input type="date" id="term-end-${i}" value="${esc(t.end || '')}"></div>
+                </div>`;
+            }).join('');
+            const n = $('set-nation');
+            if (n) n.value = (data.keydates || {}).nation || 'england';
+            const note = $('nation-note');
+            if (note) {
+                const c = nationCfg();
+                note.innerHTML = c.monthly
+                    ? `${esc(c.body)} pays monthly, on the 7th, so no instalment estimates are added to your key dates.`
+                    : `${esc(c.body)} pays in three instalments, around the start of each term.`;
+            }
+            const checked = $('keydates-checked');
+            if (checked) checked.textContent = `National dates last checked on ${KEY_DATES_CHECKED}. Always check a deadline against ucas.com before you rely on it.`;
+        }
+
+        function setNation(v) {
+            if (!data.keydates) data.keydates = { nation: 'england', terms: [] };
+            data.keydates.nation = NATIONS[v] ? v : 'england';
+            saveData();
+            renderTermRows();
+            renderKeyDates();
+        }
+
+        function saveTermDates() {
+            const terms = [];
+            let bad = '';
+            TERM_NAMES.forEach((name, i) => {
+                const start = ($(`term-start-${i}`) || {}).value || '';
+                const end = ($(`term-end-${i}`) || {}).value || '';
+                if (start && end && end < start) bad = name;
+                if (start || end) terms[i] = { name, start, end };
+            });
+            if (bad) { flash('term-status', `${bad} ends before it starts. Check those two dates.`, true); return; }
+            if (!data.keydates) data.keydates = { nation: 'england', terms: [] };
+            data.keydates.terms = terms.map(t => t || { name: '', start: '', end: '' });
+            saveData();
+            renderTermRows();
+            renderKeyDates();
+            const n = data.keydates.terms.filter(t => t.start || t.end).length;
+            flash('term-status', n ? `Saved. ${n} term${n === 1 ? '' : 's'} on your key dates.` : 'Term dates cleared.');
+        }
+
+        function clearTermDates() {
+            if (!confirm('Clear your term dates? Your key dates go back to the national ones only.')) return;
+            data.keydates.terms = [];
+            saveData();
+            renderTermRows();
+            renderKeyDates();
+            flash('term-status', 'Term dates cleared.');
+        }
+
+        // =====================================================================
+        // CALENDAR FILE (.ics): the app can't write to anyone's calendar -- the
+        // Google connection here is read-only on purpose -- so it hands over a
+        // standard file instead. Google, Apple and Outlook all open it, and it
+        // needs no permissions from anyone.
+        // =====================================================================
+        function icsText(v) {
+            return String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+        }
+        function icsFold(line) {
+            // The format allows 75 octets a line; longer lines continue with a leading space
+            if (line.length <= 73) return line;
+            const parts = [line.slice(0, 73)];
+            for (let i = 73; i < line.length; i += 72) parts.push(' ' + line.slice(i, i + 72));
+            return parts.join('\r\n');
+        }
+        function icsStamp() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+        function icsDay(iso, plus) {
+            const d = parseISO(iso);
+            if (plus) d.setDate(d.getDate() + plus);
+            return isoDate(d).replace(/-/g, '');
+        }
+
+        function buildKeyDatesICS() {
+            const stamp = icsStamp();
+            const today = todayISO();
+            // Only what's still to come: a calendar full of last term's dates helps nobody
+            const events = keyDateItems().filter(k => k.date >= today).map((k, i) => ({
+                uid: `kd-${i}-${k.date}@student.dpaul.studio`,
+                date: k.date,
+                summary: k.est ? `${k.title} (estimate)` : k.title,
+                desc: [k.note, k.est ? 'Added by Life - Student Edition as an estimate. Check your student finance account for the real date.' : '']
+                    .filter(Boolean).join(' ')
+            }));
+            data.deadlines.filter(d => !d.done && d.date && d.date >= today).forEach((d, i) => events.push({
+                uid: `dl-${d.id || i}@student.dpaul.studio`,
+                date: d.date,
+                summary: d.module ? `${d.title} (${d.module})` : d.title,
+                desc: 'Deadline from Life - Student Edition' + (d.time ? `, due ${d.time}` : '')
+            }));
+            const lines = [
+                'BEGIN:VCALENDAR', 'VERSION:2.0',
+                'PRODID:-//dPaul Studio//Life - Student Edition//EN',
+                'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+                'X-WR-CALNAME:Life - Student Edition key dates'
+            ];
+            events.forEach(e => {
+                lines.push('BEGIN:VEVENT');
+                lines.push('UID:' + e.uid);
+                lines.push('DTSTAMP:' + stamp);
+                lines.push('DTSTART;VALUE=DATE:' + icsDay(e.date));
+                lines.push('DTEND;VALUE=DATE:' + icsDay(e.date, 1));
+                lines.push('SUMMARY:' + icsText(e.summary));
+                if (e.desc) lines.push('DESCRIPTION:' + icsText(e.desc));
+                lines.push('TRANSP:TRANSPARENT');
+                lines.push('END:VEVENT');
+            });
+            lines.push('END:VCALENDAR');
+            return { text: lines.map(icsFold).join('\r\n') + '\r\n', count: events.length };
+        }
+
+        function downloadKeyDates() {
+            const { text, count } = buildKeyDatesICS();
+            if (!count) { flash('term-status', 'Nothing to put in a calendar yet. Add your term dates or some deadlines first.', true); return; }
+            const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `student-key-dates-${todayISO()}.ics`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            flash('term-status', `${count} date${count === 1 ? '' : 's'} downloaded. Open the file to add them to your calendar.`);
+        }
+
+        // =====================================================================
+        // SETTLING IN (v5.6): the admin nobody tells you about when you move away.
+        // Every link checked by hand on 20 September 2026.
+        // =====================================================================
+        const SETTLING_ITEMS = [
+            ['gp', 'Register with a GP near your term-time address',
+                'You can only be permanently registered at one practice at a time, so this moves you off your home one. Back home in the holidays, any practice can treat you free for 14 days, or sign you on as a temporary patient for up to 3 months.',
+                [['Find a GP', 'https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/']]],
+            ['dentist', 'Get on a dentist\'s list',
+                'Separate from your GP, and NHS dental treatment isn\'t free for most students. Lists are long, so join one before anything hurts.',
+                [['Find a dentist', 'https://www.nhs.uk/nhs-services/dentists/']]],
+            ['jabs', 'Check your MenACWY and MMR jabs',
+                'Both are free on the NHS and both spread easily in halls. Your GP can do them if you missed them at school.',
+                [['NHS vaccinations', 'https://www.nhs.uk/vaccinations/']]],
+            ['urgent', 'Find your nearest A&E and pharmacy before you need them',
+                'They\'re on the map on the Travel tab. Not every hospital has an A&E, so check which one does. NHS 111 tells you where to go when you\'re not sure.',
+                [['NHS 111 online', 'https://111.nhs.uk']]],
+            ['counciltax', 'Sort your council tax',
+                'Full-time students are normally exempt, but the council wants proof. Ask your university for a council tax certificate and send it in.',
+                [['Find your council', 'https://www.gov.uk/find-local-council']]],
+            ['vote', 'Register to vote',
+                'Five minutes online. Students can be registered at home and at their term-time address, but you can only vote once in a general election.',
+                [['Register to vote', 'https://www.gov.uk/register-to-vote']]],
+            ['tv', 'Work out whether you need a TV Licence',
+                'You need one to watch live TV on any channel, or to use BBC iPlayer at all, even on a laptop in halls. If you only use Netflix and YouTube, you don\'t.',
+                [['TV Licensing', 'https://www.tvlicensing.co.uk']]],
+            ['address', 'Change your address everywhere',
+                'Bank, student finance, phone contract, driving licence. Student finance is the one that bites, because letters about your payments go to the old house.',
+                [['Driving licence', 'https://www.gov.uk/change-address-driving-licence']]],
+            ['insurance', 'Check your stuff is actually insured',
+                'Some halls include basic contents cover, most private lets don\'t. Worth knowing before a laptop walks.',
+                []],
+            ['library', 'Join the local public library',
+                'Free, and not the same as your university library. Quiet desks, cheap printing and somewhere warm in the holidays when campus is shut.',
+                [['Find a library', 'https://www.gov.uk/local-library-services']]]
+        ];
+
+        function settlingDone(id) { return !!(data.settling || {})[id]; }
+        function toggleSettling(id) {
+            if (!data.settling || typeof data.settling !== 'object') data.settling = {};
+            if (data.settling[id]) delete data.settling[id];
+            else data.settling[id] = todayISO();
+            saveData();
+            renderSettling();
+        }
+        function renderSettling() {
+            const list = $('settling-list');
+            if (!list) return;
+            const min = newsMinimised('settling');
+            const done = SETTLING_ITEMS.filter(([id]) => settlingDone(id)).length;
+            const items = min ? SETTLING_ITEMS.filter(([id]) => !settlingDone(id)).slice(0, 3) : SETTLING_ITEMS;
+            list.innerHTML = items.map(([id, title, note, links]) => {
+                const isDone = settlingDone(id);
+                return `<li class="settle-item${isDone ? ' done' : ''}">
+                    <input type="checkbox" class="task-checkbox" id="settle-${esc(id)}" ${isDone ? 'checked' : ''} onchange="toggleSettling('${esc(id)}')">
+                    <span class="settle-main">
+                        <label class="settle-title" for="settle-${esc(id)}" style="display: inline; font-size: 1rem; margin: 0;">${esc(title)}</label>
+                        <span class="settle-note">${esc(note)}${links.length ? '<br>' + links.map(([t, u]) =>
+                            `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join('') : ''}</span>
+                    </span>
+                </li>`;
+            }).join('') || '<li class="settle-done">All done. Nice one.</li>';
+            const count = $('settling-count');
+            if (count) count.textContent = `${done} of ${SETTLING_ITEMS.length} done`;
+            const b = $('min-settling');
+            if (b) { b.textContent = min ? 'Show all' : 'Minimise'; b.setAttribute('aria-pressed', min); }
+        }
+
+        // =====================================================================
+        // MOON AND STARS (v6.0)
+        //
+        // The moon is real maths: days since a known new moon, divided by the
+        // average length of a lunar month. That model runs a couple of hours out
+        // either way against the published times, which is plenty for "is it
+        // worth looking up tonight", and it needs no network at all.
+        //
+        // The horoscope is not real anything. It's assembled in the browser from
+        // word banks, seeded by star sign and date, so everyone born under the
+        // same sign gets the same words on the same day and it never changes if
+        // you refresh. Nothing is sent anywhere and nobody is reading a chart.
+        // The panel says so, because pretending otherwise would be a bit off.
+        // =====================================================================
+        const SYNODIC = 29.530588853;                      // average days between new moons
+        const NEW_MOON_EPOCH = Date.UTC(2000, 0, 6, 18, 14); // a known new moon
+        const MOON_PHASES = [
+            [0.021, 'New moon', 'Darkest skies of the month. Good for stargazing, bad for finding your keys.'],
+            [0.229, 'Waxing crescent', 'A thin sliver in the west after sunset.'],
+            [0.271, 'First quarter', 'Half lit, high in the sky at sunset.'],
+            [0.479, 'Waxing gibbous', 'Fattening up, and bright by late evening.'],
+            [0.521, 'Full moon', 'Up all night, bright enough to walk home by.'],
+            [0.729, 'Waning gibbous', 'Rising later each night, still most of a moon.'],
+            [0.771, 'Last quarter', 'Half lit again, and up in the small hours.'],
+            [0.979, 'Waning crescent', 'A sliver before dawn, on its way to new.'],
+            [1.001, 'New moon', 'Darkest skies of the month. Good for stargazing, bad for finding your keys.']
+        ];
+
+        function moonPhase(when) {
+            const days = ((when || Date.now()) - NEW_MOON_EPOCH) / 86400000;
+            return ((days / SYNODIC) % 1 + 1) % 1;
+        }
+        function moonLit(p) { return (1 - Math.cos(2 * Math.PI * p)) / 2; }
+        function moonName(p) { return (MOON_PHASES.find(m => p < m[0]) || MOON_PHASES[0]).slice(1); }
+        function nextPhaseAt(target, from) {
+            const start = from || Date.now();
+            const ahead = ((target - moonPhase(start)) % 1 + 1) % 1;
+            return new Date(start + (ahead || 1) * SYNODIC * 86400000);
+        }
+        // The lit part drawn as one shape: the outer limb, then the terminator, which
+        // is an ellipse that flattens to a straight line at the quarters.
+        function moonSVG(p, size) {
+            const r = size / 2, c = size / 2;
+            const rx = (Math.abs(Math.cos(2 * Math.PI * p)) * r).toFixed(2);
+            const outer = p < 0.5 ? 1 : 0;
+            const inner = (p < 0.25 || (p >= 0.5 && p < 0.75)) ? 0 : 1;
+            return `<svg class="moon-svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">
+                <circle class="moon-dark" cx="${c}" cy="${c}" r="${r - 0.75}"></circle>
+                <path class="moon-lit" d="M ${c} ${c - r} A ${r} ${r} 0 0 ${outer} ${c} ${c + r} A ${rx} ${r} 0 0 ${inner} ${c} ${c - r} Z"></path>
+            </svg>`;
+        }
+
+        function renderMoon() {
+            const box = $('moon-panel-body');
+            if (!box) return;
+            const p = moonPhase();
+            const [name, blurb] = moonName(p);
+            const lit = Math.round(moonLit(p) * 100);
+            const age = p * SYNODIC;
+            const full = nextPhaseAt(0.5);
+            const dark = nextPhaseAt(0);
+            const when = d => `${fmtDate(isoDate(d))}, ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+            box.innerHTML = `
+                <div class="moon-row">
+                    ${moonSVG(p, 72)}
+                    <div class="moon-text">
+                        <strong class="moon-name">${esc(name)}</strong>
+                        <span class="moon-sub">${lit}% lit &middot; day ${Math.round(age)} of ${Math.round(SYNODIC)}</span>
+                        <span class="moon-sub">${esc(blurb)}</span>
+                    </div>
+                </div>
+                <ul class="moon-next">
+                    <li><span>Next full moon</span><span>${esc(when(full))}</span></li>
+                    <li><span>Next new moon</span><span>${esc(when(dark))}</span></li>
+                </ul>
+                <p class="note moon-note">Worked out on this device, so it's right to within a couple of hours.</p>`;
+        }
+
+        // ---- Star signs ----------------------------------------------------
+        // [key, name, symbol, starts (month, day), dates in words]
+        const SIGNS = [
+            ['capricorn', 'Capricorn', '\u2651', 12, 22, '22 Dec - 19 Jan'],
+            ['aquarius', 'Aquarius', '\u2652', 1, 20, '20 Jan - 18 Feb'],
+            ['pisces', 'Pisces', '\u2653', 2, 19, '19 Feb - 20 Mar'],
+            ['aries', 'Aries', '\u2648', 3, 21, '21 Mar - 19 Apr'],
+            ['taurus', 'Taurus', '\u2649', 4, 20, '20 Apr - 20 May'],
+            ['gemini', 'Gemini', '\u264A', 5, 21, '21 May - 20 Jun'],
+            ['cancer', 'Cancer', '\u264B', 6, 21, '21 Jun - 22 Jul'],
+            ['leo', 'Leo', '\u264C', 7, 23, '23 Jul - 22 Aug'],
+            ['virgo', 'Virgo', '\u264D', 8, 23, '23 Aug - 22 Sep'],
+            ['libra', 'Libra', '\u264E', 9, 23, '23 Sep - 22 Oct'],
+            ['scorpio', 'Scorpio', '\u264F', 10, 23, '23 Oct - 21 Nov'],
+            ['sagittarius', 'Sagittarius', '\u2650', 11, 22, '22 Nov - 21 Dec']
+        ];
+        const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        // The same twelve, in calendar order, so a date can be matched by scanning
+        const SIGNS_BY_DATE = SIGNS.slice().sort((a, b) => a[3] - b[3] || a[4] - b[4]);
+
+        function signFor(month, day) {
+            month = Number(month); day = Number(day);
+            if (!month || !day) return null;
+            // The last sign to have started on or before this date. Anything before
+            // 20 January belongs to the Capricorn that started the previous December,
+            // which is why the fallback is the last one in the year.
+            let found = SIGNS_BY_DATE[SIGNS_BY_DATE.length - 1];
+            SIGNS_BY_DATE.forEach(s => {
+                if (s[3] < month || (s[3] === month && s[4] <= day)) found = s;
+            });
+            return found;
+        }
+        function mySign() {
+            const s = data.settings;
+            return signFor(s.birthMonth, s.birthDay);
+        }
+        function daysInMonth(m) { return [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][Number(m) - 1] || 31; }
+
+        // ---- The reading ---------------------------------------------------
+        const HORO_OPEN = [
+            'Today has a slow start hidden in it. Take the slow start.',
+            'Something you have been putting off is smaller than you think it is.',
+            'The morning belongs to somebody else. The afternoon is yours.',
+            'A small win early on sets the tone for the rest of it.',
+            'Today rewards finishing things over starting them.',
+            'You are further ahead than your to-do list suggests.',
+            'Nothing urgent is actually urgent today, whatever the group chat says.',
+            'A quiet day, if you let it be one.',
+            'The thing you are dreading takes about twenty minutes.',
+            'Today is better for tidying up than for grand plans.',
+            'Someone will ask you for something. You are allowed to say later.',
+            'A change of room changes the whole day.'
+        ];
+        const HORO_MID = [
+            'Say the thing you have been drafting in your head.',
+            'Eat properly before you make any decisions.',
+            'Ask the question. Everyone else is wondering it too.',
+            'Put the phone in another room for one hour and see what happens.',
+            'Be generous with a friend who has gone quiet.',
+            'Do the hard bit first and the rest folds up neatly.',
+            'Write it down rather than trying to hold it all in your head.',
+            'Go outside at some point, even if it is raining. Especially if it is raining.',
+            'Take the offer of help. It was genuinely meant.',
+            'Leave the last ten percent for tomorrow. It will be better tomorrow.',
+            'Check the deadline rather than trusting your memory of it.',
+            'One good conversation beats three hours of scrolling.'
+        ];
+        const HORO_CLOSE = [
+            'Get to bed at a sensible hour and tomorrow looks entirely different.',
+            'By this evening you will have forgotten why it seemed like a big deal.',
+            'Expect one thing to go sideways, and enjoy the rest.',
+            'Be kind to whoever you are at eleven o\'clock tonight.',
+            'Somebody is glad you turned up today.',
+            'Save something for the rest of the week.',
+            'It counts even if nobody saw you do it.',
+            'Tomorrow you will thank yourself for the boring, sensible choice.',
+            'Make tea. Actually drink it this time.',
+            'If it all goes wrong, it makes a better story.',
+            'Progress today, not perfection. Perfection is next term\'s problem.',
+            'Leave the house at least once. The fresh air is doing the heavy lifting.'
+        ];
+        const HORO_FOCUS = ['Patience', 'Momentum', 'Sleep', 'Honesty', 'Curiosity', 'Rest',
+            'Nerve', 'Kindness', 'Focus', 'Company', 'Fresh air', 'Follow-through'];
+
+        // Same sign, same day, same words, however many times you open the app
+        function horoSeed(str) {
+            let h = 2166136261;
+            for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+            return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+        }
+        function horoscopeFor(sign, dateISO) {
+            const rnd = horoSeed(`${sign}-${dateISO}`);
+            const pick = arr => arr[Math.floor(rnd() * arr.length) % arr.length];
+            return {
+                lines: [pick(HORO_OPEN), pick(HORO_MID), pick(HORO_CLOSE)],
+                focus: pick(HORO_FOCUS)
+            };
+        }
+
+        function renderHoroscope() {
+            const box = $('stars-body');
+            if (!box) return;
+            const sign = mySign();
+            if (!sign) {
+                box.innerHTML = `<p class="empty" style="margin: 0;">Add the day and month you were born in
+                    <a href="#" onclick="switchTab('settings'); showFitPage('settings', 0); return false;">Settings</a>
+                    and your sign turns up here. No year needed.</p>`;
+                return;
+            }
+            const [, name, symbol, , , dates] = sign;
+            const h = horoscopeFor(sign[0], todayISO());
+            box.innerHTML = `
+                <div class="star-head">
+                    <span class="star-symbol" aria-hidden="true">${symbol}</span>
+                    <span class="star-text"><strong>${esc(name)}</strong><span class="moon-sub">${esc(dates)}</span></span>
+                </div>
+                <p class="star-read">${h.lines.map(esc).join(' ')}</p>
+                <p class="star-focus"><span class="kd-tag">Today's word</span> ${esc(h.focus)}</p>
+                <p class="note moon-note">For fun. Written by the app, not by an astrologer, and the same for everyone born under ${esc(name)}.</p>`;
+        }
+
+        function renderSignSettings() {
+            const sel = $('set-birth-month');
+            const day = $('set-birth-day');
+            if (!sel || !day) return;
+            if (!sel.options.length) {
+                sel.innerHTML = '<option value="">Month</option>' +
+                    MONTH_NAMES.map((m, i) => `<option value="${i + 1}">${esc(m)}</option>`).join('');
+            }
+            if (document.activeElement !== sel) sel.value = data.settings.birthMonth || '';
+            if (document.activeElement !== day) day.value = data.settings.birthDay || '';
+            day.max = daysInMonth(data.settings.birthMonth || sel.value || 1);
+            const out = $('set-sign-current');
+            const sign = mySign();
+            if (out) out.textContent = sign ? `${sign[2]} ${sign[1]} (${sign[5]})` : 'not set yet';
+        }
+
+        function clearBirthday() {
+            const sel = $('set-birth-month'), day = $('set-birth-day');
+            if (sel) sel.value = '';
+            if (day) day.value = '';
+            delete data.settings.birthMonth;
+            delete data.settings.birthDay;
+            saveData();
+            renderSignSettings();
+            renderHoroscope();
+            flash('set-sign-status', 'Cleared. The stars panel goes quiet.');
+        }
+
+        function ordinal(n) {
+            const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+
+        function saveBirthday() {
+            const month = Number(($('set-birth-month') || {}).value || 0);
+            const day = Number(($('set-birth-day') || {}).value || 0);
+            // Half filled in is just somebody mid-way through typing, not a mistake
+            if (!month || !day) { renderSignSettings(); return; }
+            if (day < 1 || day > daysInMonth(month)) { flash('set-sign-status', `${MONTH_NAMES[month - 1]} doesn't have a ${ordinal(day)}.`, true); return; }
+            data.settings.birthMonth = month;
+            data.settings.birthDay = day;
+            saveData();
+            renderSignSettings();
+            renderHoroscope();
+            const sign = mySign();
+            flash('set-sign-status', sign ? `Saved. You're ${sign[1]}.` : 'Saved.');
+        }
+
         function defaultData() {
             return {
                 version: 1,
@@ -2557,12 +3324,14 @@
                     travel: { stations: [], autoStations: true, map: { size: 'm', min: false, hidden: false } },
                     firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, wxOpen: false,
-                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: ''
+                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: '', theme: 'light'
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
                 food: { items: [], known: {}, weekBudget: '' },
                 reminders: { on: true, every: 15 },
+                keydates: { nation: 'england', terms: [] },
+                settling: {},
                 setup: { started: false, skipped: [], done: {} }
             };
         }
@@ -2597,6 +3366,10 @@
             if (!Array.isArray(out.food.items)) out.food.items = [];
             if (!out.food.known || typeof out.food.known !== 'object') out.food.known = {};
             out.reminders = { ...base.reminders, ...(raw.reminders || {}) };
+            out.keydates = { ...base.keydates, ...(raw.keydates || {}) };
+            if (!Array.isArray(out.keydates.terms)) out.keydates.terms = [];
+            if (!NATIONS[out.keydates.nation]) out.keydates.nation = 'england';
+            if (!out.settling || typeof out.settling !== 'object') out.settling = {};
             out.setup = { ...base.setup, ...(raw.setup || {}) };
             if (!Array.isArray(out.setup.skipped)) out.setup.skipped = [];
             if (!out.setup.done || typeof out.setup.done !== 'object') out.setup.done = {};
@@ -2706,21 +3479,97 @@
         }
 
         // =====================================================================
-        // ANIMATED LOGO (v2.5): the yellow fade plays when the page opens, then again every 30 seconds.
-        // It rests on its last frame in between. Reduced motion: it shows the still logo instead.
-        // If the video can't play, the still logo image takes its place.
+        // LOOPING VIDEOS (v5.7): the dpaul logo and the "Life - Student Edition"
+        // title are both short clips. Each plays when the page opens and again
+        // every thirty seconds, resting on its last frame in between.
+        //
+        // Every one of them names a still image in data-still. If the clip can't
+        // play -- an old browser, a missing file, or the reader has asked for
+        // reduced motion -- that still takes its place instead. The title carries
+        // a data-text as well, so if even the still image is missing the heading
+        // falls back to the words. Nothing ever ends up blank.
         // =====================================================================
         const LOGO_EVERY = 30000;
-        function logoFallback(v) {
+
+        // The title banner comes in two cuts, one for each Display background (v5.9).
+        // Switching the setting swaps the file and restarts it, so the banner always
+        // matches what's behind it.
+        const BANNER_VIDEOS = {
+            light: 'assets/life-banner-white.webm',
+            grey: 'assets/life-banner-grey.webm'
+        };
+        // Read off the html element rather than the saved settings, because the sign-in
+        // screen draws before any of the app's data has loaded.
+        function bannerThemeName() {
+            return document.documentElement.getAttribute('data-theme') === 'grey' ? 'grey' : 'light';
+        }
+        function applyBannerTheme() {
+            const want = BANNER_VIDEOS[bannerThemeName()] || BANNER_VIDEOS.light;
+            document.querySelectorAll('video.title-banner').forEach(v => {
+                if (v.getAttribute('src') === want) return;
+                v.setAttribute('src', want);
+                delete v.dataset.retried;   // a different file gets its own go at the other folder spelling
+                v.load();
+                if (!v.offsetParent) return;
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const p = v.play();
+                if (p && p.catch) p.catch(() => {});
+            });
+        }
+
+        // GitHub Pages is case-sensitive about folder names and this project has used
+        // both "Assets/" and "assets/" over time. Rather than guess, anything that
+        // fails to load is tried once more with the other spelling before it gives up.
+        function otherCasePath(url) {
+            if (/^Assets\//.test(url)) return url.replace(/^Assets\//, 'assets/');
+            if (/^assets\//.test(url)) return url.replace(/^assets\//, 'Assets/');
+            return '';
+        }
+        function assetMissing(what, url) {
+            console.warn(`Life - Student Edition: couldn't load ${what} at ${url}. Check the file is in the repo and the folder name matches exactly, capital letters included.`);
+        }
+
+        function videoFallback(v) {
             if (!v.parentNode) return;
+            const still = v.dataset.still || '';
             const img = document.createElement('img');
-            img.src = 'Assets/dpaul-logo.webp';
-            img.alt = 'dpaul.studio logo';
+            img.alt = v.getAttribute('aria-label') || v.dataset.text || '';
+            img.className = v.className.replace(/\bloop-video\b/g, '').trim();
+            if (v.getAttribute('aria-hidden') === 'true') img.setAttribute('aria-hidden', 'true');
+            const text = v.dataset.text || '';
+            let retried = false;
+            img.addEventListener('error', () => {
+                const retry = retried ? '' : otherCasePath(still);
+                if (retry) { retried = true; img.src = retry; return; }
+                assetMissing('the still banner', still);
+                if (!text) return;
+                const h = img.parentNode;
+                if (!h) return;
+                h.classList.remove('title-banner-h1');
+                h.textContent = text;   // the heading says its own name again
+            });
+            img.src = still;
             v.replaceWith(img);
         }
+
+        // A video that won't load gets one retry on the other folder spelling first
+        function videoFailed(v) {
+            const retry = !v.dataset.retried && otherCasePath(v.getAttribute('src') || '');
+            if (retry) {
+                v.dataset.retried = '1';
+                v.setAttribute('src', retry);
+                v.load();
+                const p = v.play();
+                if (p && p.catch) p.catch(() => {});
+                return;
+            }
+            assetMissing('a video', v.getAttribute('src') || '');
+            videoFallback(v);
+        }
+
         function playLogos() {
             if (document.hidden) return;
-            document.querySelectorAll('video.brand-logo').forEach(v => {
+            document.querySelectorAll('video.loop-video').forEach(v => {
                 if (!v.offsetParent) return; // not on screen (e.g. the sign-in logo once you're in)
                 try { v.currentTime = 0; } catch (e) {}
                 const p = v.play();
@@ -2729,13 +3578,14 @@
         }
         (function initLogos() {
             const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            document.querySelectorAll('video.brand-logo').forEach(v => {
+            applyBannerTheme();   // before anyone has signed in, from the html element
+            document.querySelectorAll('video.loop-video').forEach(v => {
                 v.muted = true;
-                v.addEventListener('error', () => logoFallback(v));
-                if (v.error) logoFallback(v);
-                const src = v.querySelector('source') || v;
-                if (src !== v) src.addEventListener('error', () => logoFallback(v));
-                if (still) logoFallback(v);
+                if (still) { videoFallback(v); return; }
+                v.addEventListener('error', () => videoFailed(v));
+                if (v.error) videoFailed(v);
+                const src = v.querySelector('source');
+                if (src) src.addEventListener('error', () => videoFailed(v));
             });
             if (still) return;
             const start = () => { playLogos(); setInterval(playLogos, LOGO_EVERY); };
@@ -2800,7 +3650,7 @@
             grades: [{ cols: '1fr', sections: [[0, { i: 1, grow: true }]] }],
             travel: [{ cols: '1fr', sections: [[{ i: 0, grow: '#travel-boards' }]] }],
             settings: [
-                { label: 'General', cols: '1fr 1fr 1.3fr', sections: [[0, 5], [7], [6, 8, 9]] },
+                { label: 'General', cols: '1fr 1fr 1.3fr', sections: [[0, 5, 6, 7], [8, 10], [9, 11, 12]] },
                 { label: 'Location and trains', cols: '1fr 1fr', sections: [[1], [3]] },
                 { label: 'Calendar and news', cols: '1fr 1fr', sections: [[2], [4]] }
             ]
@@ -2898,7 +3748,7 @@
         // HOME PAGE (v2.3): hide any panel, and Arrange to move them or bring hidden ones back
         // =====================================================================
         const HOME_DEFAULT = {
-            cols: [['money', 'classes', 'quick', 'links'], ['due', 'agenda', 'focus', 'wellbeing'], ['trains', 'newsLocal', 'newsUk', 'newsUni', 'newsSport']],
+            cols: [['money', 'classes', 'quick', 'links', 'settling'], ['due', 'keydates', 'agenda', 'focus', 'wellbeing'], ['trains', 'moon', 'stars', 'newsLocal', 'newsUk', 'newsUni', 'newsSport']],
             hidden: []
         };
         const homePanels = {};
@@ -3013,6 +3863,7 @@
             saveData();
             renderNews();
             renderUseful();
+            renderSettling();
         }
 
         function homeHide(id) {
@@ -3321,7 +4172,7 @@
         // =====================================================================
         // USEFUL SITES
         // Official or long-established UK student sites only, so the links keep
-        // working. Every address here was opened and checked on 13 September 2026.
+        // working. Every address here was opened and checked on 20 September 2026.
         // Add your own by adding a line below; nothing else needs changing.
         // =====================================================================
         const USEFUL_SITES = [
@@ -3342,8 +4193,14 @@
             ]],
             ['Advice', [
                 ['Citizens Advice', 'https://www.citizensadvice.org.uk', 'Housing, contracts, debt, your rights at work'],
-                ['Student Minds', 'https://www.studentminds.org.uk', 'Student mental health charity'],
-                ['NHS', 'https://www.nhs.uk', 'Find a GP, dentist or pharmacy near you']
+                ['Student Minds', 'https://www.studentminds.org.uk', 'Student mental health charity']
+            ]],
+            ['New address', [
+                ['Register with a GP', 'https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/', 'Do this in your first week, not when you are ill'],
+                ['Find a dentist', 'https://www.nhs.uk/nhs-services/dentists/', 'Separate from your GP, and lists are long'],
+                ['NHS 111', 'https://111.nhs.uk', 'Free advice when you are not sure where to go'],
+                ['Register to vote', 'https://www.gov.uk/register-to-vote', 'Five minutes, and you can do your term-time address'],
+                ['Find your council', 'https://www.gov.uk/find-local-council', 'For your council tax student exemption']
             ]]
         ];
 
@@ -4592,7 +5449,7 @@
             'https://overpass-api.de/api/interpreter',
             'https://overpass.kumi.systems/api/interpreter'
         ];
-        const AROUND_KEY = 'dpaul_student_around_v1';
+        const AROUND_KEY = 'dpaul_student_around_v2';  // v5.6: health, libraries and museums added, so old caches are incomplete
         const AROUND_TTL = 30 * 24 * 3600 * 1000;
         const aroundState = { pois: [], key: '', loading: false, error: '', at: 0 };
         const aroundMap = { map: null, layer: null, key: '' };
@@ -4611,12 +5468,19 @@
             return null;
         }
 
+        // Radii are chosen per kind: you'll walk to a corner shop, you'll travel to a
+        // hospital. Hospitals reach furthest because the nearest A&E is often not local.
         function overpassQuery(lat, lon) {
-            return `[out:json][timeout:20];(`
+            return `[out:json][timeout:25];(`
                 + `node["highway"="bus_stop"](around:1200,${lat},${lon});`
                 + `nwr["shop"="supermarket"](around:2500,${lat},${lon});`
                 + `nwr["shop"="convenience"](around:800,${lat},${lon});`
-                + `);out center 80;`;
+                + `nwr["amenity"="hospital"](around:8000,${lat},${lon});`
+                + `nwr["amenity"="doctors"](around:2500,${lat},${lon});`
+                + `nwr["amenity"="pharmacy"](around:2000,${lat},${lon});`
+                + `nwr["amenity"="library"](around:3000,${lat},${lon});`
+                + `nwr["tourism"="museum"](around:5000,${lat},${lon});`
+                + `);out center 180;`;
         }
 
         function shapeOverpass(elements, lat, lon) {
@@ -4625,13 +5489,23 @@
                 const t = el.tags || {};
                 const p = el.center || el;
                 if (typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-                let kind = '', sub = '';
-                if (t.highway === 'bus_stop') { kind = 'bus'; sub = ['Bus stop', t.local_ref || t.ref || ''].filter(Boolean).join(' '); }
-                else if (t.shop === 'supermarket') { kind = 'shop'; sub = 'Supermarket'; }
-                else if (t.shop === 'convenience') { kind = 'shop'; sub = 'Convenience store'; }
+                let kind = '', sub = '', badge = '', fallback = '';
+                if (t.highway === 'bus_stop') { kind = 'bus'; badge = 'B'; fallback = 'Bus stop'; sub = ['Bus stop', t.local_ref || t.ref || ''].filter(Boolean).join(' '); }
+                else if (t.shop === 'supermarket') { kind = 'shop'; badge = 'S'; fallback = 'Shop'; sub = 'Supermarket'; }
+                else if (t.shop === 'convenience') { kind = 'shop'; badge = 'S'; fallback = 'Shop'; sub = 'Convenience store'; }
+                else if (t.amenity === 'hospital') {
+                    kind = 'hospital'; badge = 'H'; fallback = 'Hospital';
+                    // OpenStreetMap marks an A&E department with emergency=yes. Plenty of
+                    // hospitals have no A&E at all, so the two are never merged here.
+                    sub = t.emergency === 'yes' ? 'Hospital with A&E' : t.emergency === 'no' ? 'Hospital, no A&E listed' : 'Hospital, check for A&E';
+                }
+                else if (t.amenity === 'doctors') { kind = 'health'; badge = 'G'; fallback = 'GP surgery'; sub = 'GP surgery'; }
+                else if (t.amenity === 'pharmacy') { kind = 'health'; badge = 'P'; fallback = 'Pharmacy'; sub = 'Pharmacy'; }
+                else if (t.amenity === 'library') { kind = 'library'; badge = 'L'; fallback = 'Library'; sub = 'Library'; }
+                else if (t.tourism === 'museum') { kind = 'museum'; badge = 'M'; fallback = 'Museum'; sub = 'Museum'; }
                 else return;
-                const name = t.name || t.brand || t.operator || (kind === 'bus' ? 'Bus stop' : 'Shop');
-                out.push({ kind, name: String(name).slice(0, 60), sub, lat: p.lat, lon: p.lon, dist: metresBetween(lat, lon, p.lat, p.lon) });
+                const name = t.name || t.brand || t.operator || fallback;
+                out.push({ kind, badge, name: String(name).slice(0, 60), sub, lat: p.lat, lon: p.lon, dist: metresBetween(lat, lon, p.lat, p.lon) });
             });
             // Two stops on opposite sides of the same road are useful; exact duplicates aren't
             const seen = new Set();
@@ -4687,7 +5561,7 @@
                 let old = null;
                 try { old = JSON.parse(localStorage.getItem(AROUND_KEY) || 'null'); } catch (e) {}
                 if (old && old.key === key && Array.isArray(old.pois)) { aroundState.pois = old.pois; aroundState.at = old.at; }
-                aroundState.error = `Bus stops and shops couldn't load: ${lastErr}. Your stations are still shown.`;
+                aroundState.error = `Nearby places couldn't load: ${lastErr}. Your stations are still shown.`;
             }
             aroundState.loading = false;
             renderAround();
@@ -4710,9 +5584,8 @@
                     list.push({ kind: 'station', badge: 'T', name: st.crs, sub: 'Train station', lat: st.lat, lon: st.lon, dist: st.dist }));
             }
             aroundState.pois.forEach(p => {
-                if (p.kind === 'bus' && !show('bus')) return;
-                if (p.kind === 'shop' && !show('shop')) return;
-                list.push({ ...p, badge: p.kind === 'bus' ? 'B' : 'S' });
+                if (!show(p.kind)) return;
+                list.push({ ...p, badge: p.badge || (p.kind === 'bus' ? 'B' : 'S') });
             });
             return list.sort((a, b) => a.dist - b.dist);
         }
@@ -4766,17 +5639,21 @@
             }
 
             const pts = aroundPoints();
-            const counts = { bus: 0, shop: 0 };
-            aroundState.pois.forEach(p => { counts[p.kind]++; });
+            const counts = {};
+            aroundState.pois.forEach(p => { counts[p.kind] = (counts[p.kind] || 0) + 1; });
+            const say = (n, one, many) => `${n || 0} ${n === 1 ? one : (many || one + 's')}`;
             note.textContent = aroundState.error
                 ? aroundState.error
                 : aroundState.loading
-                    ? 'Looking up bus stops and shops near you'
-                    : `${counts.bus} bus stop${counts.bus === 1 ? '' : 's'} and ${counts.shop} shop${counts.shop === 1 ? '' : 's'} near you. Times are a rough walk.`;
+                    ? 'Looking up what\'s near you'
+                    : `Near you: ${say(counts.bus, 'bus stop')}, ${say(counts.shop, 'shop')}, `
+                        + `${say(counts.hospital, 'hospital')}, ${say(counts.health, 'GP or pharmacy', 'GPs and pharmacies')}, `
+                        + `${say(counts.library, 'library', 'libraries')}, ${say(counts.museum, 'museum')}. `
+                        + 'Tick what you want to see. Times are a rough walk.';
 
             listEl.innerHTML = pts.slice(0, 30).map(p => `
                 <li class="around-row" onclick="focusAround(${p.lat}, ${p.lon})" title="Show on the map">
-                    <span class="around-badge">${esc(p.badge)}</span>
+                    <span class="around-badge ${esc(p.kind)}">${esc(p.badge)}</span>
                     <span class="around-main"><span class="around-name">${esc(p.name)}</span><span class="around-sub">${esc(p.sub)}</span></span>
                     <span class="around-dist">${esc(prettyDistance(p.dist))} &middot; ${walkMins(p.dist)} min</span>
                 </li>`).join('') || '<li class="empty">Nothing found near your location.</li>';
@@ -5074,14 +5951,36 @@
         // =====================================================================
         // SETTINGS + RENDER ALL + INIT
         // =====================================================================
-        // v4.6: one look, so there's nothing to switch between any more.
+        // v5.5: two backgrounds, white or a light matt grey. Black text either way.
+        // The choice is kept twice on purpose: in your data, so it comes with a backup,
+        // and in its own browser key, so the page can paint grey before anything else runs.
+        const THEME_KEY = 'dpaul_student_theme';
+        const THEME_BG = { light: '#ffffff', grey: '#d8d8d6' };
+        function currentTheme() {
+            const t = (data && data.settings && data.settings.theme) || '';
+            return t === 'grey' ? 'grey' : 'light';
+        }
         function applyTheme() {
-            document.documentElement.removeAttribute('data-theme');
-            const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = '#ffffff';
+            const t = currentTheme();
+            if (t === 'grey') document.documentElement.setAttribute('data-theme', 'grey');
+            else document.documentElement.removeAttribute('data-theme');
+            const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = THEME_BG[t];
+            try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+            if (typeof applyBannerTheme === 'function') applyBannerTheme();
+            const sel = $('set-theme');
+            if (sel && sel.value !== t) sel.value = t;
+        }
+        function setTheme(v) {
+            data.settings.theme = v === 'grey' ? 'grey' : 'light';
+            saveData();
+            applyTheme();
+            flash('set-theme-status', data.settings.theme === 'grey' ? 'Grey it is.' : 'Back to white.');
         }
 
         function renderSettings() {
             applyTheme();
+            renderTermRows();
+            renderSignSettings();
             renderNewsSettings();
             $('set-place-current').textContent = data.settings.place;
             renderAccount();
@@ -6720,6 +7619,7 @@
             renderTimetable(); renderProjects(); renderGrades(); renderSettings(); renderTimer();
             renderMusicLibrary(); renderNowPlaying(); renderFood(); renderSetupPill();
             renderHomeLayout(); renderNews(); renderNudge(); renderUseful();
+            renderKeyDates(); renderSettling(); renderMoon(); renderHoroscope();
         }
 
         function startApp() {
