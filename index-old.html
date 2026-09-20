@@ -39,8 +39,7 @@
          so no new third party. display=swap, so if it's slow the line shows in the
          fallback rather than not at all. To self-host instead, drop caveat.woff2 in
          assets/, delete this link and uncomment the @font-face below. -->
-    <!-- Caveat is unused since v6.8 (the handwritten tagline was removed). Uncomment to bring it back.
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="cookie-consent.js" defer></script>
     <style>
@@ -94,33 +93,6 @@
         /* The title is a short video (v5.7). Same box as the still image it replaces, and
            a transparent background so it sits on either display colour. */
         video.title-banner { background: transparent; pointer-events: none; }
-        /* Title as live text (v6.8): the banner video is gone and the heading says its own
-           name again, in the same blue the tagline used. !important because a later rule
-           paints every .header-left h1 black. Sizing still comes from the h1 rules above,
-           so the screen-size steps are unchanged. */
-        .title-text { color: var(--ink-accent, #007bff) !important; margin: 0;
-            /* White plate behind the title (v6.9). inline-block so the box hugs the words
-               rather than running the width of the header. Padding is in em, so it keeps its
-               proportions at every font size step. The soft shadow is there for the white
-               display setting, where the plate would otherwise be invisible. */
-            display: inline-block; background: #fff; border-radius: 14px;
-            padding: 0.16em 0.42em; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.14); }
-        /* The words are sized against the heading rather than set in their own rem value,
-           so every screen-size step above still governs and this just takes a slice off it. */
-        .title-words { font-size: 0.85em; }
-        /* Only "- STUDENT EDITION" fades (v7.1); LIFE and the plate stay put. Opacity alone,
-           so the box keeps its width and nothing shuffles along while the words are away. */
-        .title-sub { animation: title-cycle 14s ease-in-out infinite; }
-        /* 14 second round trip: 10s full, 1s out, 2s away, 1s back. */
-        @keyframes title-cycle {
-            0%, 71.4% { opacity: 1; }
-            78.6%, 92.9% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        /* Anyone who has asked for less movement keeps the title sitting still. */
-        @media (prefers-reduced-motion: reduce) {
-            .title-sub { animation: none; opacity: 1; }
-        }
         /* The handwritten line beside the banner (v6.7). Flex row so it sits to the right
            of the banner on a wide screen and drops underneath on a narrow one, rather than
            squeezing the banner. Caveat runs small for its point size, so it is set larger
@@ -1192,7 +1164,7 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1 class="title-text"><span class="title-words">LIFE<span class="title-sub"> - STUDENT EDITION</span></span></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
@@ -1252,7 +1224,8 @@
     <div class="header">
         <div class="header-left">
             <div class="brand-row">
-                <h1 class="title-text"><span class="title-words">LIFE<span class="title-sub"> - STUDENT EDITION</span></span></h1>
+                <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+                <div class="tagline">Private by design. Not by promise.</div>
             </div>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
@@ -2600,17 +2573,6 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
-        // v7.1  Only "- STUDENT EDITION" fades now. LIFE and the white plate hold steady.
-        // v7.0  The title is a little smaller against the heading size, and it now fades:
-        //       ten seconds showing, a second to fade out, two away, a second back, on a loop.
-        //       Opacity only, so nothing on the page moves, and it holds still for anyone with
-        //       reduced motion turned on.
-        // v6.9  The title sits on a white rounded plate on both screens.
-        // v6.8  The title banner video is replaced by the words LIFE - STUDENT EDITION, set
-        //       in blue as live text in the header and on the sign-in screen. The handwritten
-        //       "Private by design. Not by promise." line beside it has been removed. Nothing
-        //       to load and nothing to fall back to, so the title is there the moment the page
-        //       paints and reads correctly to a screen reader without the hidden duplicate.
         // v6.7  "Private by design. Not by promise." now sits beside the title banner in
         //       the header, handwritten in Caveat. It is live text rather than part of the
         //       banner artwork, so it stays sharp on any screen, recolours with the Display
@@ -2796,7 +2758,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.1';
+        const APP_VERSION = '6.7';
 
         // =====================================================================
         // CONFIG: set these before you deploy
