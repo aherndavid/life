@@ -21,6 +21,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=block" rel="stylesheet">
+    <!-- Caveat (v6.7): the handwritten line beside the banner. Same font host as Doto,
+         so no new third party. display=swap, so if it's slow the line shows in the
+         fallback rather than not at all. To self-host instead, drop caveat.woff2 in
+         assets/, delete this link and uncomment the @font-face below. -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="cookie-consent.js" defer></script>
     <style>
@@ -74,6 +79,26 @@
         /* The title is a short video (v5.7). Same box as the still image it replaces, and
            a transparent background so it sits on either display colour. */
         video.title-banner { background: transparent; pointer-events: none; }
+        /* The handwritten line beside the banner (v6.7). Flex row so it sits to the right
+           of the banner on a wide screen and drops underneath on a narrow one, rather than
+           squeezing the banner. Caveat runs small for its point size, so it is set larger
+           than the text around it, which is the opposite of the usual tagline treatment. */
+        .brand-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .brand-row h1 { margin: 0; }
+        .tagline {
+            font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive;
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: .3px;
+            color: var(--ink-accent, #007bff);
+            white-space: nowrap;
+            padding-bottom: 4px;
+        }
+        /* To self-host: put caveat.woff2 in assets/ and uncomment.
+        @font-face { font-family: 'Caveat'; src: url('assets/caveat.woff2') format('woff2');
+            font-weight: 600; font-style: normal; font-display: swap; }
+        */
         /* Read by screen readers, invisible on screen: the heading still says its name
            even though what you see is a video. */
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -325,6 +350,8 @@
             .header-left h1 { font-size: 2.2rem; letter-spacing: 1px; line-height: 1.15; white-space: normal; }
             .header-right { justify-content: flex-start; }
             .header-left .clock, .header-left .greeting { font-size: 1rem; }
+            .brand-row { gap: 6px 12px; }
+            .tagline { font-size: 1.25rem; white-space: normal; padding-bottom: 0; }
             .header-left .weather-widget { font-size: 0.95rem; }
             .header-right img, .header-right .brand-logo { max-height: 50px; height: 50px; }
             .tab-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -811,7 +838,7 @@
         /* Light matt grey (v5.5): the same black-on-light look, with the white swapped for a
            flat grey. Only the background shades, lines and the greys that sit on them move;
            the text stays black, the buttons stay blue and the departure boards are untouched. */
-        :root[data-theme="grey"] { color-scheme: light; --bg: #d8d8d6; --panel: #d2d2d0;
+        :root[data-theme="grey"] { --ink-accent: #0062cc; color-scheme: light; --bg: #d8d8d6; --panel: #d2d2d0;
             --panel-2: #c4c5c6; --panel-3: #b7b9bb; --line: #a8a8a6; --rule: #c6c6c4; --table-bg: #d8d8d6;
             --fg: #2b2b2b; --fg-hi: #000; --fg-soft: #4a4a4a; --fg-muted: #565654; --fg-dim: #8d8d8b; --fg-ph: #66665f;
             --tint: #cccece; --tint-2: #c0c6cd;
@@ -1182,7 +1209,10 @@
 
     <div class="header">
         <div class="header-left">
-            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <div class="brand-row">
+                <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+                <div class="tagline">Private by design. Not by promise.</div>
+            </div>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
                 <div class="clock" id="live-clock">Loading time...</div>
@@ -2529,6 +2559,12 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.7  "Private by design. Not by promise." now sits beside the title banner in
+        //       the header, handwritten in Caveat. It is live text rather than part of the
+        //       banner artwork, so it stays sharp on any screen, recolours with the Display
+        //       setting and can be read aloud. Header only: the sign-in screen keeps its
+        //       plainer wording, because the email address you type there does leave the
+        //       device and an absolute claim would not be true on that screen.
         // v6.6  Privacy notice and terms of use added as their own pages, linked from the
         //       welcome screen, the sign-in screen, the footer and the guide. A cookie banner
         //       now asks before Google Analytics loads, and it loads only if you say yes.
@@ -2708,7 +2744,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.6';
+        const APP_VERSION = '6.7';
 
         // =====================================================================
         // CONFIG: set these before you deploy
