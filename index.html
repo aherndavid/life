@@ -1096,7 +1096,7 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
@@ -1152,9 +1152,9 @@
         </div>
     </div>
 
-<div class="header">
+    <div class="header">
         <div class="header-left">
-            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
                 <div class="clock" id="live-clock">Loading time...</div>
@@ -2495,7 +2495,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
-        // v6.1  Two for the window sill. Moon tonight draws the real phase of the moon,
+        // v6.1  The title banner rests half a second before the end of its clip, so it holds
+        //       on the title rather than on the fade to black. The dpaul logo still plays out
+        //       in full. Plus, two for the window sill: Moon tonight draws the real phase of the moon,
         //       worked out on the device from the length of a lunar month, with how much is
         //       lit and when the next full and new moons land. Your stars needs the day and
         //       month you were born, typed into Settings, and works out your sign from that.
@@ -2639,7 +2641,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.0';
+        const APP_VERSION = '6.1';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -3567,7 +3569,7 @@
             videoFallback(v);
         }
 
-       function playLogos() {
+        function playLogos() {
             if (document.hidden) return;
             document.querySelectorAll('video.loop-video').forEach(v => {
                 if (!v.offsetParent) return; // not on screen (e.g. the sign-in logo once you're in)
@@ -3584,15 +3586,18 @@
                 v.muted = true;
                 if (still) { videoFallback(v); return; }
                 v.addEventListener('error', () => videoFailed(v));
-                
-                // --- PAUSES VIDEO JUST BEFORE THE BLACK FRAME ---
-                v.addEventListener('timeupdate', () => {
-                    // Stop 0.5s before the end. Change to 0.8 if it still fades too much.
-                    if (v.duration && v.duration - v.currentTime <= 0.5) {
-                        v.pause();
-                    }
+
+                // Rest before the end rather than on it (v6.1). The banner fades to black
+                // in its last half second, which looked like the title had switched off.
+                // Only clips that ask for it stop early, via data-stop-early, so the logo
+                // still plays its fade out in full. Never trims more than half the clip.
+                const early = parseFloat(v.dataset.stopEarly || 0);
+                if (early > 0) v.addEventListener('timeupdate', () => {
+                    const d = v.duration;
+                    if (!d || !isFinite(d)) return;
+                    if (d - v.currentTime <= Math.min(early, d / 2)) v.pause();
                 });
-                
+
                 if (v.error) videoFailed(v);
                 const src = v.querySelector('source');
                 if (src) src.addEventListener('error', () => videoFailed(v));
