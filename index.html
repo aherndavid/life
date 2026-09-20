@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="auth-locked">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-70HG5SM804"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-70HG5SM804');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Life - Student Edition by dPaul Studio: budget, tasks, deadlines, timetable, grades, calendar and live trains in one place.">
@@ -31,6 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=block" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="cookie-consent.js" defer></script>
     <style>
         body { 
             font-family: sans-serif; 
@@ -1118,12 +1110,13 @@
             <h2 id="welcome-title">Welcome to <span style="white-space: nowrap;">Life - Student</span> Edition</h2>
             <p class="welcome-lead">Your own personal tool for keeping track of your money and your studies, while keeping a close eye on your budget and your wellbeing.</p>
             <p class="welcome-note beta"><strong>This is the beta version.</strong> If you have a suggestion or something you'd like to raise, use <strong>Send feedback</strong> in Settings.</p>
-            <p class="welcome-note data"><strong>Your data stays on your device.</strong> Your budget, studies and plans are stored in this browser and are never shared. The only thing we keep is the email address you sign in with.</p>
+            <p class="welcome-note data"><strong>Your data stays on your device.</strong> Your budget, studies and plans are stored in this browser and are never shared. The only things we keep are the email address and first name you sign in with.</p>
             <button id="welcome-go" onclick="closeWelcome()">Get started</button>
         </main>
         <div class="auth-foot">
             Life - Student Edition by <a href="https://dpaul.studio" target="_blank" rel="noopener">dPaul Studio</a>.
             More apps and tools at <a href="https://www.dpaul-software.uk" target="_blank" rel="noopener">www.dpaul-software.uk</a>
+            <br><a href="privacy-policy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="#" onclick="if(window.dpaulCookies){window.dpaulCookies.open();}return false;">Cookie settings</a>
         </div>
     </div>
 
@@ -1182,6 +1175,7 @@
         <div class="auth-foot">
             Life - Student Edition by <a href="https://dpaul.studio" target="_blank" rel="noopener">dPaul Studio</a>.
             More apps and tools at <a href="https://www.dpaul-software.uk" target="_blank" rel="noopener">www.dpaul-software.uk</a>
+            <br><a href="privacy-policy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="#" onclick="if(window.dpaulCookies){window.dpaulCookies.open();}return false;">Cookie settings</a>
             <br><span id="auth-version"></span>
         </div>
     </div>
@@ -2057,6 +2051,16 @@
                     <span id="data-status" class="status-ok"></span>
                 </div>
 
+                <div class="container">
+                    <h2 style="margin-top: 0;">Privacy and cookies</h2>
+                    <p class="note">The <a href="privacy-policy.html" target="_blank" rel="noopener">privacy notice</a> and <a href="terms.html" target="_blank" rel="noopener">terms of use</a> open in a new tab.</p>
+                    <div class="row-gap">
+                        <button class="btn-help" onclick="openCookieSettings()">Change cookie choice</button>
+                        <button class="btn-teal" id="btn-yt-consent" onclick="toggleYouTubeConsent()">Background music</button>
+                    </div>
+                    <p class="note" id="consent-note" style="margin-top: 10px;"></p>
+                </div>
+
                 <div class="container" id="settings-admin">
                     <h2 style="margin-top: 0;">Admin</h2>
                     <div id="admin-locked">
@@ -2479,7 +2483,7 @@
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked. Working out which stations are nearest happens inside the app, so your location isn't sent anywhere for that.</li>
                         <li><strong>The map on Travel:</strong> to find the bus stops and shops near you, your location rounded to about 100 metres goes to OpenStreetMap's public map service. Your exact position is never sent, and the answer is kept in this browser for a month so it's only asked once.</li>
                         <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to the news sites it reads, never your exact location. It doesn't record who asked. Opening a headline takes you to whichever site published it, shown under each one.</li>
-                        <li><strong>Music:</strong> YouTube videos play from YouTube, which has its own privacy rules.</li>
+                        <li><strong>Music:</strong> nothing at all is asked of YouTube until you press play and agree. After that the player uses YouTube's no-cookie address, and YouTube's own privacy rules apply. You can change your mind under Privacy and cookies in Settings.</li>
                     </ul>
                     <p>Like any website, these services see a normal web request, which includes your internet address.</p>
                 </details>
@@ -2500,7 +2504,7 @@
                     <summary>Is it safe on a shared or university computer?</summary>
                     <p>Press <strong>Sign out</strong> in Settings when you finish. Your information still stays in that browser after you sign out, so on a computer other people use, it's safest to use your own device or browser profile, or press Delete all my data before you leave.</p>
                 </details>
-                <p class="muted" style="margin: 14px 0 0;">A full privacy notice is coming soon. If you have any questions about your data in the meantime, <a class="support-mail" href="mailto:david@dpaul.studio?subject=Privacy%20question%20about%20Life%20-%20Student%20Edition">email support</a>.</p>
+                <p class="muted" style="margin: 14px 0 0;">The formal version of all this is in the <a href="privacy-policy.html" target="_blank" rel="noopener">privacy notice</a>, alongside the <a href="terms.html" target="_blank" rel="noopener">terms of use</a>. Anything else about your data, <a class="support-mail" href="mailto:david@dpaul.studio?subject=Privacy%20question%20about%20Life%20-%20Student%20Edition">email support</a>.</p>
 
                 <div class="guide-support" id="guide-support">
                     <h3>Still stuck?</h3>
@@ -2518,12 +2522,19 @@
         <a href="#" class="support-link" onclick="openSupport(); return false;">Feeling rubbish? Talk to someone</a><br>
         Life - Student Edition by <a href="https://dpaul.studio" target="_blank" rel="noopener">dPaul Studio</a>.
         More apps and tools at <a href="https://www.dpaul-software.uk" target="_blank" rel="noopener">www.dpaul-software.uk</a>
+        <br><a href="privacy-policy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="#" onclick="if(window.dpaulCookies){window.dpaulCookies.open();}return false;">Cookie settings</a>
     </div>
 
     <script>
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.6  Privacy notice and terms of use added as their own pages, linked from the
+        //       welcome screen, the sign-in screen, the footer and the guide. A cookie banner
+        //       now asks before Google Analytics loads, and it loads only if you say yes.
+        //       The YouTube music player is held back until you press play and agree, and it
+        //       uses YouTube's no-cookie address once you do. Both choices can be changed
+        //       under Privacy and cookies in Settings.
         // v6.5  Fixed: choosing a background picture appeared to do nothing. The picture was
         //       being stored and applied correctly, but body carried its own solid colour,
         //       which paints over a layer sitting at z-index -1. Body is transparent now and
@@ -2697,7 +2708,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.5';
+        const APP_VERSION = '6.6';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -6182,6 +6193,30 @@
         let ytPlayer = null, ytReady = false, ytApiPromise = null;
         let pendingAutoplay = false, musicState = -1, musicSeeking = false, musicTick = null;
 
+        // Consent gate (v6.6): YouTube sets its own cookies the moment the iframe
+        // loads, so nothing is requested from it until the player is explicitly
+        // allowed. The choice lives in cookie-consent.js alongside the analytics one.
+        function youtubeAllowed() {
+            return !!(window.dpaulCookies && window.dpaulCookies.youtubeAllowed());
+        }
+        function resetPlayerBox(html) {
+            $('music-player-wrap').innerHTML = html;
+        }
+        function showYouTubeConsent() {
+            resetPlayerBox('<div id="yt-player" class="music-placeholder" style="display:flex; flex-direction:column; gap:10px; justify-content:center; padding:16px; text-align:center;">'
+                + '<span>Music plays through YouTube, which sets its own cookies as soon as it loads. Nothing has been asked of YouTube yet.</span>'
+                + '<span><button class="btn-teal" onclick="allowYouTubeAndPlay()">Allow YouTube and play</button></span>'
+                + '<span class="muted" style="font-size:0.85rem;"><a href="privacy-policy.html" target="_blank" rel="noopener">What this means</a></span>'
+                + '</div>');
+        }
+        function allowYouTubeAndPlay() {
+            if (window.dpaulCookies) window.dpaulCookies.allowYouTube();
+            resetPlayerBox('<div id="yt-player" class="music-placeholder">Starting...</div>');
+            renderConsentSettings();
+            renderMusicLibrary();
+            startPlayer(true);
+        }
+
         function loadYouTubeAPI() {
             if (window.YT && window.YT.Player) return Promise.resolve();
             if (ytApiPromise) return ytApiPromise;
@@ -6231,6 +6266,7 @@
         const infoTried = new Set();
         async function fetchTrackInfo(t) {
             if (t.title || infoTried.has(t.id)) return;
+            if (!youtubeAllowed()) return;   // don't touch YouTube before it's allowed
             infoTried.add(t.id);
             try {
                 const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(trackPageUrl(t))}`);
@@ -6346,6 +6382,7 @@
             const t = currentTrack();
             if (!t) return;
             showMusicError('');
+            if (!youtubeAllowed()) { showYouTubeConsent(); return; }
             try { await loadYouTubeAPI(); }
             catch (e) { showMusicError('YouTube couldn\'t load. Check your connection, or pause your ad blocker for this site.'); return; }
             if (ytPlayer && ytReady) { loadIntoPlayer(autoplay); return; }
@@ -6354,6 +6391,8 @@
             const playerVars = { playsinline: 1, rel: 0 };
             if (location.protocol.startsWith('http')) playerVars.origin = location.origin;
             ytPlayer = new YT.Player('yt-player', {
+                // Privacy-enhanced domain: YouTube holds back rather more on this one
+                host: 'https://www.youtube-nocookie.com',
                 width: '100%', height: '100%', playerVars,
                 events: {
                     onReady: () => { ytReady = true; ytPlayer.setVolume(Number(data.music.volume)); loadIntoPlayer(pendingAutoplay); },
@@ -8103,6 +8142,34 @@
         }
 
         // ---- Welcome screen: first visit on each device (or ?welcome to preview it) ----
+        // Consent controls in Settings (v6.6)
+        function openCookieSettings() {
+            if (window.dpaulCookies) window.dpaulCookies.open();
+        }
+        function toggleYouTubeConsent() {
+            if (!window.dpaulCookies) return;
+            if (youtubeAllowed()) {
+                window.dpaulCookies.revokeYouTube();
+                try { if (ytPlayer && ytPlayer.destroy) ytPlayer.destroy(); } catch (e) {}
+                ytPlayer = null; ytReady = false;
+                resetPlayerBox('<div id="yt-player" class="music-placeholder">Paste a YouTube link below to start listening.</div>');
+            } else {
+                window.dpaulCookies.allowYouTube();
+            }
+            renderConsentSettings();
+        }
+        function renderConsentSettings() {
+            const btn = $('btn-yt-consent'), note = $('consent-note');
+            if (!btn || !note) return;
+            const on = youtubeAllowed();
+            btn.textContent = on ? 'Turn off the YouTube player' : 'Allow the YouTube player';
+            const c = window.dpaulCookies && window.dpaulCookies.choice();
+            const counting = c && c.analytics ? 'Visits are being counted.' : 'Visits are not being counted.';
+            note.textContent = counting + ' ' + (on
+                ? 'The music player is allowed to load YouTube.'
+                : 'Nothing is asked of YouTube until you allow the music player.');
+        }
+
         const WELCOME_KEY = 'dpaul_student_seen_welcome';
         function showWelcomeIfNew() {
             let seen = false;
@@ -8125,6 +8192,7 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             $('auth-version').textContent = 'v' + APP_VERSION;
+            renderConsentSettings();
             showWelcomeIfNew();
             try { $('auth-email').value = localStorage.getItem('dpaul_student_last_email') || ''; } catch (e) {}
             $('auth-name').value = storedName();
