@@ -823,6 +823,20 @@
             background-position: center; background-size: cover; background-repeat: no-repeat;
             background-attachment: scroll; opacity: 0; transition: opacity .25s ease; }
         @media (prefers-reduced-motion: reduce) { #bg-layer { transition: none; } }
+        /* Let the picture through the panels (v6.4). The panel colour keeps most of its
+           weight so text stays readable, and a light blur behind it stops a busy photo
+           fighting the words. Modals, menus and the sign-in card stay solid: a photo
+           behind a form is where readability actually breaks down. */
+        html.bg-through .container,
+        html.bg-through .card,
+        html.bg-through .summary-card,
+        html.bg-through .meal-card,
+        html.bg-through .wx-day {
+            background: color-mix(in srgb, var(--panel) 78%, transparent);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+        html.bg-through table { background: transparent; }
         #bg-preview { width: 100%; max-width: 320px; height: 110px; border: 1px solid var(--line);
             border-radius: 6px; background-position: center; background-size: cover;
             background-color: var(--panel-2); margin: 10px 0; }
@@ -1950,6 +1964,8 @@
                     </div>
                     <label for="bg-opacity">How strong, <span id="bg-opacity-val"></span></label>
                     <input type="range" id="bg-opacity" min="3" max="60" step="1" oninput="setBackgroundOpacity(this.value)" style="max-width: 320px; width: 100%;">
+                    <label class="inline" style="margin-top: 10px;"><input type="checkbox" class="task-checkbox" id="bg-through" onchange="setBackgroundThrough(this.checked)"> Let it show through the boxes too</label>
+                    <p class="note" style="margin: 4px 0 0;">Off, and your picture only shows around the edges. On, and it comes through the panels as well. Turn it off if anything gets hard to read.</p>
                     <span id="bg-status" class="status-ok"></span>
                 </div>
 
@@ -2497,6 +2513,11 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.4  The background picture now comes through the panels as well as around them,
+        //       so it's visible where you actually look. The panel colour keeps most of its
+        //       weight and there's a slight blur behind it, so nothing gets hard to read, and
+        //       there's a tick box to turn it off. Modals, menus and the sign-in card stay
+        //       solid on purpose.
         // v6.3  Google Calendar is gone. Reading somebody's whole calendar -- where they are,
         //       who they're seeing, appointments that are nobody's business -- to show them a
         //       list they already had wasn't a fair swap, and it would have meant a Google
@@ -2661,7 +2682,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.3';
+        const APP_VERSION = '6.4';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -3325,7 +3346,7 @@
                     travel: { stations: [], autoStations: true, map: { size: 'm', min: false, hidden: false } },
                     firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, wxOpen: false,
-                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: '', theme: 'light', bgOpacity: 18
+                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: '', theme: 'light', bgOpacity: 18, bgThrough: true
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
@@ -4988,18 +5009,27 @@
             const n = Number(data.settings.bgOpacity);
             return isFinite(n) && n >= 3 && n <= 60 ? n : 18;
         }
+        function bgThrough() { return data.settings.bgThrough !== false; }
         function applyBackground() {
             const layer = $('bg-layer');
             if (layer) {
                 layer.style.backgroundImage = bgImage ? `url("${bgImage}")` : '';
                 layer.style.opacity = bgImage ? bgOpacity() / 100 : 0;
             }
+            document.documentElement.classList.toggle('bg-through', !!bgImage && bgThrough());
+            const through = $('bg-through');
+            if (through) through.checked = bgThrough();
             const prev = $('bg-preview');
             if (prev) prev.style.backgroundImage = bgImage ? `url("${bgImage}")` : '';
             const slider = $('bg-opacity');
             if (slider && document.activeElement !== slider) slider.value = String(bgOpacity());
             const val = $('bg-opacity-val');
             if (val) val.textContent = bgImage ? `${bgOpacity()}%` : 'no picture yet';
+        }
+        function setBackgroundThrough(on) {
+            data.settings.bgThrough = !!on;
+            saveData();
+            applyBackground();
         }
         function setBackgroundOpacity(v) {
             data.settings.bgOpacity = Number(v);
