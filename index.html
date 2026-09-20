@@ -21,7 +21,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@600;700;800;900&display=block" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { 
@@ -818,6 +817,15 @@
             --danger-bg: #ecd7d5; --danger-line: #c9a09d;
             --ok-bg: #cfe0d4; }
         html { background: var(--bg); }
+        /* Your own background (v6.3): a fixed layer between the page colour and the
+           content. Panels stay solid, so nothing has to be read through a photo. */
+        #bg-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-position: center; background-size: cover; background-repeat: no-repeat;
+            background-attachment: scroll; opacity: 0; transition: opacity .25s ease; }
+        @media (prefers-reduced-motion: reduce) { #bg-layer { transition: none; } }
+        #bg-preview { width: 100%; max-width: 320px; height: 110px; border: 1px solid var(--line);
+            border-radius: 6px; background-position: center; background-size: cover;
+            background-color: var(--panel-2); margin: 10px 0; }
         body { background: var(--bg); color: var(--fg); font-family: sans-serif; font-weight: 400; }
         h1, h2, h3, h4, .tab-btn, button, label, strong, b, th { font-weight: bold; }
         button, input, select, textarea { font-family: inherit; }
@@ -1074,6 +1082,7 @@
     </style>
 </head>
 <body>
+<div id="bg-layer" aria-hidden="true"></div>
 
     <!-- Welcome screen (v1.7): first visit on each device. Add ?welcome to the address to see it again. -->
     <div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
@@ -1291,17 +1300,14 @@
                     <div id="train-content" class="panel-scroll"></div>
                 </div>
 
-                <div class="container home-panel grow" data-panel="agenda" data-name="Agenda">
+                <div class="container home-panel grow" data-panel="agenda" data-name="Your day">
                     <div class="controls-row">
-                        <div class="row-gap" style="gap: 6px;">
-                            <h2>Agenda</h2>
-                            <button class="btn-cal-filter" onclick="fetchCalendar(7)">7D</button>
-                            <button class="btn-cal-filter" onclick="fetchCalendar(30)">30D</button>
-                        </div>
+                        <h2>Your day <span class="news-src" id="day-date"></span></h2>
                         <button class="btn-toggle panel-hide" onclick="homeHide('agenda')">Hide</button>
                     </div>
-                    <div id="calendar-content" class="panel-scroll">
-                        <ul class="task-list" id="calendar-list"></ul>
+                    <p class="note" id="day-summary" style="margin: 0 0 10px;"></p>
+                    <div class="panel-scroll">
+                        <ul class="task-list" id="day-list"></ul>
                     </div>
                 </div>
 
@@ -1850,25 +1856,12 @@
                 </div>
 
                 <div class="container">
-                    <h2 style="margin-top: 0;">Google Calendar</h2>
-                    <p class="note">Connect to see your Google Calendar agenda on the Home Page. Read-only: this page can't add, delete or change anything. Nothing leaves your browser except the requests to Google.</p>
+                    <h2 style="margin-top: 0;">Your calendar</h2>
+                    <p class="note">This app doesn't ask to read your calendar, and it never will. Connecting one would mean handing over permission to everything in it -- where you are, who you're seeing, appointments you'd rather keep to yourself -- and that's a lot to ask for the sake of showing a list.</p>
+                    <p class="note">It works the other way round instead. <strong>Key dates</strong> below builds a calendar file of your term dates and deadlines that opens straight into Google, Apple or Outlook, so the reminders land in the app that already nags you. Nothing to connect, nothing to approve.</p>
                     <div class="row-gap">
-                        <button id="btn-google-connect" onclick="connectGoogle()">Connect Google</button>
-                        <button id="btn-google-disconnect" class="btn-toggle" style="padding: 12px 20px; font-size: 1rem;" onclick="disconnectGoogle()">Disconnect</button>
-                        <span id="google-status" class="muted"></span>
+                        <button class="btn-teal" onclick="downloadKeyDates()">Download calendar file</button>
                     </div>
-                    <details class="help-details" id="google-help">
-                        <summary>Connecting for the first time? What you'll see</summary>
-                        <ol>
-                            <li>Press <strong>Connect Google</strong>. A Google window opens. If nothing happens, your browser blocked the pop-up: allow pop-ups for this site and press it again.</li>
-                            <li>Choose the Google account your calendar is on.</li>
-                            <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This shows while the app is being tested and is expected.</li>
-                            <li>If asked, tick the box to let the app <strong>see your calendar events</strong>, then press <strong>Continue</strong>. Without that tick, your agenda stays empty.</li>
-                            <li>Your next 7 days of events appear under Agenda on the Home Page.</li>
-                        </ol>
-                        <p><strong>"Access blocked"</strong> or <strong>"has not completed the Google verification process"</strong> means your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
-                        <p>Google signs you out after about an hour. When the agenda says your session expired, press <strong>Reconnect</strong>. To remove access completely, press Disconnect, or go to your Google Account under Security, then Third-party connections.</p>
-                    </details>
                 </div>
 
                 <div class="container">
@@ -1947,6 +1940,17 @@
                         <option value="grey">Light matt grey</option>
                     </select>
                     <span id="set-theme-status" class="status-ok"></span>
+
+                    <h3 style="margin: 22px 0 4px;">Background picture</h3>
+                    <p class="note">A photo of your own behind the app. It's faded down so everything stays readable, and it's saved in this browser only -- it never leaves your device and it isn't part of your backup file.</p>
+                    <div id="bg-preview" role="img" aria-label="Background preview"></div>
+                    <div class="row-gap" style="margin-bottom: 10px;">
+                        <input type="file" id="bg-file" accept="image/*" onchange="pickBackground(this)" style="max-width: 320px;">
+                        <button class="btn-toggle" style="padding: 10px 15px; font-size: 1rem;" onclick="clearBackground()">Remove</button>
+                    </div>
+                    <label for="bg-opacity">How strong, <span id="bg-opacity-val"></span></label>
+                    <input type="range" id="bg-opacity" min="3" max="60" step="1" oninput="setBackgroundOpacity(this.value)" style="max-width: 320px; width: 100%;">
+                    <span id="bg-status" class="status-ok"></span>
                 </div>
 
                 <div class="container">
@@ -2288,7 +2292,7 @@
                         <li>Go to <strong>Budget</strong> and enter how much is in your bank account and when your next payment arrives.</li>
                         <li>Add your classes in <strong>Timetable</strong>.</li>
                         <li>Add your assignment and exam dates in <strong>Deadlines</strong>.</li>
-                        <li>If you like, connect your Google Calendar in <strong>Settings</strong>. Your trains are already sorted by the location you set in step one.</li>
+                        <li>Put your term dates into <strong>Settings</strong>, then download the calendar file so your dates land in the calendar on your phone. Your trains are already sorted by the location you set in step one.</li>
                     </ol>
                     <p style="margin: 14px 0 0; font-size: 1.05rem;">Prefer to be shown? Guided set up points to each step with red arrows.</p>
                     <button style="margin-top: 12px;" onclick="closeGuide(); startSetup(0);">Start Guided Set Up</button>
@@ -2358,18 +2362,16 @@
 
                 <h3 class="guide-section-title" id="guide-help">Step-by-step help</h3>
 
-                <details class="help-details" id="help-google">
-                    <summary>Connect your Google Calendar</summary>
+                <details class="help-details" id="help-calendar">
+                    <summary>Get your dates into your phone's calendar</summary>
+                    <p>This app doesn't ask to read your calendar. Connecting one means handing an app permission to see everything in it, and for the sake of showing you a list you already have, that isn't a fair trade. It works the other way round instead.</p>
                     <ol>
-                        <li>Go to <strong>Settings</strong> and press <strong>Connect Google</strong>.</li>
-                        <li>Choose the Google account your calendar is on.</li>
-                        <li>If Google says <strong>"Google hasn't verified this app"</strong>, press <strong>Continue</strong>. This is normal while the app is new.</li>
-                        <li>Tick the box that lets the app <strong>see your calendar</strong>, then press <strong>Continue</strong>.</li>
-                        <li>Your events now show under Agenda on the Home Page.</li>
+                        <li>Go to <strong>Settings</strong> and fill in your term dates under <strong>Key dates</strong>.</li>
+                        <li>Press <strong>Download calendar file</strong>.</li>
+                        <li>Open the file that downloads. Your phone or laptop asks which calendar to put the dates in.</li>
                     </ol>
-                    <p><strong>Seeing "Access blocked"?</strong> Your email needs adding to the app first. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Please%20add%20me%20to%20Life%20-%20Student%20Edition">Email support</a> with the Gmail address you use and you'll be added.</p>
-                    <p><strong>Nothing happened when you pressed the button?</strong> Your browser blocked the pop-up window. Allow pop-ups for this site and try again.</p>
-                    <p>Google signs you out after about an hour. Just press <strong>Reconnect</strong> when asked.</p>
+                    <p>Your term dates, your deadlines and the national dates all go across in one go, and your usual calendar app does the reminding. They go in as one-off entries, so if your term dates change, take the old ones out of your calendar and download a fresh file.</p>
+                    <p>What's coming up also shows on the Home Page under <strong>Your day</strong> and <strong>Key dates</strong>, without going anywhere near your calendar.</p>
                 </details>
 
                 <details class="help-details" id="help-travel">
@@ -2437,9 +2439,9 @@
                     <p>No. We can see the first name and email address you sign in with and when you last signed in, and nothing else. Your first name is only used to greet you, and you can change it any time under Your account in Settings. There's no tracking or advertising in the app. We can't see your money, grades, plans or calendar.</p>
                 </details>
                 <details class="help-details">
-                    <summary>What does Google Calendar access allow?</summary>
-                    <p>Read-only access to your events, so they can show on the Home Page. The app can't add, change or delete anything. Your calendar goes straight from Google to your browser and never passes through us. Access lasts about an hour and is forgotten when you close the tab.</p>
-                    <p>To remove it completely, press <strong>Disconnect</strong> in Settings, or go to your Google Account, then Security, then Third-party connections.</p>
+                    <summary>Can this app read my calendar, email or contacts?</summary>
+                    <p>No, and it never asks to. There's no Connect button for any of them, so there's no permission to grant and nothing to take back later. Earlier versions had a Google Calendar connection; it was taken out in v6.3 because reading somebody's whole calendar to show them a list they already had wasn't a fair swap.</p>
+                    <p>Dates travel the other way instead: the app makes a calendar file you load into your own calendar app, which needs no permissions at all.</p>
                 </details>
                 <details class="help-details">
                     <summary>Does anything leave my device?</summary>
@@ -2495,6 +2497,17 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.3  Google Calendar is gone. Reading somebody's whole calendar -- where they are,
+        //       who they're seeing, appointments that are nobody's business -- to show them a
+        //       list they already had wasn't a fair swap, and it would have meant a Google
+        //       verification review and a scary unverified-app warning for every student.
+        //       Dates travel the other way now: the calendar file under Key dates loads into
+        //       Google, Apple or Outlook with no permissions at all. The Agenda panel is now
+        //       YOUR DAY, one chronological list of today built from your own timetable,
+        //       deadlines, tasks and bills. Guided set up asks for term dates instead.
+        //       Also: a background picture of your own, in Settings under Display. It's faded
+        //       down so panels stay readable, shrunk to fit before it's saved, and kept in its
+        //       own browser key so it never bloats your backup file.
         // v6.2  Fixed the banner staying white on the grey background. The video element
         //       carried the white still as its poster, so any moment the grey clip wasn't
         //       painting a frame -- including when it fails to load at all -- the white one
@@ -2648,27 +2661,11 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.2';
+        const APP_VERSION = '6.3';
 
         // =====================================================================
         // CONFIG: set these before you deploy
         // =====================================================================
-        // EMPTY = Google Calendar is switched off. The Connect Google button is greyed out
-        // and says so, rather than doing nothing when pressed.
-        //
-        // To switch it on:
-        //   1. console.cloud.google.com > new project
-        //   2. APIs & Services > Library > enable "Google Calendar API"
-        //   3. APIs & Services > OAuth consent screen > External. Add the Calendar
-        //      read-only scope, and add each tester's Gmail address under Test users.
-        //      While the app is in Testing, anyone not on that list gets "Access blocked".
-        //   4. Credentials > Create credentials > OAuth client ID > Web application.
-        //      Authorised JavaScript origins must include https://aherndavid.github.io
-        //      (add http://localhost:8000 too if you test locally). No redirect URI needed,
-        //      and no client secret: this is the browser token flow.
-        //   5. Paste the client ID below. It ends in .apps.googleusercontent.com and is
-        //      not a secret, so it is fine sitting in this page.
-        const GOOGLE_CLIENT_ID = '';
         // Sign-in (Supabase magic link). Shares the same Supabase project as the other site.
         // The publishable key is safe in this page. Never put the secret / service_role key here.
         // Supabase > Authentication > URL Configuration > Redirect URLs must include this app's address.
@@ -2677,13 +2674,8 @@
         // Live trains: the Supabase Edge Function "trains". It holds the Rail Data Marketplace key
         // (secret RDM_KEY) so the key never appears in this page. Called as ?crs=MAI&rows=30
         const TRAINS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/trains';
-        const GOOGLE_SCOPES = [
-            'https://www.googleapis.com/auth/calendar.readonly'
-        ].join(' ');
-
         const STORE_KEY = 'dpaul_student_life_v1';
         const DEFAULT_TRACK = { id: 'default-house', videoId: 'gZ_i4ixAMAc', listId: null, title: '', author: '' };
-        const TOKEN_KEY = 'dpaul_student_google_token';
         const TABS = ['today', 'budget', 'food', 'tasks', 'deadlines', 'timetable', 'projects', 'grades', 'travel', 'settings'];
         const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -3333,7 +3325,7 @@
                     travel: { stations: [], autoStations: true, map: { size: 'm', min: false, hidden: false } },
                     firstName: '',
                     gradeTarget: 60, focusLength: 25, lastTab: 'today', seenGuide: false, wxOpen: false,
-                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: '', theme: 'light'
+                    home: null, pages: {}, newsArea: '', uniName: '', uniUrl: '', theme: 'light', bgOpacity: 18
                 },
                 focus: { date: '', sessions: 0 },
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
@@ -4914,6 +4906,162 @@
         // =====================================================================
         // TIMETABLE
         // =====================================================================
+        // =====================================================================
+        // YOUR DAY (v6.3): one chronological list of today, built from the timetable,
+        // deadlines, tasks and bills already in the app. This is what the Google
+        // Calendar panel used to do, without asking anyone for their calendar.
+        // =====================================================================
+        function renderDay() {
+            const list = $('day-list');
+            if (!list) return;
+            const now = new Date();
+            const today = todayISO();
+            const hm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const dateEl = $('day-date');
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            const items = [];
+            data.timetable.filter(c => +c.day === isoWeekday(now)).forEach(c => items.push({
+                at: c.start, past: hm >= c.end, kind: 'class',
+                now: hm >= c.start && hm < c.end,
+                time: `${c.start}-${c.end}`,
+                title: c.module || c.kind || 'Class',
+                sub: [c.kind, c.room].filter(Boolean).join(', ')
+            }));
+            data.deadlines.filter(d => !d.done && d.date === today).forEach(d => items.push({
+                at: d.time || '23:59', past: false, kind: 'deadline',
+                time: d.time || 'Today', title: d.title,
+                sub: ['Deadline', d.module].filter(Boolean).join(', ')
+            }));
+            data.tasks.filter(t => !t.done && t.due === today).forEach(t => items.push({
+                at: '23:59', past: false, kind: 'task', time: 'Today', title: t.text, sub: 'Task'
+            }));
+            data.budget.bills.filter(b => !b.paid && b.due === today).forEach(b => items.push({
+                at: '23:59', past: false, kind: 'bill', time: 'Today',
+                title: b.name, sub: `Bill, ${money(b.amount)}`
+            }));
+            items.sort((a, b) => a.at.localeCompare(b.at));
+
+            list.innerHTML = items.length ? items.map(i => `
+                <li class="task-item${i.now ? ' class-now' : ''}"${i.past ? ' style="opacity: 0.5;"' : ''}>
+                    <span style="font-weight: bold; min-width: 96px; font-variant-numeric: tabular-nums;">${esc(i.time)}</span>
+                    <span class="task-text">${esc(i.title)}${i.now ? '<span class="badge green">Now</span>' : ''}
+                        ${i.sub ? `<br><span style="color: var(--fg-soft); font-size: 0.95em;">${esc(i.sub)}</span>` : ''}</span>
+                </li>`).join('') : '<li class="empty">Nothing booked in today.</li>';
+
+            // A plain-words summary, which is usually all anyone reads
+            const summary = $('day-summary');
+            if (!summary) return;
+            const left = items.filter(i => !i.past);
+            const classes = items.filter(i => i.kind === 'class').length;
+            const dues = items.filter(i => i.kind !== 'class').length;
+            const nextKey = keyDateItems().filter(k => k.date > today)[0];
+            const bits = [];
+            if (classes) bits.push(`${classes} class${classes === 1 ? '' : 'es'}`);
+            if (dues) bits.push(`${dues} thing${dues === 1 ? '' : 's'} due`);
+            let text = bits.length ? bits.join(' and ') + ' today.' : 'Nothing in the diary today.';
+            if (items.length && !left.length) text = 'That\'s today done.';
+            if (nextKey) text += ` Next up: ${nextKey.title.toLowerCase()}, ${fmtDate(nextKey.date)}.`;
+            summary.textContent = text;
+        }
+
+        // =====================================================================
+        // BACKGROUND PICTURE (v6.3)
+        //
+        // Kept in its own browser key rather than in the main data, for two reasons:
+        // a photo dwarfs everything else a student types in, and nobody wants a
+        // megabyte of JPEG inside a backup file they email to themselves.
+        //
+        // Every picture is shrunk to fit inside 1600px and re-encoded as a JPEG
+        // before it's stored. Phone photos are several megabytes and the whole of
+        // local storage is about five, so the original would fill it on its own.
+        // =====================================================================
+        const BG_KEY = 'dpaul_student_bg';
+        const BG_MAX_EDGE = 1600;
+        let bgImage = '';
+
+        function loadBackground() {
+            try { bgImage = localStorage.getItem(BG_KEY) || ''; } catch (e) { bgImage = ''; }
+            applyBackground();
+        }
+        function bgOpacity() {
+            const n = Number(data.settings.bgOpacity);
+            return isFinite(n) && n >= 3 && n <= 60 ? n : 18;
+        }
+        function applyBackground() {
+            const layer = $('bg-layer');
+            if (layer) {
+                layer.style.backgroundImage = bgImage ? `url("${bgImage}")` : '';
+                layer.style.opacity = bgImage ? bgOpacity() / 100 : 0;
+            }
+            const prev = $('bg-preview');
+            if (prev) prev.style.backgroundImage = bgImage ? `url("${bgImage}")` : '';
+            const slider = $('bg-opacity');
+            if (slider && document.activeElement !== slider) slider.value = String(bgOpacity());
+            const val = $('bg-opacity-val');
+            if (val) val.textContent = bgImage ? `${bgOpacity()}%` : 'no picture yet';
+        }
+        function setBackgroundOpacity(v) {
+            data.settings.bgOpacity = Number(v);
+            saveData();
+            applyBackground();
+        }
+
+        // Draw the picture into a canvas at a sensible size and take the JPEG back out
+        function shrinkImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('read'));
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('decode'));
+                    img.onload = () => {
+                        const scale = Math.min(1, BG_MAX_EDGE / Math.max(img.width, img.height));
+                        const w = Math.max(1, Math.round(img.width * scale));
+                        const h = Math.max(1, Math.round(img.height * scale));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        try { resolve(canvas.toDataURL('image/jpeg', 0.72)); }
+                        catch (e) { reject(new Error('convert')); }
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function pickBackground(input) {
+            const file = input && input.files && input.files[0];
+            if (!file) return;
+            if (!/^image\//.test(file.type)) { flash('bg-status', 'That needs to be a picture file.', true); input.value = ''; return; }
+            flash('bg-status', 'Shrinking your picture...');
+            try {
+                const small = await shrinkImage(file);
+                localStorage.setItem(BG_KEY, small);   // throws if there's no room left
+                bgImage = small;
+                applyBackground();
+                flash('bg-status', 'Background set.');
+            } catch (e) {
+                // Quota is the likely one: the picture survived the shrink but won't fit
+                const full = e && (e.name === 'QuotaExceededError' || e.code === 22);
+                flash('bg-status', full
+                    ? 'No room left in this browser for that picture. Try a smaller one, or clear some space.'
+                    : "Couldn't read that picture. Try a different one, a JPEG or PNG.", true);
+                bgImage = '';
+                try { localStorage.removeItem(BG_KEY); } catch (e2) {}
+                applyBackground();
+            }
+            input.value = '';
+        }
+
+        function clearBackground() {
+            bgImage = '';
+            try { localStorage.removeItem(BG_KEY); } catch (e) {}
+            applyBackground();
+            flash('bg-status', 'Background removed.');
+        }
+
         function classRow(c, highlight) {
             return `
                 <li class="task-item ${highlight ? 'class-now' : ''}">
@@ -4990,6 +5138,8 @@
             })() }));
             items.sort((a, b) => a.date.localeCompare(b.date));
             $('today-due').innerHTML = items.length ? items.map(i => i.html).join('') : '<li class="empty">Nothing due in the next two weeks.</li>';
+
+            renderDay();
         }
 
         // =====================================================================
@@ -5790,117 +5940,6 @@
         }
 
         // =====================================================================
-        // GOOGLE: Calendar, read-only, browser token flow (no server)
-        // =====================================================================
-        let tokenClient = null;
-        let googleToken = null;
-
-        function tokenValid() { return googleToken && googleToken.expires > Date.now(); }
-        function saveToken() { try { sessionStorage.setItem(TOKEN_KEY, JSON.stringify(googleToken)); } catch (e) {} }
-        function loadToken() { try { const t = JSON.parse(sessionStorage.getItem(TOKEN_KEY)); if (t && t.expires > Date.now()) googleToken = t; } catch (e) {} }
-
-        function initGoogle(attempt = 0) {
-            loadToken();
-            if (!GOOGLE_CLIENT_ID) { renderGoogleState(); return; }
-            if (!(window.google && google.accounts && google.accounts.oauth2)) {
-                if (attempt < 40) setTimeout(() => initGoogle(attempt + 1), 250);
-                else renderGoogleState('Google sign-in couldn\'t load. Check your connection or ad blocker.');
-                return;
-            }
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: GOOGLE_CLIENT_ID,
-                scope: GOOGLE_SCOPES,
-                callback: resp => {
-                    if (resp.error) {
-                        $('google-help').open = true;
-                        renderGoogleState(resp.error === 'access_denied'
-                            ? 'Google didn\'t allow access. If it said "Access blocked", your email needs adding to the tester list. See the help below.'
-                            : 'Google sign-in didn\'t finish. Press Connect Google to try again.');
-                        return;
-                    }
-                    if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(resp, GOOGLE_SCOPES)) {
-                        $('google-help').open = true;
-                        renderGoogleState('Calendar access wasn\'t ticked. Press Connect Google again and tick the box to see your calendar events.');
-                        return;
-                    }
-                    googleToken = { token: resp.access_token, expires: Date.now() + (Number(resp.expires_in) - 60) * 1000 };
-                    saveToken();
-                    renderGoogleState();
-                    refreshGoogle();
-                },
-                error_callback: err => {
-                    if (err && err.type === 'popup_failed_to_open') renderGoogleState('Your browser blocked the Google window. Allow pop-ups for this site, then press Connect Google again.');
-                    else if (err && err.type === 'popup_closed') renderGoogleState('The Google window was closed before you finished. Press Connect Google to try again.');
-                }
-            });
-            renderGoogleState();
-            if (tokenValid()) refreshGoogle();
-        }
-
-        function connectGoogle() {
-            if (!GOOGLE_CLIENT_ID) { renderGoogleState(); return; }
-            if (!tokenClient) { initGoogle(); return; }
-            tokenClient.requestAccessToken({ prompt: googleToken ? '' : 'consent' });
-        }
-
-        function disconnectGoogle() {
-            if (googleToken && window.google && google.accounts) google.accounts.oauth2.revoke(googleToken.token, () => {});
-            googleToken = null;
-            try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) {}
-            renderGoogleState();
-        }
-
-        function renderGoogleState(message) {
-            const connected = tokenValid();
-            const status = $('google-status');
-            $('btn-google-connect').textContent = connected ? 'Reconnect' : 'Connect Google';
-            // Nothing to connect to without a client ID, so don't leave a live-looking button
-            $('btn-google-connect').disabled = !GOOGLE_CLIENT_ID;
-            $('btn-google-disconnect').style.display = connected ? '' : 'none';
-            if (!GOOGLE_CLIENT_ID) status.innerHTML = '<strong>Not switched on yet.</strong> Calendar is still being set up, so this button does nothing for now. Everything else works. <a class="support-mail" href="mailto:david@dpaul.studio?subject=Google%20Calendar%20in%20Life%20-%20Student%20Edition">Contact support</a>';
-            else status.textContent = message || (connected ? 'Connected' : 'Not connected');
-            const prompt = msg => `<li class="empty">${msg}</li>`;
-            if (!connected) {
-                const msg = GOOGLE_CLIENT_ID ? '<a href="#" onclick="connectGoogle(); return false;">Connect Google</a> to see this here.' : 'Google isn\'t set up on this copy yet.';
-                $('calendar-list').innerHTML = prompt(msg);
-            }
-        }
-
-        async function googleGet(url) {
-            if (!tokenValid()) { renderGoogleState('Your Google session expired. Reconnect to refresh.'); throw new Error('auth'); }
-            const r = await fetch(url, { headers: { Authorization: 'Bearer ' + googleToken.token } });
-            if (r.status === 401) { googleToken = null; renderGoogleState('Your Google session expired. Reconnect to refresh.'); throw new Error('auth'); }
-            if (!r.ok) throw new Error(`Google returned ${r.status}`);
-            return r.json();
-        }
-
-        function refreshGoogle() { fetchCalendar(7); }
-
-        async function fetchCalendar(days) {
-            const list = $('calendar-list');
-            if (!tokenValid()) { renderGoogleState(); return; }
-            list.innerHTML = '<li class="muted" style="padding: 10px 0;">Syncing with Google...</li>';
-            try {
-                const now = new Date();
-                const max = new Date(now.getTime() + days * 86400000);
-                const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(now.toISOString())}&timeMax=${encodeURIComponent(max.toISOString())}&singleEvents=true&orderBy=startTime&maxResults=100`;
-                const j = await googleGet(url);
-                const events = j.items || [];
-                if (!events.length) { list.innerHTML = `<li class="empty">No events in the next ${days} days.</li>`; return; }
-                list.innerHTML = events.map(ev => {
-                    const start = ev.start.dateTime || ev.start.date;
-                    const allDay = !ev.start.dateTime;
-                    const d = allDay ? parseISO(start) : new Date(start);
-                    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' });
-                    const timeStr = allDay ? 'All Day' : d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                    return `<li class="task-item"><span class="task-text"><strong style="color: var(--link);">${dateStr}</strong> <span style="color: var(--fg-soft); font-size: 0.95em;">${timeStr}</span><br>${esc(ev.summary || 'Busy')}</span></li>`;
-                }).join('');
-            } catch (e) {
-                if (e.message !== 'auth') list.innerHTML = '<li class="status-err" style="padding: 10px 0;">Couldn\'t load your calendar. Try Refresh or reconnect in Settings.</li>';
-            }
-        }
-
-        // =====================================================================
         // FOCUS TIMER (Pomodoro)
         // =====================================================================
         const timer = { mode: 'focus', remaining: 25 * 60, running: false, handle: null, endAt: 0 };
@@ -6018,6 +6057,7 @@
 
         function renderSettings() {
             applyTheme();
+            applyBackground();
             renderTermRows();
             renderSignSettings();
             renderNewsSettings();
@@ -6035,7 +6075,6 @@
                     ? `Following your location: <strong>${esc(near.join(', '))}</strong>. Type your own 3-letter codes to override.`
                     : 'Following your location. Type your own 3-letter codes, separated by commas, to override.')
                 : 'Your own choice, up to three 3-letter codes. Empty the box and press Save and test to go back to following your location.';
-            renderGoogleState();
             $('rem-on').checked = !!data.reminders.on;
             $('rem-every').value = String(data.reminders.every);
             renderAdmin();
@@ -7213,12 +7252,10 @@
                 done: () => !!(data.setup.done && data.setup.done.location)
             },
             {
-                id: 'google', tab: 'settings', title: 'Connect your Google account',
-                text: () => GOOGLE_CLIENT_ID
-                    ? 'Press Connect Google and sign in. If Google says it hasn\'t verified the app, press Continue, and tick the box to let it see your calendar. It\'s read-only, so nothing can be added, changed or deleted.'
-                    : 'Google connection isn\'t switched on for this copy of the app yet, so skip this step for now. Once it is, this is where you\'ll connect your calendar.',
-                targets: () => ['#btn-google-connect'],
-                done: () => tokenValid()
+                id: 'terms', tab: 'settings', title: 'Add your term dates',
+                text: () => 'Copy the three term start and end dates from your university\'s term dates page. Everything else follows from these: what\'s coming up, roughly when your loan lands, and a calendar file you can load into your phone.',
+                targets: () => ['#term-rows', '#btn-terms-save'],
+                done: () => termList().some(t => t && t.start)
             },
             {
                 id: 'travel', tab: 'settings', title: 'Check your train stations',
@@ -7673,13 +7710,13 @@
             setTimeout(playLogos, 50); // the header logo was hidden behind sign-in until now
             renderAll();
             applyTheme();
+            loadBackground();
             renderAccount();
             switchTab(data.settings.lastTab || 'today');
             $('app-version').textContent = 'v' + APP_VERSION;
             if (!data.settings.seenGuide) openGuide();
             if (data.music.open) openMusic(); // default track loads ready to play, minimised
             fetchWeather();
-            initGoogle();
             initAutosave();
             setTimeout(checkBackupReminder, 4000);
             setInterval(renderSaveStatus, 60000);
