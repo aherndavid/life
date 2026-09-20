@@ -1096,7 +1096,7 @@
     <!-- Sign-in screen (v1.6): the app stays hidden until you're signed in -->
     <div class="auth-gate" id="auth-gate">
         <div class="auth-top">
-            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
         <main class="auth-main">
@@ -1154,7 +1154,7 @@
 
     <div class="header">
         <div class="header-left">
-            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" poster="assets/life-student-edition.webp" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
+            <h1 class="title-banner-h1"><span class="sr-only">Life - Student Edition</span><video class="title-banner loop-video" data-stop-early="0.5" src="assets/life-banner-white.webm" data-still="assets/life-student-edition.webp" data-text="Life - Student Edition" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video></h1>
             <div class="header-meta">
                 <div class="greeting" id="header-greeting"></div>
                 <div class="clock" id="live-clock">Loading time...</div>
@@ -2495,6 +2495,13 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v6.2  Fixed the banner staying white on the grey background. The video element
+        //       carried the white still as its poster, so any moment the grey clip wasn't
+        //       painting a frame -- including when it fails to load at all -- the white one
+        //       showed through. The poster is gone, the fallback still follows the
+        //       background, and the banner is chosen after the error handlers are attached
+        //       rather than before, so a missing file now reports itself instead of
+        //       quietly leaving the wrong picture up.
         // v6.1  The title banner rests half a second before the end of its clip, so it holds
         //       on the title rather than on the fade to black. The dpaul logo still plays out
         //       in full. Plus, two for the window sill: Moon tonight draws the real phase of the moon,
@@ -2641,7 +2648,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '6.1';
+        const APP_VERSION = '6.2';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -3505,6 +3512,13 @@
         function bannerThemeName() {
             return document.documentElement.getAttribute('data-theme') === 'grey' ? 'grey' : 'light';
         }
+        // The still the banner drops back to, for the background it's sitting on. Add a
+        // data-still-grey to the markup if a grey version of the image is ever made;
+        // without one, both backgrounds share the same still.
+        function bannerStill(el) {
+            const theme = bannerThemeName();
+            return (theme === 'grey' && el.dataset.stillGrey) || el.dataset.still || '';
+        }
         function applyBannerTheme() {
             const want = BANNER_VIDEOS[bannerThemeName()] || BANNER_VIDEOS.light;
             document.querySelectorAll('video.title-banner').forEach(v => {
@@ -3516,6 +3530,12 @@
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 const p = v.play();
                 if (p && p.catch) p.catch(() => {});
+            });
+            // A banner that already gave up on video is a plain image, and it has to
+            // follow the background too
+            document.querySelectorAll('img.title-banner').forEach(img => {
+                const still = bannerStill(img);
+                if (still && !img.src.endsWith(still)) img.src = still;
             });
         }
 
@@ -3533,8 +3553,10 @@
 
         function videoFallback(v) {
             if (!v.parentNode) return;
-            const still = v.dataset.still || '';
             const img = document.createElement('img');
+            if (v.dataset.still) img.dataset.still = v.dataset.still;
+            if (v.dataset.stillGrey) img.dataset.stillGrey = v.dataset.stillGrey;
+            const still = (v.classList.contains('title-banner') ? bannerStill(img) : '') || v.dataset.still || '';
             img.alt = v.getAttribute('aria-label') || v.dataset.text || '';
             img.className = v.className.replace(/\bloop-video\b/g, '').trim();
             if (v.getAttribute('aria-hidden') === 'true') img.setAttribute('aria-hidden', 'true');
@@ -3581,7 +3603,6 @@
 
         (function initLogos() {
             const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            applyBannerTheme();   // before anyone has signed in, from the html element
             document.querySelectorAll('video.loop-video').forEach(v => {
                 v.muted = true;
                 if (still) { videoFallback(v); return; }
@@ -3602,6 +3623,9 @@
                 const src = v.querySelector('source');
                 if (src) src.addEventListener('error', () => videoFailed(v));
             });
+            // Only now, with every handler in place, pick the banner for the background
+            // that's already been set on the html element. Any failure from here is caught.
+            applyBannerTheme();
             if (still) return;
             const start = () => { playLogos(); setInterval(playLogos, LOGO_EVERY); };
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
