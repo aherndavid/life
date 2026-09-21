@@ -2073,7 +2073,7 @@
                 </div>
 
                 <div class="container">
-                    <h2 style="margin-top: 0;">Display</h2>
+                    <h2 style="margin-top: 0;" id="set-display-head">Display</h2>
                     <p class="note">The background colour of the app. The text stays black either way. If a white screen is harsh on your eyes, or you're working late, try the grey.</p>
                     <label for="set-theme">Background</label>
                     <select id="set-theme" onchange="setTheme(this.value)" style="max-width: 420px;">
@@ -2426,6 +2426,36 @@
         </div>
     </div>
 
+    <!-- WHAT'S NEW (v8.2). Temporary: switches itself off after WHATSNEW_UNTIL. -->
+    <div class="guide-overlay" id="whatsnew-overlay" onclick="if(event.target === this) closeWhatsNew()">
+        <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
+            <div class="guide-head">
+                <div>
+                    <h2 id="whatsnew-title">What's new</h2>
+                    <p>A few things you can do now that you couldn't before.</p>
+                </div>
+                <button class="guide-close" id="whatsnew-close" onclick="closeWhatsNew()" aria-label="Close">&times;</button>
+            </div>
+            <div class="guide-body">
+                <h3>Live bus times</h3>
+                <p>Go to <strong>Travel</strong> and press <strong>Live</strong> next to any bus stop on the list. You'll see the next buses from that stop, the bus number and where each one is going.</p>
+                <h3>Find the next bus to where you're going</h3>
+                <p>Type a place in the <strong>Where to?</strong> box on Travel, like Windsor, and press <strong>Find bus</strong>. The app tells you the next bus going there, which stop to wait at, and how long until it comes.</p>
+                <h3>Your own wallpaper</h3>
+                <p>Put a picture of your own behind the whole app. Go to <strong>Settings</strong>, find <strong>Display</strong> and choose a picture from your phone or laptop. It stays on your device.</p>
+                <h3>More on the map</h3>
+                <p>The map on Travel also shows hospitals (and which have an A&amp;E), GP surgeries, pharmacies, libraries and museums near you. Use the tick boxes to choose what you see. Every bus stop has a <strong>Times</strong> button too, which opens its full timetable.</p>
+            </div>
+            <div class="guide-foot">
+                <div class="reminder-actions">
+                    <button onclick="whatsNewGo('travel')">Try live buses</button>
+                    <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="whatsNewGo('settings')">Add a wallpaper</button>
+                </div>
+                <button class="btn-cal-filter" style="padding: 12px 20px; font-size: 1rem;" onclick="closeWhatsNew()">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HOW TO USE GUIDE -->
     <div class="guide-overlay" id="guide-overlay" onclick="if(event.target === this) closeGuide()">
         <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">
@@ -2655,6 +2685,11 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.2  What's New pop-up: ten seconds after the app opens it lists the new bus
+        //       features, your own wallpaper and the map, once per device. It switches itself
+        //       off after 28 September 2026 (WHATSNEW_UNTIL), and never shows to someone
+        //       signing in for the first time, since the guide already walks them through.
+        //       To remove it for good, delete the whatsnew-overlay block and the WHATSNEW code.
         // v8.1  Title is now heavy Doto dot matrix in see-through black, with no plate or
         //       border behind it, so the background shows through the letters. The edition
         //       line still fades in and out.
@@ -2876,7 +2911,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '8.1';
+        const APP_VERSION = '8.2';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -8021,6 +8056,44 @@
             if (reminderReturnFocus && reminderReturnFocus.focus) reminderReturnFocus.focus();
         }
 
+        // WHAT'S NEW (v8.2): once per device, ten seconds in, until WHATSNEW_UNTIL. If
+        // something else is open at ten seconds (the break reminder, say) it waits and
+        // tries again rather than stacking on top.
+        const WHATSNEW_KEY = 'dpaul_student_seen_whatsnew_8_2';
+        const WHATSNEW_UNTIL = new Date('2026-09-29T00:00:00');
+        let whatsNewTimer = 0, whatsNewReturnFocus = null;
+        function scheduleWhatsNew(firstVisit) {
+            if (firstVisit || Date.now() >= WHATSNEW_UNTIL.getTime()) return;
+            try { if (localStorage.getItem(WHATSNEW_KEY)) return; } catch (e) {}
+            clearTimeout(whatsNewTimer);
+            let tries = 0;
+            const attempt = () => {
+                if (document.documentElement.classList.contains('auth-locked')) return;
+                if (anyOverlayOpen()) { if (++tries < 24) whatsNewTimer = setTimeout(attempt, 5000); return; }
+                whatsNewReturnFocus = document.activeElement;
+                $('whatsnew-overlay').classList.add('open');
+                document.body.classList.add('guide-open');
+                $('whatsnew-close').focus();
+                try { localStorage.setItem(WHATSNEW_KEY, '1'); } catch (e) {}
+            };
+            whatsNewTimer = setTimeout(attempt, 10000);
+        }
+        function closeWhatsNew() {
+            $('whatsnew-overlay').classList.remove('open');
+            if (!anyOverlayOpen()) document.body.classList.remove('guide-open');
+            if (whatsNewReturnFocus && whatsNewReturnFocus.focus) whatsNewReturnFocus.focus();
+        }
+        function whatsNewGo(where) {
+            closeWhatsNew();
+            switchTab(where);
+            setTimeout(() => {
+                const el = where === 'travel' ? $('bus-dest-input') : $('set-display-head');
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (where === 'travel') el.focus({ preventScroll: true });
+            }, 150);
+        }
+
         function snoozeReminder() {
             closeReminder();
             snoozeUntil = Date.now() + 5 * 60000;
@@ -8123,7 +8196,9 @@
             renderAccount();
             switchTab(data.settings.lastTab || 'today');
             $('app-version').textContent = 'v' + APP_VERSION;
-            if (!data.settings.seenGuide) openGuide();
+            const firstVisit = !data.settings.seenGuide;
+            if (firstVisit) openGuide();
+            scheduleWhatsNew(firstVisit);
             if (data.music.open) openMusic(); // default track loads ready to play, minimised
             fetchWeather();
             initAutosave();
