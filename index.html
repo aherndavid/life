@@ -192,8 +192,12 @@
         .header-left h1 { white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
         .header-right .version-tag { font-size: 1.1rem; color: var(--fg-soft); font-weight: bold; }
-        .header-right img, .header-right .brand-logo { max-height: 56px; height: 56px; object-fit: contain; }
+        .header-right img, .header-logo .brand-logo { max-height: 56px; height: 56px; object-fit: contain; }
         .header-left { flex: 1 1 auto; min-width: 0; }
+        /* dpaul logo (v8.5): its own slot, pinned to the top right of the header on
+           every screen. On phones the buttons drop underneath and the logo stays up
+           beside the title. */
+        .header-logo { flex: 0 0 auto; align-self: flex-start; margin-left: 12px; }
         .header-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
         .header-meta .clock, .header-meta .weather-widget { margin: 0 !important; }
         /* Greeting and signed-in chip (v2.9): on every page, because the header is shared */
@@ -416,11 +420,14 @@
             .header { flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
             .header-left h1 { font-size: 2.2rem; letter-spacing: 1px; line-height: 1.15; white-space: normal; }
             .header-right { justify-content: flex-start; }
+            .header-left { order: 1; flex: 1 1 0; }
+            .header-logo { order: 2; margin-left: 0; }
+            .header-right { order: 3; flex: 1 1 100%; }
             .header-left .clock, .header-left .greeting { font-size: 1rem; }
             .brand-row { gap: 6px 12px; }
             .tagline { font-size: 1.25rem; white-space: normal; padding-bottom: 0; }
             .header-left .weather-widget { font-size: 0.95rem; }
-            .header-right img, .header-right .brand-logo { max-height: 50px; height: 50px; }
+            .header-right img, .header-logo .brand-logo { max-height: 44px; height: 44px; }
             .tab-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
             .tab-btn { white-space: nowrap; padding: 8px 14px; font-size: 1rem; }
             .main-layout { flex-direction: column; gap: 0; }
@@ -699,7 +706,7 @@
             body .header-right { gap: 14px; }
             body .header-right .btn-help { padding: 12px 22px; font-size: 1.1rem; }
             body .header-right .version-tag { font-size: 1.2rem; }
-            body .header-right img, body .header-right .brand-logo { max-height: 84px; height: 84px; }
+            body .header-right img, body .header-logo .brand-logo { max-height: 84px; height: 84px; }
             body .tab-bar { margin-bottom: 14px; padding-bottom: 12px; }
         }
         @media (min-width: 901px) and (min-height: 560px) and (max-height: 820px) {
@@ -707,7 +714,7 @@
             body .header-meta { margin-top: 6px; }
             body .header-meta .clock, body .header-meta .greeting { font-size: 1.25rem; }
             body .header-meta .weather-widget { font-size: 1.05rem; padding: 6px 12px; }
-            body .header-right img, body .header-right .brand-logo { max-height: 60px; height: 60px; }
+            body .header-right img, body .header-logo .brand-logo { max-height: 60px; height: 60px; }
             body .header-right .btn-help { padding: 9px 18px; font-size: 1rem; }
             body .header { margin-bottom: 10px; padding-bottom: 10px; }
             body .tab-btn { padding: 7px 16px; font-size: 1rem; }
@@ -874,10 +881,10 @@
             overflow-y: auto; padding: 20px; box-sizing: border-box;
             flex-direction: column; align-items: center;
         }
-        .auth-top { width: 100%; max-width: 1700px; display: flex; justify-content: space-between; align-items: center;
+        .auth-top { width: 100%; max-width: 1700px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
             padding-bottom: 12px; border-bottom: 2px solid var(--rule); }
         .auth-top h1 { font-size: 2.8rem; line-height: 1.1; color: var(--fg); margin: 0; letter-spacing: 2px; }
-        .auth-top img, .auth-top .brand-logo { max-height: 56px; height: 56px; object-fit: contain; }
+        .auth-top img, .auth-top .brand-logo { max-height: 56px; height: 56px; object-fit: contain; flex: 0 0 auto; margin-left: auto; }
         .auth-main { width: 100%; max-width: 480px; margin: auto 0; padding: 40px 0; }
         .auth-card { border: 1px solid var(--line); border-radius: 6px; padding: 30px; background: var(--panel); }
         .auth-card h2 { margin: 0 0 8px; font-size: 1.8rem; color: var(--fg); }
@@ -1182,7 +1189,7 @@
             body .header-left h1 { font-size: 2.5rem; }
             body .header-meta .clock, body .header-meta .greeting { font-size: 1.1rem; }
             body .header-meta .weather-widget { font-size: 0.95rem; padding: 5px 10px; }
-            body .header-right img, body .header-right .brand-logo { max-height: 48px; height: 48px; }
+            body .header-right img, body .header-logo .brand-logo { max-height: 48px; height: 48px; }
             body .header-right .btn-help { padding: 7px 14px; font-size: 0.95rem; }
             body .header { margin-bottom: 8px; padding-bottom: 8px; }
             body .tab-bar { margin-bottom: 8px; padding-bottom: 8px; }
@@ -1318,6 +1325,8 @@
             <button class="btn-help" id="btn-music" onclick="showMusic()">Music</button>
             <button class="btn-help" onclick="openGuide()" aria-haspopup="dialog">How to use</button>
             <span class="version-tag" id="app-version">v5.4</span>
+        </div>
+        <div class="header-logo">
             <video class="brand-logo loop-video" src="Assets/dpaul-logo-yello-fade.webm" poster="Assets/dpaul-logo.webp" data-still="Assets/dpaul-logo.webp" muted playsinline preload="auto" disablepictureinpicture aria-label="dpaul.studio logo"></video>
         </div>
     </div>
@@ -2691,6 +2700,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.5  The dPaul logo now sits in the top right corner on every screen, phones
+        //       included. On phones the buttons drop underneath and the logo stays beside the
+        //       title. The sign-in and welcome screens match.
         // v8.4  Send a bus to your phone: under a Where to? result, "Send to my phone" opens
         //       the phone's own share menu (Messages, WhatsApp, email) with the bus, the time,
         //       the stop, a map link to the stop and when it was checked. Where there's no
@@ -2925,7 +2937,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '8.4';
+        const APP_VERSION = '8.5';
 
         // =====================================================================
         // CONFIG: set these before you deploy
