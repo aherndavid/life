@@ -2444,7 +2444,7 @@
                 <h3>Your own wallpaper</h3>
                 <p>Put a picture of your own behind the whole app. Go to <strong>Settings</strong>, find <strong>Display</strong> and choose a picture from your phone or laptop. It stays on your device.</p>
                 <h3>More on the map</h3>
-                <p>The map on Travel also shows hospitals (and which have an A&amp;E), GP surgeries, pharmacies, libraries and museums near you. Use the tick boxes to choose what you see. Every bus stop has a <strong>Times</strong> button too, which opens its full timetable.</p>
+                <p>The map on Travel also shows hospitals (and which have an A&amp;E), GP surgeries, pharmacies, libraries and museums near you. Use the tick boxes to choose what you see.</p>
             </div>
             <div class="guide-foot">
                 <div class="reminder-actions">
@@ -2562,8 +2562,8 @@
                     <p>There's nothing to set up. Once your location is saved in <strong>Settings</strong>, the app picks your nearest stations on its own and shows their departures on the Home Page and on the Travel tab.</p>
                     <p>The <strong>Travel</strong> tab also has a map of what's around you: where you are, your nearest stations, the bus stops nearby and the nearest supermarkets, each with how far it is and roughly how long it takes to walk. Press anything in the list to find it on the map, and use the tick boxes to show or hide each kind.</p>
                     <p><strong>Bus times:</strong> next to each bus stop there's a <strong>Live</strong> button. Press it to see the next buses from that stop right there: the time, the bus number and where it's going. Look for your destination in the list, like Windsor. "Live" means the bus is being tracked; "Timetable" means it's the planned time.</p>
-                    <p><strong>Find a bus to somewhere:</strong> type where you're going in the <strong>Where to?</strong> box above the list, like Windsor, and press <strong>Find bus</strong>. The app checks your two nearest stops and tells you the next bus going there, which stop to wait at, and how long until it comes. It works by where each bus says it's heading, so if nothing comes up, try a bigger town nearby or press Times on your stop. What you type stays on your device.</p>
-                    <p>Live bus times are shared between everyone using the app and there's a small daily allowance, so if it says they're used up, press <strong>Times</strong> instead. That opens the stop on bustimes.org, which always works.</p>
+                    <p><strong>Find a bus to somewhere:</strong> type where you're going in the <strong>Where to?</strong> box above the list, like Windsor, and press <strong>Find bus</strong>. The app checks your two nearest stops and tells you the next bus going there, which stop to wait at, and how long until it comes. It works by where each bus says it's heading, so if nothing comes up, try a bigger town nearby or press Live on your stop to see everything that's due. What you type stays on your device.</p>
+                    <p>Live bus times are shared between everyone using the app and there's a small daily allowance. If it says they're used up for today, they come back at midnight.</p>
                     <p><strong>To use different stations</strong>, go to <strong>Settings</strong>, find <strong>Trains</strong> and type the 3-letter codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the code is shown next to its name. Press <strong>Save and test</strong>.</p>
                     <p>To hand it back to the app, empty the Stations box and press <strong>Use nearest to me</strong>.</p>
                 </details>
@@ -2637,7 +2637,7 @@
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked. Working out which stations are nearest happens inside the app, so your location isn't sent anywhere for that.</li>
                         <li><strong>The map on Travel:</strong> to find the bus stops and shops near you, your location rounded to about 100 metres goes to OpenStreetMap's public map service. Your exact position is never sent, and the answer is kept in this browser for a month so it's only asked once.</li>
-                        <li><strong>Bus times:</strong> when you press <strong>Live</strong> next to a bus stop, only that stop's code goes through our bus service to TransportAPI for the next departures. It doesn't record who asked. When you press <strong>Times</strong>, that stop opens on bustimes.org in a new tab, and bustimes.org's own privacy rules apply there.</li>
+                        <li><strong>Bus times:</strong> when you press <strong>Live</strong> next to a bus stop, only that stop's code goes through our bus service to TransportAPI for the next departures. It doesn't record who asked.</li>
                         <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to the news sites it reads, never your exact location. It doesn't record who asked. Opening a headline takes you to whichever site published it, shown under each one.</li>
                         <li><strong>Music:</strong> nothing at all is asked of YouTube until you press play and agree. After that the player uses YouTube's no-cookie address, and YouTube's own privacy rules apply. You can change your mind under Privacy and cookies in Settings.</li>
                     </ul>
@@ -2685,6 +2685,8 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.3  The Times button and every link to bustimes.org are gone. Bus stops show live
+        //       times in the app only; stops without a stop code simply have no button.
         // v8.2  What's New pop-up: ten seconds after the app opens it lists the new bus
         //       features, your own wallpaper and the map, once per device. It switches itself
         //       off after 28 September 2026 (WHATSNEW_UNTIL), and never shows to someone
@@ -2911,7 +2913,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '8.2';
+        const APP_VERSION = '8.3';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -6034,18 +6036,6 @@
             });
         }
 
-        // v7.8: where a bus stop's "Times" link goes. The stop's own page when OpenStreetMap
-        // has its NaPTAN code; otherwise a bustimes.org search for its name and area.
-        function busTimesUrl(p) {
-            if (p.atco) return 'https://bustimes.org/stops/' + encodeURIComponent(p.atco);
-            const town = /^my location$/i.test(data.settings.place || '') ? '' : String(data.settings.place || '').split(',')[0].trim();
-            return 'https://bustimes.org/search?q=' + encodeURIComponent([p.name, town].filter(Boolean).join(' '));
-        }
-        function busTimesLink(p) {
-            if (p.kind !== 'bus') return '';
-            return `<a class="around-times" href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener"
-                onclick="event.stopPropagation()" title="Buses from this stop, on bustimes.org">Times</a>`;
-        }
 
         // v7.9: live departures for one stop, opened under its row. Kept per stop here so
         // ticking a box (which redraws the list) doesn't close it. Answers are reused for
@@ -6074,13 +6064,13 @@
                 try {
                     const r = await fetch(`${BUSES_PROXY_URL}?atco=${encodeURIComponent(atco)}`);
                     const j = await r.json().catch(() => ({}));
-                    if (r.status === 429) throw new Error('Today\'s live bus lookups are used up. They reset at midnight. The Times button still shows this stop\'s buses.');
-                    if (!r.ok) throw new Error(j.error || `Live bus times returned an error (${r.status}). Try the Times button instead.`);
+                    if (r.status === 429) throw new Error('Today\'s live bus lookups are used up. They reset at midnight.');
+                    if (!r.ok) throw new Error(j.error || `Live bus times returned an error (${r.status}). Try again in a few minutes.`);
                     st.deps = Array.isArray(j.departures) ? j.departures : [];
                     st.fetched = j.fetched_at ? new Date(j.fetched_at) : new Date();
                     st.at = Date.now();
                 } catch (e) {
-                    st.error = (e && e.message) || 'Live bus times didn\'t answer. Try the Times button instead.';
+                    st.error = (e && e.message) || 'Live bus times didn\'t answer. Try again in a few minutes.';
                     st.at = 0;
                 }
                 st.loading = false;
@@ -6120,7 +6110,7 @@
             if (!stops.length) {
                 box.innerHTML = aroundState.loading
                     ? '<span class="bd-muted">Still finding your bus stops. Try again in a moment.</span>'
-                    : '<span class="bd-muted">No bus stops near you have live times. Set your location in Settings, or use the Times buttons.</span>';
+                    : '<span class="bd-muted">No bus stops near you have live times. Set your location in Settings, or try again once the map has loaded.</span>';
                 return;
             }
             box.innerHTML = `<span class="bd-muted">Checking buses to ${esc(dest)}</span>`;
@@ -6149,10 +6139,9 @@
                     <div>From ${where(n.stop)}. Heading to ${esc(n.direction)}. ${n.live ? 'Live time.' : 'Timetable time.'}</div>
                     ${more ? `<ul class="bd-more">${more}</ul>` : ''}`;
             } else if (errors === stops.length) {
-                box.innerHTML = `<span class="bd-muted">${usedUp ? 'Today\'s live bus lookups are used up. They reset at midnight.' : 'Live bus times didn\'t answer.'} Use the Times button on a stop instead.</span>`;
+                box.innerHTML = `<span class="bd-muted">${usedUp ? 'Today\'s live bus lookups are used up. They reset at midnight.' : 'Live bus times didn\'t answer. Try again in a few minutes.'}</span>`;
             } else {
-                const links = stops.map(p => `<a href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener">${esc(p.name)}</a>`).join(' or ');
-                box.innerHTML = `<span class="bd-muted">No bus from your nearest stops shows ${esc(dest)} as where it's heading in the next hour or so. Some buses go through a place without it being their last stop, so check Times for ${links}. Or try a nearby town name.</span>`;
+                box.innerHTML = `<span class="bd-muted">No bus from your nearest stops shows ${esc(dest)} as where it's heading in the next hour or so. Some buses go through a place without it being their last stop, so try a bigger town nearby, or press Live on your stop to see everything that's due.</span>`;
             }
             renderAround();
         }
@@ -6259,7 +6248,7 @@
                     <span class="around-badge ${esc(p.kind)}">${esc(p.badge)}</span>
                     <span class="around-main"><span class="around-name">${esc(p.name)}</span><span class="around-sub">${esc(p.sub)}</span></span>
                     <span class="around-dist">${esc(prettyDistance(p.dist))} &middot; ${walkMins(p.dist)} min</span>
-                    ${busLiveButton(p)}${busTimesLink(p)}
+                    ${busLiveButton(p)}
                 </li>${busLiveHTML(p)}`).join('') || '<li class="empty">Nothing found near your location.</li>';
 
             if (p.hidden || p.min) return;         // no map on screen to draw on
@@ -6290,8 +6279,7 @@
             pts.forEach(p => {
                 L.marker([p.lat, p.lon], { icon: aroundPin(p.kind, p.badge), title: p.name })
                     .addTo(aroundMap.layer)
-                    .bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.sub)}<br>${esc(prettyDistance(p.dist))}, about ${walkMins(p.dist)} min walk`
-                        + (p.kind === 'bus' ? `<br><a href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener">Bus times for this stop</a>` : ''));
+                    .bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.sub)}<br>${esc(prettyDistance(p.dist))}, about ${walkMins(p.dist)} min walk`);
             });
         }
 
