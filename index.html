@@ -788,6 +788,11 @@
         .bus-dest-result .bd-next { color: var(--fg-hi); font-weight: bold; }
         .bus-dest-result .bd-more { color: var(--fg-muted); font-size: 0.85rem; margin: 4px 0 0; padding: 0; list-style: none; }
         .bus-dest-result .bd-muted { color: var(--fg-muted); }
+        .bd-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 0; }
+        .bd-actions .btn-toggle { padding: 5px 12px; font-size: 0.85rem; }
+        .bd-send-panel { display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; margin: 6px 0 0; font-size: 0.85rem; }
+        .bd-send-panel a, .bd-send { color: var(--link); font-weight: bold; }
+        .bd-send { font-size: 0.8rem; margin-left: 4px; }
         .around-dist { white-space: nowrap; color: var(--fg-soft); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
         .around-note { color: var(--fg-muted); font-size: 0.9rem; margin: 0 0 10px; }
         .map-pin { position: relative; }
@@ -2440,7 +2445,7 @@
                 <h3>Live bus times</h3>
                 <p>Go to <strong>Travel</strong> and press <strong>Live</strong> next to any bus stop on the list. You'll see the next buses from that stop, the bus number and where each one is going.</p>
                 <h3>Find the next bus to where you're going</h3>
-                <p>Type a place in the <strong>Where to?</strong> box on Travel, like Windsor, and press <strong>Find bus</strong>. The app tells you the next bus going there, which stop to wait at, and how long until it comes.</p>
+                <p>Type a place in the <strong>Where to?</strong> box on Travel, like Windsor, and press <strong>Find bus</strong>. The app tells you the next bus going there, which stop to wait at, and how long until it comes. Press <strong>Send to my phone</strong> to take the details with you, or <strong>Remind me</strong> to get an alert before it's due.</p>
                 <h3>Your own wallpaper</h3>
                 <p>Put a picture of your own behind the whole app. Go to <strong>Settings</strong>, find <strong>Display</strong> and choose a picture from your phone or laptop. It stays on your device.</p>
                 <h3>More on the map</h3>
@@ -2563,6 +2568,7 @@
                     <p>The <strong>Travel</strong> tab also has a map of what's around you: where you are, your nearest stations, the bus stops nearby and the nearest supermarkets, each with how far it is and roughly how long it takes to walk. Press anything in the list to find it on the map, and use the tick boxes to show or hide each kind.</p>
                     <p><strong>Bus times:</strong> next to each bus stop there's a <strong>Live</strong> button. Press it to see the next buses from that stop right there: the time, the bus number and where it's going. Look for your destination in the list, like Windsor. "Live" means the bus is being tracked; "Timetable" means it's the planned time.</p>
                     <p><strong>Find a bus to somewhere:</strong> type where you're going in the <strong>Where to?</strong> box above the list, like Windsor, and press <strong>Find bus</strong>. The app checks your two nearest stops and tells you the next bus going there, which stop to wait at, and how long until it comes. It works by where each bus says it's heading, so if nothing comes up, try a bigger town nearby or press Live on your stop to see everything that's due. What you type stays on your device.</p>
+                    <p><strong>Send it to your phone:</strong> under the answer, press <strong>Send to my phone</strong>. On a phone it opens your usual share menu, so you can text it, WhatsApp it or save it. On a laptop you can email it to yourself or copy it. The message has the bus, the time, the stop, a map link to the stop and when it was checked. <strong>Remind me</strong> adds the bus to your calendar with an alert before it's due.</p>
                     <p>Live bus times are shared between everyone using the app and there's a small daily allowance. If it says they're used up for today, they come back at midnight.</p>
                     <p><strong>To use different stations</strong>, go to <strong>Settings</strong>, find <strong>Trains</strong> and type the 3-letter codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the code is shown next to its name. Press <strong>Save and test</strong>.</p>
                     <p>To hand it back to the app, empty the Stations box and press <strong>Use nearest to me</strong>.</p>
@@ -2637,7 +2643,7 @@
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked. Working out which stations are nearest happens inside the app, so your location isn't sent anywhere for that.</li>
                         <li><strong>The map on Travel:</strong> to find the bus stops and shops near you, your location rounded to about 100 metres goes to OpenStreetMap's public map service. Your exact position is never sent, and the answer is kept in this browser for a month so it's only asked once.</li>
-                        <li><strong>Bus times:</strong> when you press <strong>Live</strong> next to a bus stop, only that stop's code goes through our bus service to TransportAPI for the next departures. It doesn't record who asked.</li>
+                        <li><strong>Bus times:</strong> when you press <strong>Live</strong> next to a bus stop, only that stop's code goes through our bus service to TransportAPI for the next departures. It doesn't record who asked. Sending a bus to your phone uses your own share menu, text or email app, so the app never sees a phone number.</li>
                         <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to the news sites it reads, never your exact location. It doesn't record who asked. Opening a headline takes you to whichever site published it, shown under each one.</li>
                         <li><strong>Music:</strong> nothing at all is asked of YouTube until you press play and agree. After that the player uses YouTube's no-cookie address, and YouTube's own privacy rules apply. You can change your mind under Privacy and cookies in Settings.</li>
                     </ul>
@@ -2685,6 +2691,12 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.4  Send a bus to your phone: under a Where to? result, "Send to my phone" opens
+        //       the phone's own share menu (Messages, WhatsApp, email) with the bus, the time,
+        //       the stop, a map link to the stop and when it was checked. Where there's no
+        //       share menu (most laptops) it offers Text, Email and Copy instead. "Remind me"
+        //       downloads a calendar event for the bus with an alert before it's due. The app
+        //       itself sends nothing and never asks for a phone number.
         // v8.3  The Times button and every link to bustimes.org are gone. Bus stops show live
         //       times in the app only; stops without a stop code simply have no button.
         // v8.2  What's New pop-up: ten seconds after the app opens it lists the new bus
@@ -2913,7 +2925,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '8.3';
+        const APP_VERSION = '8.4';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -6098,6 +6110,83 @@
             if (mins < 60) return `in ${mins} min`;
             return `in ${Math.floor(mins / 60)} hr ${mins % 60} min`;
         }
+        // v8.4: sending a bus to your phone. Everything goes through the device's own share
+        // menu, text or email app, so the app never needs or keeps a phone number.
+        let busPicks = [];
+        function busStopLabel(p) {
+            const code = p.sub.replace(/^Bus stop\s*/, '');
+            return p.name + (code ? ', stop ' + code : '');
+        }
+        function busMessage(b) {
+            const checked = b.checked.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            return [
+                `Bus ${b.line} to ${b.dest} at ${b.time} (${b.live ? 'live time' : 'timetable time'})`,
+                `From: ${busStopLabel(b.stop)}, ${walkMins(b.stop.dist)} min walk`,
+                `Heading to: ${b.direction}`,
+                `Stop on the map: https://www.google.com/maps/search/?api=1&query=${b.stop.lat.toFixed(5)},${b.stop.lon.toFixed(5)}`,
+                `Checked at ${checked}. Times can change, so check again before you leave.`
+            ].join('\n');
+        }
+        async function sendBus(i) {
+            const b = busPicks[i];
+            if (!b) return;
+            const text = busMessage(b);
+            if (navigator.share) {
+                try { await navigator.share({ title: `Bus ${b.line} to ${b.dest}`, text }); return; }
+                catch (e) { if (e && e.name === 'AbortError') return; } // closed the menu: leave it there
+            }
+            // No share menu (most laptops): offer the ways that work everywhere
+            const panel = $('bd-send-panel');
+            if (!panel) return;
+            const body = encodeURIComponent(text);
+            panel.innerHTML = `<div class="bd-send-panel">
+                <a href="sms:?&amp;body=${body}">Text it</a>
+                <a href="mailto:?subject=${encodeURIComponent(`Bus ${b.line} to ${b.dest} at ${b.time}`)}&amp;body=${body}">Email it</a>
+                <a href="#" onclick="copyBus(${i}); return false;">Copy</a>
+                <span class="bd-muted" id="bd-copy-status">On a laptop, Email it to yourself, or Copy and paste into a message.</span>
+            </div>`;
+        }
+        async function copyBus(i) {
+            const b = busPicks[i];
+            if (!b) return;
+            let ok = false;
+            try { await navigator.clipboard.writeText(busMessage(b)); ok = true; } catch (e) {}
+            const st = $('bd-copy-status');
+            if (st) st.textContent = ok ? 'Copied. Paste it into a message to yourself.' : 'Couldn\'t copy here. Try Email it instead.';
+        }
+        // A calendar event at the bus's time with an alert before it, which your phone
+        // picks up if your calendar syncs (or opens straight away on the phone itself)
+        function remindBus(i) {
+            const b = busPicks[i];
+            if (!b) return;
+            const m = /^(\d{1,2}):(\d{2})$/.exec(b.time);
+            if (!m) return;
+            const when = new Date();
+            when.setHours(+m[1], +m[2], 0, 0);
+            if (b.mins !== null && b.mins > 0 && when.getTime() < Date.now() - 60000) when.setDate(when.getDate() + 1); // after midnight
+            const p2 = n => String(n).padStart(2, '0');
+            const local = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`;
+            const end = new Date(when.getTime() + 5 * 60000);
+            const icsEsc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+            const stamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const alertMins = b.mins !== null && b.mins < 12 ? 2 : 10;
+            const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dPaul Studio//Life - Student Edition//EN', 'CALSCALE:GREGORIAN',
+                'BEGIN:VEVENT', `UID:bus-${Date.now()}@dpaul.studio`, `DTSTAMP:${stamp}`,
+                `DTSTART:${local(when)}`, `DTEND:${local(end)}`,
+                `SUMMARY:${icsEsc(`Bus ${b.line} to ${b.dest}`)}`,
+                `LOCATION:${icsEsc(busStopLabel(b.stop))}`,
+                `GEO:${b.stop.lat.toFixed(5)};${b.stop.lon.toFixed(5)}`,
+                `DESCRIPTION:${icsEsc(busMessage(b))}`,
+                'BEGIN:VALARM', `TRIGGER:-PT${alertMins}M`, 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(`Bus ${b.line} in ${alertMins} minutes`)}`, 'END:VALARM',
+                'END:VEVENT', 'END:VCALENDAR'];
+            const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `bus-${String(b.line).replace(/[^\w-]/g, '')}-${b.time.replace(':', '')}.ics`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
         async function findBusTo() {
             const box = $('bus-dest-result');
             const dest = ($('bus-dest-input').value || '').trim().slice(0, 40);
@@ -6132,11 +6221,18 @@
 
             const where = p => `${esc(p.name)}${p.sub.replace(/^Bus stop\s*/, '') ? ', stop ' + esc(p.sub.replace(/^Bus stop\s*/, '')) : ''}, ${walkMins(p.dist)} min walk`;
             if (found.length) {
+                busPicks = found.slice(0, 4).map(d => ({ ...d, dest, checked: busLive[d.stop.atco].fetched || new Date() }));
                 const n = found[0];
-                const more = found.slice(1, 4).map(d =>
-                    `<li>${esc(d.line)} at ${esc(d.time)} (${sayDue(d.mins)}) from ${where(d.stop)}</li>`).join('');
+                const more = found.slice(1, 4).map((d, i) =>
+                    `<li>${esc(d.line)} at ${esc(d.time)} (${sayDue(d.mins)}) from ${where(d.stop)}
+                        <a href="#" class="bd-send" onclick="sendBus(${i + 1}); return false;">Send</a></li>`).join('');
                 box.innerHTML = `<div class="bd-next">Next bus to ${esc(dest)}: ${esc(n.line)} at ${esc(n.time)}, ${sayDue(n.mins)}</div>
                     <div>From ${where(n.stop)}. Heading to ${esc(n.direction)}. ${n.live ? 'Live time.' : 'Timetable time.'}</div>
+                    <div class="bd-actions">
+                        <button type="button" class="btn-toggle" onclick="sendBus(0)">Send to my phone</button>
+                        <button type="button" class="btn-toggle" onclick="remindBus(0)">Remind me</button>
+                    </div>
+                    <div id="bd-send-panel"></div>
                     ${more ? `<ul class="bd-more">${more}</ul>` : ''}`;
             } else if (errors === stops.length) {
                 box.innerHTML = `<span class="bd-muted">${usedUp ? 'Today\'s live bus lookups are used up. They reset at midnight.' : 'Live bus times didn\'t answer. Try again in a few minutes.'}</span>`;
