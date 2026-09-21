@@ -102,13 +102,15 @@
             /* White plate behind the title (v6.9). inline-block so the box hugs the words
                rather than running the width of the header. Padding is in em, so it keeps its
                proportions at every font size step. */
-            display: inline-block; background: #fff; border-radius: 14px;
+            display: inline-block; background: transparent; border-radius: 14px;
             /* Blue edge in the same ink as the words (v7.2), and a shallower box: the
                vertical padding is nearly off and line-height is 1, so the plate sits close
                to the capitals. Border and padding are both in em so they keep their weight
                at every heading size. The drop shadow has gone; the border does that job now. */
-            border: 0.07em solid var(--ink-accent, #007bff);
-            padding: 0.02em 0.4em; line-height: 1; }
+            /* v8.1: the plate and its border are off, so the title sits straight on the
+               background. Padding goes to nothing so it lines up with the greeting below. */
+            border: none;
+            padding: 0; line-height: 1; }
         /* The words are sized against the heading rather than set in their own rem value,
            so every screen-size step above still governs and this just takes a slice off it. */
         /* Laid out as a flex row (v7.5) so the smaller edition line centres against LIFE
@@ -120,8 +122,11 @@
            face on both Mac and Windows; the 900 weight is there for anywhere that falls
            back to a family with a black cut of its own. The plate is always white, so a
            flat black is safe on either display setting. */
-        .title-main { color: #000; font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-weight: 900; letter-spacing: 0.01em; font-size: 1.2em; }
+        /* v8.1: the whole title is Doto at its heaviest, the dot-matrix face the rest of
+           the app uses, in black at 80% so the background shows faintly through the dots. */
+        .title-main, .title-sub { font-family: 'Doto', monospace !important; font-weight: 900 !important;
+            color: rgba(0, 0, 0, 0.8) !important; font-stretch: normal; }
+        .title-main { letter-spacing: 0.02em; font-size: 1.2em; }
         /* Only "- STUDENT EDITION" fades (v7.1); LIFE and the plate stay put. Opacity alone,
            so the box keeps its width and nothing shuffles along while the words are away. */
         /* Both sizes are em against .title-words (v7.4), so LIFE leads and the edition line
@@ -130,8 +135,7 @@
             /* Narrower line (v7.6): a condensed face rather than a squash, so the letters keep
                their shape. Letter-spacing is pinned to nothing, which also stops the 2px the
                sign-in heading sets from pushing this line wider than the one in the header. */
-            font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-stretch: condensed; letter-spacing: -0.025em; }
+            letter-spacing: -0.02em; }
         /* 14 second round trip: 10s full, 1s out, 2s away, 1s back. */
         @keyframes title-cycle {
             0%, 71.4% { opacity: 1; }
@@ -2651,6 +2655,9 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.1  Title is now heavy Doto dot matrix in see-through black, with no plate or
+        //       border behind it, so the background shows through the letters. The edition
+        //       line still fades in and out.
         // v8.0  "Where to?" on Travel: type a destination and Find bus checks your two nearest
         //       stops and shows the next buses heading there, soonest first, with the stop,
         //       the walk and how long until it's due. Matching happens in the app, so the
@@ -2869,7 +2876,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '8.0';
+        const APP_VERSION = '8.1';
 
         // =====================================================================
         // CONFIG: set these before you deploy
