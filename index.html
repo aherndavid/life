@@ -776,6 +776,14 @@
         .bl-dest { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .bl-src { flex: none; color: var(--fg-muted); font-size: 0.8rem; }
         .bl-note { color: var(--fg-muted); font-size: 0.8rem; margin: 6px 0 0; }
+        .bus-live-list li.bl-match .bl-dest, .bus-live-list li.bl-match .bl-line { color: var(--fg-hi); text-decoration: underline; }
+        .bus-dest { display: flex; gap: 8px; margin: 0 0 8px; }
+        .bus-dest input { flex: 1; min-width: 0; font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+        .bus-dest-result { font-size: 0.9rem; margin: 0 0 8px; }
+        .bus-dest-result:empty { display: none; }
+        .bus-dest-result .bd-next { color: var(--fg-hi); font-weight: bold; }
+        .bus-dest-result .bd-more { color: var(--fg-muted); font-size: 0.85rem; margin: 4px 0 0; padding: 0; list-style: none; }
+        .bus-dest-result .bd-muted { color: var(--fg-muted); }
         .around-dist { white-space: nowrap; color: var(--fg-soft); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
         .around-note { color: var(--fg-muted); font-size: 0.9rem; margin: 0 0 10px; }
         .map-pin { position: relative; }
@@ -1940,6 +1948,12 @@
                                 <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-library" onchange="renderAround()"> Libraries</label>
                                 <label class="inline"><input type="checkbox" class="task-checkbox" id="lay-museum" onchange="renderAround()"> Museums</label>
                             </div>
+                            <div class="bus-dest" id="bus-dest" role="search" aria-label="Find a bus to somewhere">
+                                <input type="text" id="bus-dest-input" maxlength="40" placeholder="Where to? e.g. Windsor"
+                                    autocomplete="off" onkeydown="if (event.key === 'Enter') findBusTo()">
+                                <button type="button" class="btn-toggle" onclick="findBusTo()">Find bus</button>
+                            </div>
+                            <div class="bus-dest-result" id="bus-dest-result" aria-live="polite"></div>
                             <p class="around-note" id="around-note"></p>
                             <ul class="around-list" id="around-list"></ul>
                         </div>
@@ -2514,6 +2528,7 @@
                     <p>There's nothing to set up. Once your location is saved in <strong>Settings</strong>, the app picks your nearest stations on its own and shows their departures on the Home Page and on the Travel tab.</p>
                     <p>The <strong>Travel</strong> tab also has a map of what's around you: where you are, your nearest stations, the bus stops nearby and the nearest supermarkets, each with how far it is and roughly how long it takes to walk. Press anything in the list to find it on the map, and use the tick boxes to show or hide each kind.</p>
                     <p><strong>Bus times:</strong> next to each bus stop there's a <strong>Live</strong> button. Press it to see the next buses from that stop right there: the time, the bus number and where it's going. Look for your destination in the list, like Windsor. "Live" means the bus is being tracked; "Timetable" means it's the planned time.</p>
+                    <p><strong>Find a bus to somewhere:</strong> type where you're going in the <strong>Where to?</strong> box above the list, like Windsor, and press <strong>Find bus</strong>. The app checks your two nearest stops and tells you the next bus going there, which stop to wait at, and how long until it comes. It works by where each bus says it's heading, so if nothing comes up, try a bigger town nearby or press Times on your stop. What you type stays on your device.</p>
                     <p>Live bus times are shared between everyone using the app and there's a small daily allowance, so if it says they're used up, press <strong>Times</strong> instead. That opens the stop on bustimes.org, which always works.</p>
                     <p><strong>To use different stations</strong>, go to <strong>Settings</strong>, find <strong>Trains</strong> and type the 3-letter codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the code is shown next to its name. Press <strong>Save and test</strong>.</p>
                     <p>To hand it back to the app, empty the Stations box and press <strong>Use nearest to me</strong>.</p>
@@ -2636,6 +2651,11 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v8.0  "Where to?" on Travel: type a destination and Find bus checks your two nearest
+        //       stops and shows the next buses heading there, soonest first, with the stop,
+        //       the walk and how long until it's due. Matching happens in the app, so the
+        //       destination never leaves your device. Matching rows are marked in Live panels.
+        //       The "buses" Edge Function now returns up to 20 departures per stop.
         // v7.9  Live bus times in the app: a "Live" button on each bus stop on Travel opens
         //       that stop's next departures underneath it, through the Supabase Edge Function
         //       "buses", which holds the TransportAPI key. The free plan allows 30 lookups a
@@ -2849,7 +2869,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.9';
+        const APP_VERSION = '8.0';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -5998,7 +6018,15 @@
         async function toggleBusLive(atco) {
             const st = busLive[atco] || (busLive[atco] = { open: false });
             st.open = !st.open;
-            if (st.open && !st.loading && (!st.at || Date.now() - st.at > 120000)) {
+            if (st.open) await loadBusLive(atco);
+            renderAround();
+        }
+        // Fetches one stop's departures unless a fresh answer (under 2 minutes) is already here
+        async function loadBusLive(atco) {
+            const st = busLive[atco] || (busLive[atco] = { open: false });
+            if (st.loading) return st.pending;
+            if (st.at && Date.now() - st.at <= 120000) return;
+            st.pending = (async () => {
                 st.loading = true; st.error = '';
                 renderAround();
                 try {
@@ -6014,6 +6042,75 @@
                     st.at = 0;
                 }
                 st.loading = false;
+            })();
+            return st.pending;
+        }
+
+        // v8.0: "Where to?" A bus matches when where it's heading contains what you typed,
+        // so "Windsor" finds "Windsor Parish Church". Buses that only pass through a place
+        // don't list it, which is why the no-match message points to Times.
+        function destMatches(d, dest) {
+            return !!dest && String(d.direction || '').toLowerCase().includes(dest.toLowerCase());
+        }
+        function minsUntil(hhmm) {
+            const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
+            if (!m) return null;
+            const now = new Date();
+            let diff = (+m[1] * 60 + +m[2]) - (now.getHours() * 60 + now.getMinutes());
+            if (diff < -60) diff += 1440; // just after midnight
+            return diff;
+        }
+        function sayDue(mins) {
+            if (mins === null) return '';
+            if (mins <= 0) return 'due now';
+            if (mins < 60) return `in ${mins} min`;
+            return `in ${Math.floor(mins / 60)} hr ${mins % 60} min`;
+        }
+        async function findBusTo() {
+            const box = $('bus-dest-result');
+            const dest = ($('bus-dest-input').value || '').trim().slice(0, 40);
+            data.settings.travel.dest = dest; saveData(true);
+            if (!dest) { box.innerHTML = ''; renderAround(); return; }
+            if (!BUSES_PROXY_URL) { box.innerHTML = '<span class="bd-muted">Live bus times aren\'t switched on for this copy of the app.</span>'; return; }
+            // Your two nearest stops with a code: usually the same road, one each way
+            const stops = [];
+            aroundState.pois.forEach(p => { if (p.kind === 'bus' && p.atco && !stops.some(x => x.atco === p.atco) && stops.length < 2) stops.push(p); });
+            if (!stops.length) {
+                box.innerHTML = aroundState.loading
+                    ? '<span class="bd-muted">Still finding your bus stops. Try again in a moment.</span>'
+                    : '<span class="bd-muted">No bus stops near you have live times. Set your location in Settings, or use the Times buttons.</span>';
+                return;
+            }
+            box.innerHTML = `<span class="bd-muted">Checking buses to ${esc(dest)}</span>`;
+            await Promise.all(stops.map(p => loadBusLive(p.atco)));
+
+            const found = [];
+            let errors = 0, usedUp = false;
+            stops.forEach(p => {
+                const st = busLive[p.atco];
+                if (st.error) { errors++; if (/used up/.test(st.error)) usedUp = true; return; }
+                (st.deps || []).forEach(d => {
+                    if (!destMatches(d, dest)) return;
+                    const mins = minsUntil(d.time);
+                    if (mins !== null && mins < -1) return;
+                    found.push({ ...d, mins, stop: p });
+                });
+            });
+            found.sort((a, b) => (a.mins ?? 9999) - (b.mins ?? 9999));
+
+            const where = p => `${esc(p.name)}${p.sub.replace(/^Bus stop\s*/, '') ? ', stop ' + esc(p.sub.replace(/^Bus stop\s*/, '')) : ''}, ${walkMins(p.dist)} min walk`;
+            if (found.length) {
+                const n = found[0];
+                const more = found.slice(1, 4).map(d =>
+                    `<li>${esc(d.line)} at ${esc(d.time)} (${sayDue(d.mins)}) from ${where(d.stop)}</li>`).join('');
+                box.innerHTML = `<div class="bd-next">Next bus to ${esc(dest)}: ${esc(n.line)} at ${esc(n.time)}, ${sayDue(n.mins)}</div>
+                    <div>From ${where(n.stop)}. Heading to ${esc(n.direction)}. ${n.live ? 'Live time.' : 'Timetable time.'}</div>
+                    ${more ? `<ul class="bd-more">${more}</ul>` : ''}`;
+            } else if (errors === stops.length) {
+                box.innerHTML = `<span class="bd-muted">${usedUp ? 'Today\'s live bus lookups are used up. They reset at midnight.' : 'Live bus times didn\'t answer.'} Use the Times button on a stop instead.</span>`;
+            } else {
+                const links = stops.map(p => `<a href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener">${esc(p.name)}</a>`).join(' or ');
+                box.innerHTML = `<span class="bd-muted">No bus from your nearest stops shows ${esc(dest)} as where it's heading in the next hour or so. Some buses go through a place without it being their last stop, so check Times for ${links}. Or try a nearby town name.</span>`;
             }
             renderAround();
         }
@@ -6026,8 +6123,9 @@
             else if (!st.deps || !st.deps.length) inner = '<p class="empty">No buses due from this stop in the next while.</p>';
             else {
                 const mins = Math.max(0, Math.round((Date.now() - st.fetched.getTime()) / 60000));
+                const dest = (data.settings.travel.dest || '').trim();
                 inner = `<ul class="bus-live-list">${st.deps.slice(0, 8).map(d => `
-                    <li><span class="bl-time">${esc(d.time)}</span>
+                    <li${destMatches(d, dest) ? ' class="bl-match"' : ''}><span class="bl-time">${esc(d.time)}</span>
                         <span class="bl-line">${esc(d.line)}</span>
                         <span class="bl-dest" title="${esc(d.direction)}">${esc(d.direction)}</span>
                         <span class="bl-src">${d.live ? 'Live' : 'Timetable'}</span></li>`).join('')}</ul>
@@ -6086,6 +6184,8 @@
 
         async function renderAround() {
             renderMapPrefs();
+            const destIn = $('bus-dest-input');
+            if (destIn && !destIn.value && data.settings.travel.dest && document.activeElement !== destIn) destIn.value = data.settings.travel.dest;
             const p = mapPrefs();
             const box = $('around-map');
             const listEl = $('around-list');
