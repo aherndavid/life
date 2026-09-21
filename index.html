@@ -764,6 +764,18 @@
         .around-main { flex: 1; min-width: 0; line-height: 1.3; }
         .around-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .around-sub { color: var(--fg-muted); font-size: 0.82rem; }
+        .around-times { white-space: nowrap; font-size: 0.85rem; padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg-hi); text-decoration: none; }
+        .around-times:hover { text-decoration: underline; }
+        button.around-times { background: transparent; font: inherit; font-size: 0.85rem; cursor: pointer; }
+        .bus-live { list-style: none; padding: 4px 0 10px 32px; border-bottom: 1px solid var(--line); }
+        .bus-live .empty { margin: 4px 0; }
+        .bus-live-list { list-style: none; margin: 0; padding: 0; }
+        .bus-live-list li { display: flex; gap: 10px; align-items: baseline; padding: 3px 0; font-size: 0.9rem; }
+        .bl-time { flex: none; width: 3.2em; font-variant-numeric: tabular-nums; color: var(--fg-hi); }
+        .bl-line { flex: none; min-width: 2.6em; font-weight: bold; }
+        .bl-dest { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bl-src { flex: none; color: var(--fg-muted); font-size: 0.8rem; }
+        .bl-note { color: var(--fg-muted); font-size: 0.8rem; margin: 6px 0 0; }
         .around-dist { white-space: nowrap; color: var(--fg-soft); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
         .around-note { color: var(--fg-muted); font-size: 0.9rem; margin: 0 0 10px; }
         .map-pin { position: relative; }
@@ -2501,6 +2513,8 @@
                     <summary>Set up trains</summary>
                     <p>There's nothing to set up. Once your location is saved in <strong>Settings</strong>, the app picks your nearest stations on its own and shows their departures on the Home Page and on the Travel tab.</p>
                     <p>The <strong>Travel</strong> tab also has a map of what's around you: where you are, your nearest stations, the bus stops nearby and the nearest supermarkets, each with how far it is and roughly how long it takes to walk. Press anything in the list to find it on the map, and use the tick boxes to show or hide each kind.</p>
+                    <p><strong>Bus times:</strong> next to each bus stop there's a <strong>Live</strong> button. Press it to see the next buses from that stop right there: the time, the bus number and where it's going. Look for your destination in the list, like Windsor. "Live" means the bus is being tracked; "Timetable" means it's the planned time.</p>
+                    <p>Live bus times are shared between everyone using the app and there's a small daily allowance, so if it says they're used up, press <strong>Times</strong> instead. That opens the stop on bustimes.org, which always works.</p>
                     <p><strong>To use different stations</strong>, go to <strong>Settings</strong>, find <strong>Trains</strong> and type the 3-letter codes, separated by commas. Manchester Oxford Road is <strong>MCO</strong>, Piccadilly is <strong>MAN</strong>, Deansgate is <strong>DGT</strong> and Victoria is <strong>MCV</strong>. For any other station, search for it on nationalrail.co.uk and the code is shown next to its name. Press <strong>Save and test</strong>.</p>
                     <p>To hand it back to the app, empty the Stations box and press <strong>Use nearest to me</strong>.</p>
                 </details>
@@ -2574,6 +2588,7 @@
                         <li><strong>Weather and map:</strong> your saved location goes to Open-Meteo for the forecast and to OpenStreetMap for the map. A postcode you search for goes to postcodes.io.</li>
                         <li><strong>Trains:</strong> your station codes go through our train service to National Rail. It doesn't record who asked. Working out which stations are nearest happens inside the app, so your location isn't sent anywhere for that.</li>
                         <li><strong>The map on Travel:</strong> to find the bus stops and shops near you, your location rounded to about 100 metres goes to OpenStreetMap's public map service. Your exact position is never sent, and the answer is kept in this browser for a month so it's only asked once.</li>
+                        <li><strong>Bus times:</strong> when you press <strong>Live</strong> next to a bus stop, only that stop's code goes through our bus service to TransportAPI for the next departures. It doesn't record who asked. When you press <strong>Times</strong>, that stop opens on bustimes.org in a new tab, and bustimes.org's own privacy rules apply there.</li>
                         <li><strong>News:</strong> only your news area (like Berkshire) goes through our news service to the news sites it reads, never your exact location. It doesn't record who asked. Opening a headline takes you to whichever site published it, shown under each one.</li>
                         <li><strong>Music:</strong> nothing at all is asked of YouTube until you press play and agree. After that the player uses YouTube's no-cookie address, and YouTube's own privacy rules apply. You can change your mind under Privacy and cookies in Settings.</li>
                     </ul>
@@ -2621,6 +2636,16 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v7.9  Live bus times in the app: a "Live" button on each bus stop on Travel opens
+        //       that stop's next departures underneath it, through the Supabase Edge Function
+        //       "buses", which holds the TransportAPI key. The free plan allows 30 lookups a
+        //       day for everyone together, so the function keeps each stop's answer for 5
+        //       minutes and stops at the daily limit. "Times" (bustimes.org) always works.
+        // v7.8  Bus stops on Travel get a "Times" link to that stop's page on bustimes.org:
+        //       which buses call there, where they go, and live times where the operator
+        //       shares them. Uses the stop's NaPTAN code from OpenStreetMap; stops without
+        //       one open a bustimes.org search for the stop name. Map cache bumped so stops
+        //       pick up their codes. Nothing is sent until you press the link.
         // v7.7  The edition line is pulled in a little tighter again.
         // v7.6  The edition line is set condensed and unspaced, so it runs narrower.
         // v7.5  The edition line is centred against LIFE instead of sharing its baseline,
@@ -2824,7 +2849,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '7.7';
+        const APP_VERSION = '7.9';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -2837,6 +2862,11 @@
         // Live trains: the Supabase Edge Function "trains". It holds the Rail Data Marketplace key
         // (secret RDM_KEY) so the key never appears in this page. Called as ?crs=MAI&rows=30
         const TRAINS_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/trains';
+        // Live buses (v7.9): the Supabase Edge Function "buses". It holds the TransportAPI
+        // app_id and app_key (secrets TRANSPORTAPI_APP_ID, TRANSPORTAPI_APP_KEY), shares each
+        // stop's answer for 5 minutes and enforces the daily limit. Called as ?atco=035001234567
+        // Leave it '' to hide the Live buttons.
+        const BUSES_PROXY_URL = 'https://ucnqhcxsomfelpgmruhb.supabase.co/functions/v1/buses';
         const STORE_KEY = 'dpaul_student_life_v1';
         const DEFAULT_TRACK = { id: 'default-house', videoId: 'gZ_i4ixAMAc', listId: null, title: '', author: '' };
         const TABS = ['today', 'budget', 'food', 'tasks', 'deadlines', 'timetable', 'projects', 'grades', 'travel', 'settings'];
@@ -5810,7 +5840,7 @@
             'https://overpass-api.de/api/interpreter',
             'https://overpass.kumi.systems/api/interpreter'
         ];
-        const AROUND_KEY = 'dpaul_student_around_v2';  // v5.6: health, libraries and museums added, so old caches are incomplete
+        const AROUND_KEY = 'dpaul_student_around_v3';  // v7.8: bus stops now carry their NaPTAN code, so old caches lack it
         const AROUND_TTL = 30 * 24 * 3600 * 1000;
         const aroundState = { pois: [], key: '', loading: false, error: '', at: 0 };
         const aroundMap = { map: null, layer: null, key: '' };
@@ -5866,7 +5896,13 @@
                 else if (t.tourism === 'museum') { kind = 'museum'; badge = 'M'; fallback = 'Museum'; sub = 'Museum'; }
                 else return;
                 const name = t.name || t.brand || t.operator || fallback;
-                out.push({ kind, badge, name: String(name).slice(0, 60), sub, lat: p.lat, lon: p.lon, dist: metresBetween(lat, lon, p.lat, p.lon) });
+                const poi = { kind, badge, name: String(name).slice(0, 60), sub, lat: p.lat, lon: p.lon, dist: metresBetween(lat, lon, p.lat, p.lon) };
+                // v7.8: the NaPTAN code is what bustimes.org files each stop under
+                if (kind === 'bus') {
+                    const atco = String(t['naptan:AtcoCode'] || '').trim();
+                    if (/^[0-9A-Za-z]{4,15}$/.test(atco)) poi.atco = atco;
+                }
+                out.push(poi);
             });
             // Two stops on opposite sides of the same road are useful; exact duplicates aren't
             const seen = new Set();
@@ -5934,6 +5970,70 @@
                 html: `<span>${esc(label)}</span>`,
                 iconSize: [24, 24], iconAnchor: [12, 12]
             });
+        }
+
+        // v7.8: where a bus stop's "Times" link goes. The stop's own page when OpenStreetMap
+        // has its NaPTAN code; otherwise a bustimes.org search for its name and area.
+        function busTimesUrl(p) {
+            if (p.atco) return 'https://bustimes.org/stops/' + encodeURIComponent(p.atco);
+            const town = /^my location$/i.test(data.settings.place || '') ? '' : String(data.settings.place || '').split(',')[0].trim();
+            return 'https://bustimes.org/search?q=' + encodeURIComponent([p.name, town].filter(Boolean).join(' '));
+        }
+        function busTimesLink(p) {
+            if (p.kind !== 'bus') return '';
+            return `<a class="around-times" href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener"
+                onclick="event.stopPropagation()" title="Buses from this stop, on bustimes.org">Times</a>`;
+        }
+
+        // v7.9: live departures for one stop, opened under its row. Kept per stop here so
+        // ticking a box (which redraws the list) doesn't close it. Answers are reused for
+        // 2 minutes in the browser; the Edge Function also shares them for 5 minutes.
+        const busLive = {};
+        function busLiveButton(p) {
+            if (p.kind !== 'bus' || !p.atco || !BUSES_PROXY_URL) return '';
+            const st = busLive[p.atco];
+            return `<button type="button" class="around-times" aria-expanded="${st && st.open ? 'true' : 'false'}"
+                onclick="event.stopPropagation(); toggleBusLive('${esc(p.atco)}')" title="Next buses from this stop">${st && st.open ? 'Close' : 'Live'}</button>`;
+        }
+        async function toggleBusLive(atco) {
+            const st = busLive[atco] || (busLive[atco] = { open: false });
+            st.open = !st.open;
+            if (st.open && !st.loading && (!st.at || Date.now() - st.at > 120000)) {
+                st.loading = true; st.error = '';
+                renderAround();
+                try {
+                    const r = await fetch(`${BUSES_PROXY_URL}?atco=${encodeURIComponent(atco)}`);
+                    const j = await r.json().catch(() => ({}));
+                    if (r.status === 429) throw new Error('Today\'s live bus lookups are used up. They reset at midnight. The Times button still shows this stop\'s buses.');
+                    if (!r.ok) throw new Error(j.error || `Live bus times returned an error (${r.status}). Try the Times button instead.`);
+                    st.deps = Array.isArray(j.departures) ? j.departures : [];
+                    st.fetched = j.fetched_at ? new Date(j.fetched_at) : new Date();
+                    st.at = Date.now();
+                } catch (e) {
+                    st.error = (e && e.message) || 'Live bus times didn\'t answer. Try the Times button instead.';
+                    st.at = 0;
+                }
+                st.loading = false;
+            }
+            renderAround();
+        }
+        function busLiveHTML(p) {
+            const st = p.atco && busLive[p.atco];
+            if (!st || !st.open) return '';
+            let inner;
+            if (st.loading) inner = '<p class="empty">Getting the next buses</p>';
+            else if (st.error) inner = `<p class="empty">${esc(st.error)}</p>`;
+            else if (!st.deps || !st.deps.length) inner = '<p class="empty">No buses due from this stop in the next while.</p>';
+            else {
+                const mins = Math.max(0, Math.round((Date.now() - st.fetched.getTime()) / 60000));
+                inner = `<ul class="bus-live-list">${st.deps.slice(0, 8).map(d => `
+                    <li><span class="bl-time">${esc(d.time)}</span>
+                        <span class="bl-line">${esc(d.line)}</span>
+                        <span class="bl-dest" title="${esc(d.direction)}">${esc(d.direction)}</span>
+                        <span class="bl-src">${d.live ? 'Live' : 'Timetable'}</span></li>`).join('')}</ul>
+                    <p class="bl-note">Checked ${mins ? mins + ' min ago' : 'just now'}. Look for your destination, like Windsor, in the list.</p>`;
+            }
+            return `<li class="bus-live" onclick="event.stopPropagation()">${inner}</li>`;
         }
 
         // Everything to show, in one list: you, then stations, stops and shops
@@ -6017,7 +6117,8 @@
                     <span class="around-badge ${esc(p.kind)}">${esc(p.badge)}</span>
                     <span class="around-main"><span class="around-name">${esc(p.name)}</span><span class="around-sub">${esc(p.sub)}</span></span>
                     <span class="around-dist">${esc(prettyDistance(p.dist))} &middot; ${walkMins(p.dist)} min</span>
-                </li>`).join('') || '<li class="empty">Nothing found near your location.</li>';
+                    ${busLiveButton(p)}${busTimesLink(p)}
+                </li>${busLiveHTML(p)}`).join('') || '<li class="empty">Nothing found near your location.</li>';
 
             if (p.hidden || p.min) return;         // no map on screen to draw on
             if (box.offsetParent === null) return; // Travel tab not on screen; draw when it is
@@ -6047,7 +6148,8 @@
             pts.forEach(p => {
                 L.marker([p.lat, p.lon], { icon: aroundPin(p.kind, p.badge), title: p.name })
                     .addTo(aroundMap.layer)
-                    .bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.sub)}<br>${esc(prettyDistance(p.dist))}, about ${walkMins(p.dist)} min walk`);
+                    .bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.sub)}<br>${esc(prettyDistance(p.dist))}, about ${walkMins(p.dist)} min walk`
+                        + (p.kind === 'bus' ? `<br><a href="${esc(busTimesUrl(p))}" target="_blank" rel="noopener">Bus times for this stop</a>` : ''));
             });
         }
 
