@@ -622,6 +622,11 @@
         .link-btn { background: transparent; color: var(--link); padding: 0; font-size: 0.95rem; text-decoration: underline; font-weight: normal; }
         .link-btn:hover { background: transparent; color: var(--link-hi); }
 
+        /* Daily reminders (v9.7) */
+        .daily-row { margin-bottom: 10px; }
+        .daily-row input[type=time] { width: auto; padding: 8px 10px; margin: 0; }
+        .daily-row input[type=text] { padding: 8px 10px; margin: 0; }
+        .daily-lbl { margin: 0 0 0 4px; font-size: 1rem; }
         /* Break reminder (uses the guide overlay) */
         .reminder-modal { max-width: 680px; }
         .reminder-msg { font-size: 1.2rem; line-height: 1.6; color: var(--fg); margin: 0 0 22px; }
@@ -2391,6 +2396,35 @@
                     </div>
                 </div>
 
+                <!-- DAILY REMINDERS (v9.7): medication each morning, bedtime each night -->
+                <div class="container">
+                    <h2 style="margin-top: 0;">Daily reminders</h2>
+                    <p class="note">A pop-up at the same time every day. They show while Life is open in a browser tab; if you open it later, a missed one still shows (medication until 12 hours after, bedtime until 4 hours after).</p>
+                    <div class="row-gap daily-row">
+                        <label class="inline"><input type="checkbox" id="med-on" class="task-checkbox" onchange="saveDailySettings()"> Medication</label>
+                        <label for="med-time" class="daily-lbl">at</label>
+                        <input type="time" id="med-time" value="08:00" onchange="saveDailySettings()">
+                        <input type="text" id="med-what" maxlength="60" placeholder="What to take (optional)" onchange="saveDailySettings()" style="flex: 1; min-width: 180px; max-width: 320px;">
+                        <button class="btn-teal btn-small" onclick="showDaily('med', true)">Test</button>
+                        <span class="muted" id="med-status"></span>
+                    </div>
+                    <div class="row-gap daily-row">
+                        <label class="inline"><input type="checkbox" id="sleep-on" class="task-checkbox" onchange="saveDailySettings()"> Bedtime</label>
+                        <label for="sleep-time" class="daily-lbl">at</label>
+                        <input type="time" id="sleep-time" value="22:30" onchange="saveDailySettings()">
+                        <button class="btn-teal btn-small" onclick="showDaily('sleep', true)">Test</button>
+                        <span class="muted" id="sleep-status"></span>
+                    </div>
+                    <div class="row-gap daily-row">
+                        <label class="inline"><input type="checkbox" id="daily-notify" class="task-checkbox" onchange="setDailyNotify(this.checked)"> Also show a notification when Life is in the background</label>
+                    </div>
+                    <div class="row-gap">
+                        <button class="btn-small" onclick="downloadDailyICS()">Add to my calendar</button>
+                        <span id="daily-status" class="status-ok"></span>
+                    </div>
+                    <p class="note" style="margin: 8px 0 0;">When Life is closed it can't remind you. <strong>Add to my calendar</strong> downloads the reminders as daily events with an alert, so your phone reminds you too.</p>
+                </div>
+
                 <div class="container">
                     <h2 style="margin-top: 0;" id="set-display-head">Display</h2>
                     <p class="note">The background colour of the app. The text stays black either way. If a white screen is harsh on your eyes, or you're working late, try the grey.</p>
@@ -2752,6 +2786,29 @@
         </div>
     </div>
 
+    <!-- DAILY REMINDER (v9.7): medication or bedtime -->
+    <div class="guide-overlay" id="daily-overlay" onclick="if(event.target === this) dailyAction('snooze')">
+        <div class="guide-modal reminder-modal" role="dialog" aria-modal="true" aria-labelledby="daily-title">
+            <div class="guide-head">
+                <div>
+                    <h2 id="daily-title"></h2>
+                    <p id="daily-sub"></p>
+                </div>
+                <button class="guide-close" id="daily-close" onclick="dailyAction('snooze')" aria-label="Remind me in 15 minutes">×</button>
+            </div>
+            <div class="guide-body">
+                <p class="reminder-msg" id="daily-msg"></p>
+            </div>
+            <div class="guide-foot">
+                <div class="reminder-actions">
+                    <button id="daily-done" onclick="dailyAction('done')"></button>
+                    <button class="btn-toggle" style="padding: 12px 18px; font-size: 1rem;" onclick="dailyAction('snooze')">Remind me in 15 minutes</button>
+                </div>
+                <button class="btn-cal-filter" style="padding: 12px 20px; font-size: 1rem;" id="daily-skip" onclick="dailyAction('skip')"></button>
+            </div>
+        </div>
+    </div>
+
     <!-- WHAT'S NEW (v8.2). Temporary: switches itself off after WHATSNEW_UNTIL. -->
     <div class="guide-overlay" id="whatsnew-overlay" onclick="if(event.target === this) closeWhatsNew()">
         <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
@@ -2867,6 +2924,7 @@
                     <div class="guide-card">
                         <h3>Music and break reminders</h3>
                         <p>Press Music at the top and paste a YouTube link to play music while you work. It needs the app opened from a web address or localhost, not straight from the file. <strong>Add &amp; Play</strong> starts it straight away; <strong>Save for later</strong> just puts it on your list without interrupting anything. <strong>Hide</strong> tucks the player into a small tab in the corner, and the music keeps going &mdash; press the tab to bring it back. To send your list to a friend, press <strong>Share my list</strong> under your tracks. A reminder pops up every 15 minutes to get you moving. You can change or turn it off in Settings.</p>
+                        <p>Settings also has <strong>Daily reminders</strong>: medication each morning and bedtime each night, at times you choose. <strong>Add to my calendar</strong> puts them on your phone too, so they still go off when Life is closed.</p>
                         <button class="btn-small" onclick="closeGuide(); showMusic();">Open Music</button>
                     </div>
                 </div>
@@ -3002,6 +3060,10 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v9.7  Daily reminders in Settings: medication each morning (08:00 by default, with
+        //       what to take) and bedtime (22:30 by default), both with their own time. Taken,
+        //       Remind me in 15 minutes, or Skip. Optional notifications while the app is in
+        //       the background, and Add to my calendar for daily alerts when it's closed.
         // v9.6  Name your own accounts: Accounts on the Month page adds, renames and removes
         //       them, each marked current, savings or cash. Current and cash count toward safe
         //       to spend. A Next month button jumps to next month's money in and going out, and
@@ -3284,7 +3346,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '9.6';
+        const APP_VERSION = '9.7';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -3946,6 +4008,7 @@
                 music: { tracks: [{ ...DEFAULT_TRACK }], current: DEFAULT_TRACK.id, volume: 60, repeat: true, libOpen: true, mini: true, tucked: false, pos: null, open: true, seeded: true },
                 food: { items: [], known: {}, weekBudget: '', meals: [] },
                 reminders: { on: true, every: 15 },
+                daily: { med: { on: true, time: '08:00', what: '', done: '', doneAt: '' }, sleep: { on: true, time: '22:30', done: '', doneAt: '' }, notify: false },
                 keydates: { own: [] },
                 settling: {},
                 setup: { started: false, skipped: [], done: {} }
@@ -3983,6 +4046,9 @@
             if (!out.food.known || typeof out.food.known !== 'object') out.food.known = {};
             if (!Array.isArray(out.food.meals)) out.food.meals = [];
             out.reminders = { ...base.reminders, ...(raw.reminders || {}) };
+            const rd = raw.daily || {};
+            out.daily = { med: { ...base.daily.med, ...(rd.med || {}) }, sleep: { ...base.daily.sleep, ...(rd.sleep || {}) }, notify: !!rd.notify };
+            ['med', 'sleep'].forEach(k => { if (!/^\d{2}:\d{2}$/.test(out.daily[k].time)) out.daily[k].time = base.daily[k].time; });
             out.keydates = { own: Array.isArray((raw.keydates || {}).own) ? raw.keydates.own : [] };
             if (!out.settling || typeof out.settling !== 'object') out.settling = {};
             out.setup = { ...base.setup, ...(raw.setup || {}) };
@@ -7569,6 +7635,7 @@
                 : 'Your own choice, up to three 3-letter codes. Empty the box and press Save and test to go back to following your location.';
             $('rem-on').checked = !!data.reminders.on;
             $('rem-every').value = String(data.reminders.every);
+            renderDailySettings();
             renderAdmin();
         }
 
@@ -9275,6 +9342,138 @@ add('Job search', ['Role', 'Company', 'Stage', 'Applied', 'Follow up', 'Link', '
         }
 
         // =====================================================================
+        // DAILY REMINDERS (v9.7): medication each morning, bedtime each night. Each has a
+        // time; the most recent one that's gone by shows once, until Taken / Skip, and
+        // Remind me in 15 minutes snoozes it. Missed ones still show within a window.
+        // =====================================================================
+        const DAILY_WINDOW = { med: 12 * 3600000, sleep: 4 * 3600000 };
+        const dailySnooze = {}, dailyNotified = {};
+        let dailyShowing = null, dailyReturnFocus = null;
+        function dailyLastTime(time) {
+            const [h, m] = time.split(':').map(Number);
+            const d = new Date(); d.setHours(h, m, 0, 0);
+            if (d > new Date()) d.setDate(d.getDate() - 1);
+            return d;
+        }
+        function dailyDue(k) {
+            const c = data.daily[k];
+            if (!c.on) return null;
+            const occ = dailyLastTime(c.time), key = isoDate(occ);
+            if (c.done === key || Date.now() - occ > DAILY_WINDOW[k] || (dailySnooze[k] || 0) > Date.now()) return null;
+            return key;
+        }
+        function dailyText(k) {
+            const c = data.daily[k];
+            return k === 'med'
+                ? { title: 'Time for your medication', msg: c.what ? `Take ${c.what}.` : 'Time to take your morning medication.', done: 'Taken', skip: 'Skip today' }
+                : { title: 'Time for bed', msg: 'Put the screens away and start winding down. A regular bedtime is one of the best things you can do for your mood and your energy tomorrow.', done: 'Heading to bed', skip: 'Not tonight' };
+        }
+        function showDaily(k, test) {
+            if (anyOverlayOpen()) return false;
+            const t = dailyText(k), c = data.daily[k];
+            dailyShowing = { k, test: !!test };
+            $('daily-title').textContent = t.title;
+            $('daily-sub').textContent = test ? 'This is a test. Nothing is recorded.' : `Your ${c.time} reminder`;
+            $('daily-msg').textContent = t.msg;
+            $('daily-done').textContent = t.done;
+            $('daily-skip').textContent = t.skip;
+            dailyReturnFocus = document.activeElement;
+            $('daily-overlay').classList.add('open');
+            document.body.classList.add('guide-open');
+            $('daily-done').focus();
+            return true;
+        }
+        function dailyAction(what) {
+            const cur = dailyShowing;
+            $('daily-overlay').classList.remove('open');
+            if (!anyOverlayOpen()) document.body.classList.remove('guide-open');
+            dailyShowing = null;
+            if (dailyReturnFocus && dailyReturnFocus.focus) dailyReturnFocus.focus();
+            if (!cur || cur.test) return;
+            const c = data.daily[cur.k];
+            if (what === 'snooze') { dailySnooze[cur.k] = Date.now() + 15 * 60000; return; }
+            c.done = isoDate(dailyLastTime(c.time));
+            c.doneAt = what === 'done' ? new Date().toTimeString().slice(0, 5) : 'skipped';
+            saveData();
+            renderDailySettings();
+        }
+        function checkDaily() {
+            if (!data || !data.daily || document.documentElement.classList.contains('auth-locked')) return;
+            ['med', 'sleep'].forEach(k => {
+                const key = dailyDue(k);
+                if (!key) return;
+                if (document.visibilityState === 'visible') {
+                    if (!anyOverlayOpen() && !setupState.active) showDaily(k);
+                } else if (data.daily.notify && window.Notification && Notification.permission === 'granted' && !dailyNotified[k + key]) {
+                    dailyNotified[k + key] = true;
+                    const t = dailyText(k);
+                    try { const n = new Notification(t.title, { body: t.msg, tag: 'life-' + k, requireInteraction: true }); n.onclick = () => { window.focus(); n.close(); }; } catch (e) {}
+                }
+            });
+        }
+        function renderDailySettings() {
+            if (!$('med-on') || !data.daily) return;
+            const d = data.daily;
+            $('med-on').checked = !!d.med.on; $('med-time').value = d.med.time; $('med-what').value = d.med.what || '';
+            $('sleep-on').checked = !!d.sleep.on; $('sleep-time').value = d.sleep.time;
+            $('daily-notify').checked = !!d.notify && !!window.Notification && Notification.permission === 'granted';
+            const line = (k, doneWord) => {
+                const c = d[k];
+                if (!c.on) return 'Off';
+                if (c.done === isoDate(dailyLastTime(c.time))) return c.doneAt === 'skipped' ? 'Skipped this time' : `${doneWord} at ${c.doneAt}`;
+                return '';
+            };
+            $('med-status').textContent = line('med', 'Taken');
+            $('sleep-status').textContent = line('sleep', 'Off to bed');
+        }
+        function saveDailySettings() {
+            const d = data.daily;
+            const oldMed = d.med.time, oldSleep = d.sleep.time;
+            d.med.on = $('med-on').checked; d.med.time = $('med-time').value || '08:00'; d.med.what = $('med-what').value.trim().slice(0, 60);
+            d.sleep.on = $('sleep-on').checked; d.sleep.time = $('sleep-time').value || '22:30';
+            // A new time shouldn't fire straight away for a slot you've already dealt with
+            if (d.med.time !== oldMed && d.med.done) d.med.done = isoDate(dailyLastTime(d.med.time));
+            if (d.sleep.time !== oldSleep && d.sleep.done) d.sleep.done = isoDate(dailyLastTime(d.sleep.time));
+            saveData();
+            renderDailySettings();
+        }
+        async function setDailyNotify(on) {
+            if (on) {
+                if (!window.Notification) { flash('daily-status', 'This browser can\'t show notifications.', true); $('daily-notify').checked = false; return; }
+                let perm = Notification.permission;
+                if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch (e) {} }
+                if (perm !== 'granted') { flash('daily-status', 'Notifications are blocked for this page. Allow them in your browser\'s site settings.', true); $('daily-notify').checked = false; data.daily.notify = false; saveData(); return; }
+            }
+            data.daily.notify = !!on;
+            saveData();
+            if (on) flash('daily-status', 'Notifications on. They work while Life is open in a tab, even behind other windows.');
+        }
+        function downloadDailyICS() {
+            const d = data.daily, stamp = icsStamp(), start = todayISO().replace(/-/g, '');
+            const items = [];
+            if (d.med.on) items.push({ k: 'med', summary: d.med.what ? `Medication: ${d.med.what}` : 'Medication', time: d.med.time });
+            if (d.sleep.on) items.push({ k: 'sleep', summary: 'Time for bed', time: d.sleep.time });
+            if (!items.length) { flash('daily-status', 'Turn on a reminder first.', true); return; }
+            const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dPaul Studio//Life//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Life reminders'];
+            items.forEach(e => {
+                const t = e.time.replace(':', '') + '00';
+                lines.push('BEGIN:VEVENT', `UID:daily-${e.k}@life.dpaul.studio`, 'DTSTAMP:' + stamp,
+                    `DTSTART:${start}T${t}`, 'DURATION:PT10M', 'RRULE:FREQ=DAILY',
+                    'SUMMARY:' + icsText(e.summary), 'TRANSP:TRANSPARENT',
+                    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(e.summary), 'TRIGGER:PT0M', 'END:VALARM',
+                    'END:VEVENT');
+            });
+            lines.push('END:VCALENDAR');
+            const blob = new Blob([lines.map(icsFold).join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'life-daily-reminders.ics';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            flash('daily-status', 'Downloaded. Open the file to add the daily reminders to your calendar. If you change a time, download it again.');
+        }
+
+        // =====================================================================
         // HOW TO USE GUIDE
         // =====================================================================
         let guideReturnFocus = null;
@@ -9310,7 +9509,7 @@ add('Job search', ['Role', 'Company', 'Stage', 'Applied', 'Follow up', 'Link', '
         document.addEventListener('keydown', e => {
             const overlay = document.querySelector('.guide-overlay.open');
             if (!overlay) return;
-            if (e.key === 'Escape') { if (overlay.id === 'reminder-overlay') closeReminder(); else if (overlay.id === 'backup-overlay') closeBackup(); else if (overlay.id === 'support-overlay') closeSupport(); else if (overlay.id.startsWith('share-')) closeShare(); else closeGuide(); return; }
+            if (e.key === 'Escape') { if (overlay.id === 'reminder-overlay') closeReminder(); else if (overlay.id === 'daily-overlay') dailyAction('snooze'); else if (overlay.id === 'backup-overlay') closeBackup(); else if (overlay.id === 'support-overlay') closeSupport(); else if (overlay.id.startsWith('share-')) closeShare(); else closeGuide(); return; }
             if (e.key === 'Tab') {
                 const f = [...overlay.querySelectorAll('button, a[href], input, select')].filter(el => el.offsetParent !== null);
                 if (!f.length) return;
@@ -9363,6 +9562,9 @@ add('Job search', ['Role', 'Company', 'Stage', 'Applied', 'Follow up', 'Link', '
             setInterval(() => { if ($('view-today').style.display !== 'none') renderToday(); }, 60000);
             setInterval(() => { if (document.visibilityState === 'visible' && $('view-today').style.display !== 'none') fetchNews(); }, 5 * 60000);
             setInterval(checkReminder, 15000);
+            setInterval(checkDaily, 20000);
+            document.addEventListener('visibilitychange', checkDaily);
+            setTimeout(checkDaily, 3000);
             document.addEventListener('visibilitychange', checkReminder);
             offerPendingShare();
         }
