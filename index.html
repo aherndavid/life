@@ -433,6 +433,13 @@
         .money-now label { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 1rem; font-weight: bold; }
         .money-now input { width: 120px !important; padding: 7px 9px !important; margin: 0 !important; font-size: 1rem !important; }
         .money-now-label { font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--fg-soft); }
+        /* v9.6: named accounts */
+        .money-now .acc-type { font-weight: normal; font-size: 0.8rem; color: var(--fg-soft); }
+        .acc-edit { background: var(--panel-2); border-radius: 8px; padding: 10px 14px; margin: -4px 0 12px; }
+        .acc-edit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .acc-edit-row input[type=text] { flex: 1 1 180px; min-width: 140px; padding: 7px 9px !important; margin: 0 !important; }
+        .acc-edit-row select { width: auto; padding: 7px 9px; margin: 0; }
+        .acc-edit .note { margin: 4px 0 0; font-size: 0.88rem; }
         .month-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 8px; }
         .month-cards .summary-card { padding: 8px 10px; }
         .month-cards .summary-card h3 { margin: 0 0 2px; font-size: 0.9rem; }
@@ -1678,6 +1685,7 @@
                         <div class="row-gap">
                             <div class="seg" role="group" aria-label="Period">
                                 <button class="btn-toggle" id="btn-mode-month" onclick="setMonthMode('month')">Month</button>
+                                <button class="btn-toggle" id="btn-mode-next" onclick="setMonthMode('next')">Next month</button>
                                 <button class="btn-toggle" id="btn-mode-30" onclick="setMonthMode('30')">Next 30 days</button>
                             </div>
                             <div class="row-gap month-nav" id="month-nav">
@@ -1689,10 +1697,17 @@
                     </div>
                     <div class="money-now">
                         <span class="money-now-label">Money now</span>
-                        <label>Bank £ <input type="number" step="0.01" id="acc-balance-0" onchange="saveBalances()"></label>
-                        <label>Cash £ <input type="number" step="0.01" id="acc-balance-2" onchange="saveBalances()"></label>
-                        <label>Savings £ <input type="number" step="0.01" id="acc-balance-1" onchange="saveBalances()"></label>
+                        <span id="money-now-accounts" style="display: contents;"></span>
                         <span class="muted" id="money-now-total"></span>
+                        <button class="btn-small btn-toggle" id="btn-acc-edit" onclick="toggleAccEdit()">Accounts</button>
+                    </div>
+                    <div class="acc-edit" id="acc-edit" style="display: none;">
+                        <div id="acc-edit-rows"></div>
+                        <div class="row-gap">
+                            <button class="btn-small" onclick="addAccount()">Add an account</button>
+                            <button class="btn-small btn-toggle" onclick="toggleAccEdit()">Done</button>
+                        </div>
+                        <p class="note">Name each account how your bank does, e.g. Monzo, Barclays current, Nationwide ISA. Current accounts and cash count toward Safe to spend; savings don't.</p>
                     </div>
                     <div class="finance-summary month-cards" id="month-summary"></div>
                     <p class="note" id="month-note" style="margin: 0 0 12px;"></p>
@@ -2804,7 +2819,7 @@
                     <div class="guide-card">
                         <h3>Budget</h3>
                         <p>Type in your bank balance whenever you check it. The app takes off bills that are still to pay and tells you how much you can spend each day until your next payment.</p>
-                        <p><strong>Month</strong> shows any calendar month at a glance, whatever today's date: money coming in on the left, bills and payments going out on the right, what's left after bills, and where you'll finish. Switch to <strong>Next 30 days</strong> for a rolling view.</p>
+                        <p><strong>Month</strong> shows any calendar month at a glance, whatever today's date: money coming in on the left, bills and payments going out on the right, what's left after bills, and where you'll finish. Press <strong>Next month</strong> to see what's coming in and going out next month, and where you're expected to start and finish, or <strong>Next 30 days</strong> for a rolling view. Press <strong>Accounts</strong> to name your own accounts and add more.</p>
                         <p><strong>Debts</strong> keeps each card, loan or arrears with its balance, next payment and notes. Log each payment with the date and amount and the balance comes down.</p>
                         <p>Add paydays under Money in, and bills under Bills with how often they come round. Press <strong>Mark paid</strong>, check the date and amount, and the next one is set up for you.</p>
                         <button class="btn-small" onclick="guideGo('budget')">Go to Budget</button>
@@ -2987,6 +3002,10 @@
         // =====================================================================
         // VERSION: bump APP_VERSION with every change and add a line below
         // =====================================================================
+        // v9.6  Name your own accounts: Accounts on the Month page adds, renames and removes
+        //       them, each marked current, savings or cash. Current and cash count toward safe
+        //       to spend. A Next month button jumps to next month's money in and going out, and
+        //       future months show where you're expected to start and finish, before spending.
         // v9.5  Budget opens on Month: any calendar month at a glance whatever today's date, or
         //       a Next 30 days toggle. Money now (bank, cash, savings) along the top; cards for
         //       money in, going out, left after bills, bank and cash now, and where you'll
@@ -3265,7 +3284,7 @@
         // v1.2  Food Shop tab, break reminders with fun facts, default house mix track
         // v1.1  Background music dock (drag, minimise), renamed to Life - Student Edition, dpaul-software.uk link
         // v1.0  First student build: budget, tasks, deadlines, timetable, projects, grades, bus, Google, focus timer, how-to guide
-        const APP_VERSION = '9.5';
+        const APP_VERSION = '9.6';
 
         // =====================================================================
         // CONFIG: set these before you deploy
@@ -3298,6 +3317,8 @@
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
         // A first name, tidied: single spaces, no silly lengths
+        const ACC_TYPES = { current: 'Current account', savings: 'Savings', cash: 'Cash' };
+        function cleanAccName(v) { return String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 30); }
         function cleanName(v) { return String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 24); }
 
         function esc(value) {
@@ -3911,7 +3932,7 @@
                 modules: [],
                 jobs: [],
                 budget: {
-                    accounts: [{ name: 'Current account', balance: 0 }, { name: 'Savings', balance: 0 }, { name: 'Cash', balance: 0 }],
+                    accounts: [{ id: 'acc-current', name: 'Current account', type: 'current', balance: 0 }, { id: 'acc-savings', name: 'Savings', type: 'savings', balance: 0 }, { id: 'acc-cash', name: 'Cash', type: 'cash', balance: 0 }],
                     income: [], bills: [], spends: [], monthBudget: '', debts: []
                 },
                 settings: {
@@ -3971,8 +3992,15 @@
             if (!TABS.includes(out.settings.lastTab)) out.settings.lastTab = 'today';
             ['income', 'bills', 'spends', 'debts'].forEach(k => { if (!Array.isArray(out.budget[k])) out.budget[k] = []; });
             out.budget.debts.forEach(d => { if (!Array.isArray(d.payments)) d.payments = []; });
-            if (!Array.isArray(out.budget.accounts) || out.budget.accounts.length < 2) out.budget.accounts = base.budget.accounts;
-            if (out.budget.accounts.length < 3) out.budget.accounts.push({ name: 'Cash', balance: 0 });
+            if (!Array.isArray(out.budget.accounts) || !out.budget.accounts.length) out.budget.accounts = base.budget.accounts.map(a => ({ ...a }));
+            // v9.6: older data had three fixed slots (current, savings, cash) with no type
+            const oldTypes = ['current', 'savings', 'cash'];
+            out.budget.accounts = out.budget.accounts.filter(a => a && typeof a === 'object').map((a, i) => ({
+                id: a.id || uid(),
+                name: cleanAccName(a.name) || 'Account',
+                type: ACC_TYPES[a.type] ? a.type : (oldTypes[i] || 'current'),
+                balance: Number(a.balance) || 0
+            }));
             return out;
         }
 
@@ -5220,9 +5248,7 @@
 
         function renderBudget() {
             const b = data.budget;
-            $('acc-balance-0').value = b.accounts[0].balance;
-            $('acc-balance-1').value = b.accounts[1].balance;
-            $('acc-balance-2').value = (b.accounts[2] || {}).balance || 0;
+            renderAccounts();
             const s = budgetSummary();
             $('budget-summary').innerHTML = summaryCards(s);
             $('budget-note').textContent = summaryNote(s);
@@ -5642,9 +5668,58 @@
             return `<td class="dc-wd">${WD3[d.getDay()]}</td><td class="dc-d">${d.getDate()}</td><td class="dc-m">${MON3[d.getMonth()]}${yr}</td>`;
         }
         function addDays(iso, n) { const d = parseISO(iso); d.setDate(d.getDate() + n); return isoDate(d); }
-        function moneyNow() {
-            const a = data.budget.accounts;
-            return (Number(a[0].balance) || 0) + (Number((a[2] || {}).balance) || 0);
+        // v9.6: named accounts. Current and cash count as spendable; savings don't.
+        function accTotal(...types) {
+            return data.budget.accounts.filter(a => types.includes(a.type)).reduce((s, a) => s + (Number(a.balance) || 0), 0);
+        }
+        function moneyNow() { return accTotal('current', 'cash'); }
+        let accEditing = false;
+        function toggleAccEdit() {
+            accEditing = !accEditing;
+            renderAccounts();
+            if (accEditing) { const f = document.querySelector('#acc-edit-rows input'); if (f) f.focus(); }
+        }
+        function renderAccounts() {
+            const accs = data.budget.accounts;
+            $('money-now-accounts').innerHTML = accs.map((a, i) =>
+                `<label title="${ACC_TYPES[a.type]}">${esc(a.name)} £ <input type="number" step="0.01" id="acc-balance-${i}" value="${Number(a.balance) || 0}" onchange="setAccBalance('${a.id}', this.value)"></label>`).join('')
+                || '<span class="muted">No accounts yet. Press Accounts to add one.</span>';
+            $('acc-edit').style.display = accEditing ? '' : 'none';
+            $('btn-acc-edit').textContent = accEditing ? 'Done' : 'Accounts';
+            if (!accEditing) return;
+            $('acc-edit-rows').innerHTML = accs.map(a => `<div class="acc-edit-row">
+                    <input type="text" maxlength="30" value="${esc(a.name)}" aria-label="Account name" onchange="renameAccount('${a.id}', this.value)">
+                    <select aria-label="Account type" onchange="setAccType('${a.id}', this.value)">${Object.entries(ACC_TYPES).map(([k, v]) => `<option value="${k}"${k === a.type ? ' selected' : ''}>${v}</option>`).join('')}</select>
+                    <button class="btn-task-del" onclick="deleteAccount('${a.id}')" title="Remove this account">×</button>
+                </div>`).join('') || '<p class="note">No accounts. Add one below.</p>';
+        }
+        function accById(id) { return data.budget.accounts.find(a => a.id === id); }
+        function setAccBalance(id, v) {
+            const a = accById(id); if (!a) return;
+            a.balance = Math.round((parseFloat(v) || 0) * 100) / 100;
+            saveData(); renderBudget();
+        }
+        function renameAccount(id, v) {
+            const a = accById(id); if (!a) return;
+            a.name = cleanAccName(v) || a.name;
+            saveData(); renderBudget();
+        }
+        function setAccType(id, v) {
+            const a = accById(id); if (!a || !ACC_TYPES[v]) return;
+            a.type = v;
+            saveData(); renderBudget();
+        }
+        function addAccount() {
+            data.budget.accounts.push({ id: uid(), name: 'New account', type: 'current', balance: 0 });
+            saveData(); renderBudget();
+            const rows = document.querySelectorAll('#acc-edit-rows input[type=text]');
+            if (rows.length) { rows[rows.length - 1].focus(); rows[rows.length - 1].select(); }
+        }
+        function deleteAccount(id) {
+            const a = accById(id); if (!a) return;
+            if (!confirm(`Remove ${a.name}${Number(a.balance) ? ` and its ${money(Number(a.balance))} balance` : ''}?`)) return;
+            data.budget.accounts = data.budget.accounts.filter(x => x.id !== id);
+            saveData(); renderBudget();
         }
 
         // Income, with repeating entries projected forward. Each repeat is a copy of the
@@ -5722,8 +5797,11 @@
             renderBudget();
         }
 
+        function nextMonthKey() { return addMonths(todayISO().slice(0, 7) + '-01', 1).slice(0, 7); }
         function setMonthMode(m) {
             data.settings.monthMode = m === '30' ? '30' : 'month';
+            if (m === 'next') monthView = nextMonthKey();
+            else if (m === 'month' && monthView === nextMonthKey()) monthView = todayISO().slice(0, 7);
             saveData(true);
             billPaying = null;
             renderMonth();
@@ -5736,13 +5814,28 @@
             return { start, end, label: monthLabel(monthView), current: today >= start && today <= end, past: end < today, thirty: false };
         }
 
+        // v9.6: bank and cash expected at the end of a given day, before day-to-day spending:
+        // money now, plus money still to come in, minus everything unpaid due by then
+        function projectBalance(to) {
+            const today = todayISO();
+            if (to < today) return null;
+            const b = data.budget;
+            const inc = incomeOccurrences(addDays(today, 1), to).reduce((s, x) => s + x.amount, 0);
+            const bills = b.bills.filter(x => !x.paid && x.due <= to).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+            const proj = projectedBills(today.slice(0, 7) + '-01', to).reduce((s, x) => s + x.amount, 0);
+            const debts = debtOccurrences('0000', to).filter(x => !x.paid).reduce((s, x) => s + x.amount, 0);
+            return moneyNow() + inc - bills - proj - debts;
+        }
+
         function renderMonth() {
             if (!$('month-summary')) return;
             const b = data.budget;
             const today = todayISO();
             const P = monthPeriod();
             const thirty = P.thirty;
-            $('btn-mode-month').classList.toggle('seg-on', !thirty);
+            const nextOn = !thirty && monthView === nextMonthKey();
+            $('btn-mode-month').classList.toggle('seg-on', !thirty && !nextOn);
+            $('btn-mode-next').classList.toggle('seg-on', nextOn);
             $('btn-mode-30').classList.toggle('seg-on', thirty);
             $('month-nav').style.display = thirty ? 'none' : '';
             $('month-title').textContent = thirty ? `Next 30 days · ${fmtDate(P.start)} to ${fmtDate(P.end)}` : P.label;
@@ -5752,8 +5845,8 @@
             $('month-budget').value = b.monthBudget || '';
 
             // Money now
-            const bank = Number(b.accounts[0].balance) || 0, cash = Number((b.accounts[2] || {}).balance) || 0, savings = Number(b.accounts[1].balance) || 0;
-            $('money-now-total').textContent = `${money(bank + cash + savings)} in all`;
+            const spendable = moneyNow(), savings = accTotal('savings');
+            $('money-now-total').textContent = b.accounts.length > 1 ? `${money(spendable + savings)} in all` : '';
 
             // Money in
             const inc = incomeOccurrences(P.start, P.end);
@@ -5778,29 +5871,38 @@
             const spent = b.spends.filter(x => x.date >= P.start && x.date <= P.end).reduce((s, x) => s + (Number(x.amount) || 0), 0);
             const limit = Number(b.monthBudget) || 0;
             const afterBills = inAll - outAll;
-            const endProj = bank + cash + inToCome - outToPay;
+            const endProj = spendable + inToCome - outToPay;
 
             const card = (h, v, cls, sub, hero) => `<div class="summary-card${hero ? ' hero' : ''}"><h3>${h}</h3><p class="${cls}">${v}</p><div class="sub">${sub}</div></div>`;
             let cards = card('Money in', money(inAll), 'money-in', P.current ? `${money(inDone)} in, ${money(inToCome)} to come` : `${inc.length} payment${inc.length === 1 ? '' : 's'}`)
                 + card('Going out', money(outAll), 'money-out', P.current || P.past ? `${money(outPaid)} paid, ${money(outToPay)} to pay` : `${out.length} bill${out.length === 1 ? '' : 's'} and payments`)
                 + card('Left after bills', money(afterBills), afterBills < 0 ? 'money-out' : 'money-in', limit && !thirty ? `${money(limit)} budgeted for spending` : 'for day-to-day spending', true);
             if (P.current) {
-                cards += card('Bank and cash now', money(bank + cash), '', `plus ${money(savings)} in savings`)
+                cards += card('Bank and cash now', money(spendable), '', `plus ${money(savings)} in savings`)
                     + card(`By ${fmtDate(P.end)}`, money(endProj), endProj < 0 ? 'money-out' : 'money-in', 'before day-to-day spending');
+            } else if (!P.past) {
+                const startBal = projectBalance(addDays(P.start, -1)), endBal = projectBalance(P.end);
+                cards += card(`Start of ${MON3[parseISO(P.start).getMonth()]}`, money(startBal), startBal < 0 ? 'money-out' : 'money-in', 'expected, before spending')
+                    + card(`End of ${MON3[parseISO(P.start).getMonth()]}`, money(endBal), endBal < 0 ? 'money-out' : 'money-in', 'expected, before spending');
             } else {
                 cards += card(P.past ? 'Spent day to day' : 'Spending budget', money(P.past ? spent : limit), P.past ? 'money-out' : '', P.past ? (limit ? `of ${money(limit)} budget` : 'no budget set') : (limit ? 'set below' : 'none set yet'))
-                    + card('Savings now', money(savings), '', `bank and cash ${money(bank + cash)}`);
+                    + card('Savings now', money(savings), '', `bank and cash ${money(spendable)}`);
             }
             $('month-summary').innerHTML = cards;
 
             let note;
             if (P.current) {
-                note = `You have ${money(bank + cash)} in the bank and cash. With ${money(inToCome)} still to come in and ${money(outToPay)} still to pay by ${fmtDate(P.end, true)}, you'd finish on about ${money(endProj)} before day-to-day spending`;
+                note = `You have ${money(spendable)} in the bank and cash. With ${money(inToCome)} still to come in and ${money(outToPay)} still to pay by ${fmtDate(P.end, true)}, you'd finish on about ${money(endProj)} before day-to-day spending`;
                 if (limit && !thirty) { const leftBudget = Math.max(0, limit - spent); note += `, or ${money(endProj - leftBudget)} if you spend the rest of your ${money(limit)} budget`; }
                 note += '.';
                 if (endProj < 0) note += ' That\'s short, so check which bills can move, and talk to Citizens Advice or StepChange if it keeps happening.';
             } else if (P.past) note = `Looking back at ${P.label}: ${money(inAll)} came in, ${money(outAll)} went on bills and payments, and ${money(spent)} on day-to-day spending.`;
-            else note = `Expected for ${P.label}: ${money(inAll)} coming in and ${money(outAll)} going out${inAll ? '' : '. Add your paydays with Repeats set and they show here'}.`;
+            else {
+                const startBal = projectBalance(addDays(P.start, -1)), endBal = projectBalance(P.end);
+                note = `Expected for ${P.label}: ${money(inAll)} coming in and ${money(outAll)} going out, so ${money(afterBills)} ${afterBills < 0 ? 'short' : 'left'} after bills. You'd start the month on about ${money(startBal)} and finish on about ${money(endBal)} in the bank and cash, before day-to-day spending`;
+                if (limit) note += `, or ${money(endBal - limit)} if you spend your ${money(limit)} budget that month too`;
+                note += inAll ? '.' : '. Add your paydays with Repeats set and they show here.';
+            }
             $('month-note').textContent = note;
 
             // Money in list
@@ -5845,10 +5947,8 @@
                 ? `<div class="progress" title="${pct}% of your spending budget"><div style="width: ${pct}%; background: ${spent > limit ? 'var(--danger)' : 'var(--fg)'};"></div></div>` : '';
         }
 
-        function saveBalances() {
-            data.budget.accounts[0].balance = parseFloat($('acc-balance-0').value) || 0;
-            data.budget.accounts[1].balance = parseFloat($('acc-balance-1').value) || 0;
-            data.budget.accounts[2].balance = parseFloat($('acc-balance-2').value) || 0;
+        function saveBalances() { // older name, kept for anything still calling it
+            data.budget.accounts.forEach((a, i) => { const f = $('acc-balance-' + i); if (f) a.balance = parseFloat(f.value) || 0; });
             saveData();
             renderBudget();
         }
